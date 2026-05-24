@@ -5,7 +5,7 @@
 import {
   ref,
   uploadBytesResumable,
-  downloadURL,
+  getDownloadURL,
   UploadTask,
   getBytes,
   deleteObject,
@@ -46,7 +46,7 @@ export const uploadFile = (
  */
 export const getFileUrl = async (path: string): Promise<string> => {
   const storageRef = ref(storage, path);
-  return downloadURL(storageRef);
+  return getDownloadURL(storageRef);
 };
 
 /**
@@ -112,5 +112,5 @@ export const uploadPitchThumbnail = (
  */
 export const waitForUpload = async (uploadTask: UploadTask): Promise<string> => {
   await uploadTask;
-  return downloadURL(uploadTask.snapshot.ref);
+  return getDownloadURL(uploadTask.snapshot.ref);
 };
