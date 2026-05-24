@@ -1,26 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton:wght@400&family=Sora:wght@300;400;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light mode - Premium Finance */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f7f5;
+  --bg-tertiary: #efefec;
+
+  --text-primary: #0a0a0a;
+  --text-secondary: #5a5a5a;
+  --text-tertiary: #8f8f8f;
+
+  /* Premium Finance Palette */
+  --accent-green: #1e7a5c;
+  --accent-green-light: #2d9971;
+  --accent-gold: #d4a574;
+  --accent-gold-light: #e8c9a0;
+  --accent-charcoal: #1f1f1f;
+  --accent-black: #0a0a0a;
+
+  /* Utility colors */
+  --success: #2d9971;
+  --warning: #d4a574;
+  --error: #d32f2f;
+  --info: #1e7a5c;
+
+  /* Borders & Dividers */
+  --border-light: #e5e3e0;
+  --border-medium: #d5d3d0;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(10, 10, 10, 0.05);
+  --shadow-md: 0 4px 12px rgba(10, 10, 10, 0.08);
+  --shadow-lg: 0 12px 32px rgba(10, 10, 10, 0.12);
+  --shadow-xl: 0 20px 48px rgba(10, 10, 10, 0.15);
+}
+
+html[data-theme="dark"] {
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #252525;
+
+  --text-primary: #f5f5f5;
+  --text-secondary: #b8b8b8;
+  --text-tertiary: #8a8a8a;
+
+  /* Dark mode greens - richer, more luxe */
+  --accent-green: #2d9971;
+  --accent-green-light: #3fb892;
+  --accent-gold: #d4a574;
+  --accent-gold-light: #e8c9a0;
+  --accent-charcoal: #2a2a2a;
+  --accent-black: #0f0f0f;
+
+  --success: #3fb892;
+  --warning: #d4a574;
+  --error: #ff5252;
+  --info: #2d9971;
+
+  --border-light: #2a2a2a;
+  --border-medium: #3a3a3a;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.6);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-sora);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Anton', system-ui;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  margin-bottom: 1.25rem;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 3vw, 1.875rem);
+  margin-bottom: 1rem;
+}
+
+p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+a {
+  color: var(--accent-green);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-green-light);
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+button, a, input {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Selection styling */
+::selection {
+  background: var(--accent-green);
+  color: white;
+}
+
+::-moz-selection {
+  background: var(--accent-green);
+  color: white;
 }
