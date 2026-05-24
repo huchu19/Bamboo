@@ -34,6 +34,9 @@
 - [x] Footer
 - [x] Tailwind CSS setup
 - [x] Global styles
+- [x] Theme system with CSS variables
+- [x] Theme toggle component (light/dark mode)
+- [x] Card component with variants (default, elevated, bordered)
 
 ### Project Documentation
 - [x] Comprehensive README
