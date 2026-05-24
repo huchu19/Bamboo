@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${sora.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="en" className={`${sora.variable} h-full antialiased`} suppressHydrationWarning data-theme="light">
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           <AuthProvider>{children}</AuthProvider>

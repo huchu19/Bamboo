@@ -1,15 +1,27 @@
 'use client';
 
-import { useTheme } from '@/context/ThemeContext';
 import { useEffect, useState } from 'react';
 
 export function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    const stored = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    const initial = stored || 'light';
+    setTheme(initial);
+    document.documentElement.setAttribute('data-theme', initial);
   }, []);
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      localStorage.setItem('theme', next);
+      document.documentElement.setAttribute('data-theme', next);
+      return next;
+    });
+  };
 
   if (!isClient) {
     return <div className="w-10 h-10" />;
