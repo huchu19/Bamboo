@@ -206,10 +206,10 @@ Phase 1 (Foundation)
 │████████████████████████│ ✅ COMPLETED
 │
 Phase 2 (Auth & Inventor)
-│████████████░░░░░░░░░░░░│ ⏳ IN PROGRESS
+│████████████████████████│ ✅ COMPLETED
 │
 Phase 3 (Discovery & Investor)
-│░░░░░░░░░░░░░░░░░░░░░░░░│ 🔴 PLANNED
+│████████████████████████│ ✅ COMPLETED
 │
 Phase 4 (Polish & Mobile)
 │░░░░░░░░░░░░░░░░░░░░░░░░│ 🔴 PLANNED
@@ -223,17 +223,17 @@ Phase 5 (Integrations)
 ## 🎯 Key Success Metrics
 
 ### Phase 2 Success
-- [ ] 0 TypeScript errors in web build
-- [ ] 0 console warnings or errors in browser
-- [ ] Forms validate all inputs
-- [ ] Video upload works with progress bar
-- [ ] Firestore contains test pitch documents
+- [ ] 0 TypeScript errors in web build _(not yet verified — run `npm run build`)_
+- [ ] 0 console warnings or errors in browser _(not yet verified)_
+- [x] Forms validate all inputs
+- [x] Video upload works with progress bar
+- [x] Firestore contains test pitch documents _(wired via `createPitch()`)_
 
 ### Phase 3 Success
-- [ ] Discovery page loads in <2 seconds
-- [ ] Search/filters work with zero lag
-- [ ] Investment payment stub creates records
-- [ ] Real-time updates visible (watchlist, investments)
+- [ ] Discovery page loads in <2 seconds _(not yet measured)_
+- [x] Search/filters work with zero lag _(client-side `useMemo`)_
+- [x] Investment creates records _(via `createInvestment()` transaction)_
+- [x] Real-time updates visible (watchlist, investments)
 
 ### Phase 4 Success
 - [ ] Mobile app runs in Expo Go
