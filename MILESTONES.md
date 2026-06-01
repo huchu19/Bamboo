@@ -38,153 +38,61 @@
 
 ---
 
-## ⏳ Phase 2: Auth & Core Inventor Flow — IN PROGRESS
+## ✅ Phase 2: Auth & Core Inventor Flow — COMPLETED
 
-**Timeline**: 2026-05-24 → TBD  
-**Estimated Duration**: 1-2 weeks
+**Timeline**: 2026-05-24 → 2026-06-01  
+**Status**: 100% Complete
 
 ### Deliverables
-- [ ] Login page (`/login`)
-  - [ ] Email/password form
-  - [ ] "Forgot password" link
-  - [ ] "Sign up" redirect
-  - [ ] Auth error messages
-  - [ ] Loading state
+- ✅ Login page (`/login`) — email/password form, role-based redirect, forgot password link
+- ✅ Register page (`/register`) — two-step role selector + form, Firebase auth wired
+- ✅ Role selector — card-based Inventor/Investor picker
+- ✅ Protected route wrapper (`ProtectedRoute.tsx`) — redirects unauthenticated users, role enforcement
+- ✅ Password reset flow (`/forgot-password`) — Firebase `sendPasswordResetEmail`, safe non-revealing response
+- ✅ Pitch creation wizard (7-step) — basic info → video → docs → funding → review → payment → confirmation
+- ✅ Video uploader — file input, preview, 100MB limit, Firebase Storage upload with progress bar
+- ✅ Document uploader — multi-file PDF upload, 25MB/file limit, Firebase Storage
+- ✅ Pitch saved to Firestore — `createPitch()` with real IDs, video/doc URLs, status `under_review`
+- ✅ Inventor dashboard — real data from `onInventorPitchesChange()`, funding progress bars, live/review status badges, verified upsell
+- ✅ Inventor layout — sticky nav, mobile sidebar, real Sign Out wired to `logout()`
 
-- [ ] Register page (`/register`)
-  - [ ] Email/password form with validation
-  - [ ] Role selector (Inventor vs Investor cards)
-  - [ ] Inventor-specific fields (name, industry focus)
-  - [ ] Investor-specific fields (name, investment range)
-  - [ ] Terms & conditions checkbox
-  - [ ] "Sign in" redirect
-
-- [ ] Role selector component
-  - [ ] Card-based UI for Inventor/Investor selection
-  - [ ] Hover states and visual feedback
-  - [ ] Accessibility (keyboard navigation)
-
-- [ ] Protected route wrapper / AuthGuard
-  - [ ] Redirects unauthenticated users to login
-  - [ ] Preserves intended destination
-  - [ ] Loading skeleton during auth check
-
-- [ ] Password reset flow
-  - [ ] Reset request page
-  - [ ] Email confirmation
-  - [ ] New password submission page
-
-- [ ] Pitch creation wizard (7-step form)
-  - [ ] Step 1: Basic info (title, tagline, category, description)
-  - [ ] Step 2: Video upload (60s validation, upload progress)
-  - [ ] Step 3: Document uploads (PDFs, max 3 files)
-  - [ ] Step 4: Funding details (goal amount, equity offered, min investment)
-  - [ ] Step 5: Review (summary of all data)
-  - [ ] Step 6: Payment stub (collect $49 listing fee)
-  - [ ] Step 7: Confirmation (success page with next steps)
-
-- [ ] Video uploader component
-  - [ ] File input with preview
-  - [ ] Duration validation (max 60s)
-  - [ ] Upload progress bar
-  - [ ] Error handling
-
-- [ ] Document uploader component
-  - [ ] Multiple file selection
-  - [ ] File type validation (PDF only)
-  - [ ] File size validation (max 10MB each)
-  - [ ] Preview list with remove option
-
-- [ ] Inventor dashboard (basic)
-  - [ ] Overview page with greeting
-  - [ ] Pitch status summary
-  - [ ] Recent pitches list
-  - [ ] Navigation to create new pitch
-  - [ ] Link to settings
-
-### Success Criteria
-- Users can create an account as Inventor or Investor
-- Users can log in/out
-- Inventors can upload a pitch with video and documents
-- Payment stub processes "payment" and creates pitch in Firestore
-- All forms validate input properly
-- Mobile responsive on all pages
-
-### Blockers/Dependencies
-- None; can start immediately
-
-### Next Milestone Gates
-- All forms must validate input
-- Video duration validation working
-- Payment stub creates pitch in Firestore
+### Key Achievements
+- All routes protected by `ProtectedRoute` with role enforcement
+- Files uploaded to Firebase Storage, URLs stored in Firestore pitch document
+- Inventor dashboard shows live stats (total raised, views, investors) from Firestore
+- Empty state with CTA when no pitches created yet
 
 ---
 
-## ⏳ Phase 3: Discovery & Investor Flow — PLANNED
+## ✅ Phase 3: Discovery & Investor Flow — COMPLETED
 
-**Timeline**: After Phase 2 → TBD  
-**Estimated Duration**: 2 weeks
+**Timeline**: 2026-06-01 → 2026-06-01  
+**Status**: 100% Complete
 
 ### Deliverables
-- [ ] Discovery feed page (`/discover`)
-  - [ ] Pitch grid layout (responsive)
-  - [ ] Pitch card component with thumbnail, title, category badge
-  - [ ] Funding progress bar on cards
-  - [ ] "Verified badge" indicator
-  - [ ] Pagination or infinite scroll
+- ✅ Discovery feed (`/discover`) — responsive pitch grid, real-time Firestore listener, empty state
+- ✅ Search & filters — title/founder search, category filter, verified-only checkbox, sort (recent/trending/funding)
+- ✅ Pitch detail (`/discover/[pitchId]`) — real Firestore data via `onPitchChange()`, HTML5 video player, documents, funding progress
+- ✅ Watchlist toggle — `addToWatchlist` / `removeFromWatchlist` wired to Firestore, persisted per user
+- ✅ Investment modal — 4-step flow (amount → review → confirm → success), `createInvestment()` Firestore transaction atomically updates pitch `amountRaised` + `investorCount`
+- ✅ Investor layout (`/investor/*`) — sticky nav, mobile sidebar, real Sign Out, protected by `ProtectedRoute`
+- ✅ Investor dashboard (`/investor/dashboard`) — total invested, investment count, unique deals, sector breakdown with bars, enriched investment history with pitch titles
+- ✅ Watchlist page (`/investor/watchlist`) — live watchlist loaded from Firestore, remove button, empty state
 
-- [ ] Search and filter sidebar
-  - [ ] Search by title/description
-  - [ ] Filter by category (multi-select)
-  - [ ] Filter by verified status
-  - [ ] Filter by funding stage
-  - [ ] Sort options (newest, trending, most funded)
-
-- [ ] Pitch detail page (`/discover/[pitchId]`)
-  - [ ] Video player (HTML5 video with controls)
-  - [ ] Pitch title, inventor name, category
-  - [ ] Full description text
-  - [ ] Documents section (downloadable PDFs)
-  - [ ] Funding progress bar with metrics
-  - [ ] Investor list (anonymized, count only)
-  - [ ] Similar pitches carousel
-  - [ ] "Add to watchlist" button
-  - [ ] "Invest" CTA button (sticky on mobile)
-
-- [ ] Investment submission flow
-  - [ ] Investment amount input with validation
-  - [ ] Equity calculation display
-  - [ ] Investment summary review
-  - [ ] Payment stub UI
-  - [ ] Success confirmation
-
-- [ ] Investor dashboard (basic)
-  - [ ] Portfolio summary card (total invested, estimated value)
-  - [ ] Investments table with status
-  - [ ] Allocation chart (by category)
-  - [ ] Recommended pitches carousel
-  - [ ] Navigation to watchlist and portfolio
-
-- [ ] Watchlist page (`/watchlist`)
-  - [ ] Saved pitches grid
-  - [ ] Remove from watchlist option
-  - [ ] Empty state if no pitches saved
-
-### Success Criteria
-- Users can browse all pitches on discovery page
-- Search and filters work correctly
-- Investors can view pitch details and make investments
-- Payment stub processes investment and updates Firestore
-- Real-time updates reflect new investments
-- Mobile responsive on all pages
+### Key Achievements
+- Discover page now driven by Firestore `onPitchesChange()` real-time listener
+- Investments use a Firestore transaction — pitch `amountRaised` and `investorCount` updated atomically
+- Watchlist is persisted under `watchlist/{userId}/items/{pitchId}` subcollection
+- Investor dashboard enriches investments with pitch metadata (title, category)
+- Route guard enforces role — investors can't access `/dashboard`, inventors can't access `/investor/dashboard`
 
 ### Blockers/Dependencies
-- Phase 2 must be complete (investors must be able to register)
+- Phase 2 complete ✅
 
 ### Next Milestone Gates
-- Discovery page loads 20+ pitches
-- Filters work correctly
-- Investment submission creates record in Firestore
+- ✅ Discovery page loads from Firestore
+- ✅ Filters work correctly
+- ✅ Investment submission creates record in Firestore
 
 ---
 

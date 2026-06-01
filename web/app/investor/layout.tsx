@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
-export default function InventorLayout({ children }: { children: React.ReactNode }) {
+export default function InvestorLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { logout } = useAuth();
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function InventorLayout({ children }: { children: React.ReactNode
   };
 
   return (
-    <ProtectedRoute requiredRole="inventor">
+    <ProtectedRoute requiredRole="investor">
       <div className="min-h-screen bg-gray-50">
         <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
@@ -31,11 +31,14 @@ export default function InventorLayout({ children }: { children: React.ReactNode
               ☰
             </button>
             <div className="hidden md:flex items-center gap-6">
-              <Link href="/dashboard" className="text-gray-700 hover:text-green-600 transition font-medium">
-                Dashboard
+              <Link href="/investor/dashboard" className="text-gray-700 hover:text-green-600 transition font-medium">
+                Portfolio
               </Link>
-              <Link href="/pitch/new" className="text-gray-700 hover:text-green-600 transition font-medium">
-                New Pitch
+              <Link href="/discover" className="text-gray-700 hover:text-green-600 transition font-medium">
+                Discover
+              </Link>
+              <Link href="/investor/watchlist" className="text-gray-700 hover:text-green-600 transition font-medium">
+                Watchlist
               </Link>
               <button
                 onClick={handleSignOut}
@@ -48,11 +51,14 @@ export default function InventorLayout({ children }: { children: React.ReactNode
 
           {sidebarOpen && (
             <div className="md:hidden border-t border-gray-200 p-4 space-y-2">
-              <Link href="/dashboard" className="block py-2 text-gray-700 hover:text-green-600">
-                Dashboard
+              <Link href="/investor/dashboard" className="block py-2 text-gray-700 hover:text-green-600">
+                Portfolio
               </Link>
-              <Link href="/pitch/new" className="block py-2 text-gray-700 hover:text-green-600">
-                New Pitch
+              <Link href="/discover" className="block py-2 text-gray-700 hover:text-green-600">
+                Discover
+              </Link>
+              <Link href="/investor/watchlist" className="block py-2 text-gray-700 hover:text-green-600">
+                Watchlist
               </Link>
               <button
                 onClick={handleSignOut}

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import type { PitchCategory } from '@/types';
 
 const PITCH_CATEGORIES: { value: PitchCategory; label: string; emoji: string }[] = [
@@ -17,6 +19,9 @@ const PITCH_CATEGORIES: { value: PitchCategory; label: string; emoji: string }[]
 ];
 
 export default function CreatePitchPage() {
+  const router = useRouter();
+  const { firebaseUser, user } = useAuth();
+
   const [step, setStep] = useState<
     'basic' | 'video' | 'documents' | 'funding' | 'review' | 'payment' | 'confirmation'
   >('basic');
@@ -37,30 +42,25 @@ export default function CreatePitchPage() {
   const [documents, setDocuments] = useState<File[]>([]);
   const [currentTag, setCurrentTag] = useState('');
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState('');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleAddTag = () => {
     if (currentTag.trim() && formData.tags.length < 5) {
-      setFormData((prev) => ({
-        ...prev,
-        tags: [...prev.tags, currentTag.trim()],
-      }));
+      setFormData((prev) => ({ ...prev, tags: [...prev.tags, currentTag.trim()] }));
       setCurrentTag('');
     }
   };
 
   const handleRemoveTag = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((_, i) => i !== index),
-    }));
+    setFormData((prev) => ({ ...prev, tags: prev.tags.filter((_, i) => i !== index) }));
   };
 
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,8 +71,7 @@ export default function CreatePitchPage() {
         return;
       }
       setVideoFile(file);
-      const preview = URL.createObjectURL(file);
-      setVideoPreview(preview);
+      setVideoPreview(URL.createObjectURL(file));
     }
   };
 
@@ -90,38 +89,88 @@ export default function CreatePitchPage() {
     setDocuments((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    if (!firebaseUser) return;
     setLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const { collection, doc } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase/config');
+      const { createPitch } = await import('@/lib/firebase/firestore');
+      const {
+        uploadPitchVideo,
+        uploadPitchDocument,
+        waitForUpload,
+      } = await import('@/lib/firebase/storage');
 
-      // Store in local storage for demo
-      const pitchData = {
-        id: Date.now().toString(),
-        ...formData,
+      const pitchId = doc(collection(db, 'pitches')).id;
+      let videoURL = '';
+      const pitchDocuments: { name: string; url: string; type: string; uploadedAt: number }[] = [];
+
+      // Upload video
+      if (videoFile) {
+        setUploadStatus('Uploading video...');
+        const videoTask = uploadPitchVideo(pitchId, videoFile, ({ progress }) => {
+          setUploadProgress(Math.round(progress * 0.7)); // 0-70% for video
+        });
+        videoURL = await waitForUpload(videoTask);
+      }
+
+      // Upload documents
+      if (documents.length > 0) {
+        setUploadStatus('Uploading documents...');
+        for (let i = 0; i < documents.length; i++) {
+          const docTask = uploadPitchDocument(pitchId, documents[i]);
+          const url = await waitForUpload(docTask);
+          pitchDocuments.push({
+            name: documents[i].name,
+            url,
+            type: documents[i].type,
+            uploadedAt: Date.now(),
+          });
+          setUploadProgress(70 + Math.round(((i + 1) / documents.length) * 20));
+        }
+      }
+
+      // Save pitch to Firestore
+      setUploadStatus('Saving pitch...');
+      setUploadProgress(95);
+
+      const now = Date.now();
+      await createPitch(pitchId, {
+        inventorId: firebaseUser.uid,
+        inventorName: user?.displayName || firebaseUser.displayName || 'Unknown',
+        title: formData.title,
+        tagline: formData.tagline,
+        description: formData.description,
+        category: formData.category,
+        tags: formData.tags,
+        videoURL,
+        documents: pitchDocuments,
         fundingGoal: parseInt(formData.fundingGoal) * 100,
         minimumInvestment: parseInt(formData.minimumInvestment) * 100,
         equityOffered: parseFloat(formData.equityOffered),
-        status: 'pending_payment' as const,
+        amountRaised: 0,
+        status: 'under_review',
         isVerified: false,
         viewCount: 0,
         watchlistCount: 0,
         investorCount: 0,
-        listingFeePaid: false,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
+        listingFeePaid: true,
+        verifiedBadgePaid: false,
+        createdAt: now,
+        updatedAt: now,
+        publishedAt: now,
+      });
 
-      localStorage.setItem(`pitch_${pitchData.id}`, JSON.stringify(pitchData));
-
+      setUploadProgress(100);
       setStep('confirmation');
     } catch (error) {
-      alert('Failed to create pitch');
+      console.error('Failed to create pitch:', error);
+      alert('Failed to create pitch. Please try again.');
     } finally {
       setLoading(false);
+      setUploadStatus('');
     }
   };
 
@@ -131,7 +180,6 @@ export default function CreatePitchPage() {
 
   return (
     <div>
-      {/* Progress bar */}
       {step !== 'confirmation' && (
         <div className="mb-8">
           <div className="flex justify-between mb-2">
@@ -176,7 +224,7 @@ export default function CreatePitchPage() {
                 name="tagline"
                 value={formData.tagline}
                 onChange={handleInputChange}
-                placeholder="One-sentence hook (e.g., AI-powered carbon tracking for businesses)"
+                placeholder="One-sentence hook"
                 maxLength={100}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
@@ -190,12 +238,7 @@ export default function CreatePitchPage() {
                   <button
                     key={cat.value}
                     type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        category: cat.value,
-                      }))
-                    }
+                    onClick={() => setFormData((prev) => ({ ...prev, category: cat.value }))}
                     className={`p-3 rounded-lg border-2 transition text-center text-sm font-medium ${
                       formData.category === cat.value
                         ? 'border-green-600 bg-green-50 text-green-900'
@@ -216,7 +259,7 @@ export default function CreatePitchPage() {
                   type="text"
                   value={currentTag}
                   onChange={(e) => setCurrentTag(e.target.value)}
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
                       handleAddTag();
@@ -240,7 +283,11 @@ export default function CreatePitchPage() {
                     className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm"
                   >
                     {tag}
-                    <button type="button" onClick={() => handleRemoveTag(idx)} className="text-green-600 hover:text-green-800">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTag(idx)}
+                      className="text-green-600 hover:text-green-800"
+                    >
                       ✕
                     </button>
                   </span>
@@ -262,15 +309,14 @@ export default function CreatePitchPage() {
               <p className="text-xs text-gray-500 mt-1">{formData.description.length}/2000 characters</p>
             </div>
 
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => setStep('video')}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
-              >
-                Next: Upload Video
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setStep('video')}
+              disabled={!formData.title || !formData.tagline || !formData.description}
+              className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next: Upload Video
+            </button>
           </form>
         </div>
       )}
@@ -301,18 +347,11 @@ export default function CreatePitchPage() {
               <div>
                 <p className="text-sm font-medium text-gray-900 mb-2">Preview</p>
                 <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
-                  <video
-                    src={videoPreview}
-                    controls
-                    className="w-full h-full"
-                  />
+                  <video src={videoPreview} controls className="w-full h-full" />
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setVideoFile(null);
-                    setVideoPreview('');
-                  }}
+                  onClick={() => { setVideoFile(null); setVideoPreview(''); }}
                   className="mt-3 text-red-600 hover:text-red-700 text-sm font-medium"
                 >
                   Remove Video
@@ -366,10 +405,15 @@ export default function CreatePitchPage() {
 
             {documents.length > 0 && (
               <div>
-                <p className="text-sm font-medium text-gray-900 mb-3">Uploaded Documents ({documents.length}/10)</p>
+                <p className="text-sm font-medium text-gray-900 mb-3">
+                  Uploaded Documents ({documents.length}/10)
+                </p>
                 <div className="space-y-2">
                   {documents.map((doc, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                    >
                       <span className="text-sm text-gray-700">{doc.name}</span>
                       <button
                         type="button"
@@ -412,7 +456,9 @@ export default function CreatePitchPage() {
           <form className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Funding Goal (USD) *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Funding Goal (USD) *
+                </label>
                 <div className="relative">
                   <span className="absolute left-4 top-3 text-gray-600">$</span>
                   <input
@@ -427,7 +473,9 @@ export default function CreatePitchPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Minimum Investment (USD) *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Minimum Investment (USD) *
+                </label>
                 <div className="relative">
                   <span className="absolute left-4 top-3 text-gray-600">$</span>
                   <input
@@ -442,7 +490,9 @@ export default function CreatePitchPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Equity Offered (%) *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Equity Offered (%) *
+                </label>
                 <div className="relative">
                   <input
                     type="number"
@@ -493,7 +543,9 @@ export default function CreatePitchPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Category</p>
-                  <p className="font-semibold text-gray-900 capitalize">{formData.category.replace('-', ' ')}</p>
+                  <p className="font-semibold text-gray-900 capitalize">
+                    {formData.category.replace('-', ' ')}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Tagline</p>
@@ -501,7 +553,7 @@ export default function CreatePitchPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Video</p>
-                  <p className="font-semibold text-gray-900">{videoFile?.name}</p>
+                  <p className="font-semibold text-gray-900">{videoFile?.name || '—'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Funding Goal</p>
@@ -510,6 +562,14 @@ export default function CreatePitchPage() {
                 <div>
                   <p className="text-sm text-gray-600">Equity Offered</p>
                   <p className="font-semibold text-gray-900">{formData.equityOffered}%</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Min. Investment</p>
+                  <p className="font-semibold text-gray-900">${formData.minimumInvestment}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Documents</p>
+                  <p className="font-semibold text-gray-900">{documents.length} file(s)</p>
                 </div>
               </div>
             </div>
@@ -543,7 +603,8 @@ export default function CreatePitchPage() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
               <h3 className="font-semibold text-blue-900 mb-2">💳 Pitch Listing Fee</h3>
               <p className="text-blue-700 mb-4">
-                To publish your pitch and make it visible to investors, a one-time listing fee of <strong>$49</strong> is required.
+                A one-time listing fee of <strong>$49</strong> is required to publish your pitch
+                to investors.
               </p>
               <div className="flex justify-between py-3 border-t border-blue-200">
                 <span className="font-semibold text-blue-900">Total</span>
@@ -553,15 +614,31 @@ export default function CreatePitchPage() {
 
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-sm text-green-700">
-                🔒 Payment processed securely. This is a demo - no real charge will be made.
+                🔒 Payment processed securely. This is a demo — no real charge will be made.
               </p>
             </div>
+
+            {loading && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>{uploadStatus}</span>
+                  <span>{uploadProgress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-green-600 h-2 rounded-full transition-all"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-4">
               <button
                 type="button"
                 onClick={() => setStep('review')}
-                className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
+                disabled={loading}
+                className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition disabled:opacity-50"
               >
                 Back
               </button>
@@ -571,7 +648,7 @@ export default function CreatePitchPage() {
                 disabled={loading}
                 className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Processing...' : 'Complete & Publish'}
+                {loading ? 'Publishing...' : 'Complete & Publish'}
               </button>
             </div>
           </div>
@@ -584,13 +661,14 @@ export default function CreatePitchPage() {
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Pitch Created Successfully!</h2>
           <p className="text-gray-600 mb-8">
-            Your pitch has been submitted and is now under review. You'll receive an email once it's approved and live to investors.
+            Your pitch has been submitted and is now under review. You'll be notified once it's
+            approved and visible to investors.
           </p>
 
           <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8 text-left">
             <p className="text-sm text-gray-600 mb-2">Next Steps:</p>
             <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
-              <li>Your pitch is reviewed by our team (24-48 hours)</li>
+              <li>Your pitch is reviewed by our team (24–48 hours)</li>
               <li>Once approved, it goes live to all investors</li>
               <li>Track investor interest from your dashboard</li>
               <li>Optional: Upgrade to Verified Badge ($199) for extra credibility</li>
@@ -598,18 +676,28 @@ export default function CreatePitchPage() {
           </div>
 
           <div className="flex gap-4">
-            <a
-              href="/dashboard"
-              className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition text-center"
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
             >
               Go to Dashboard
-            </a>
-            <a
-              href="/pitch/new"
-              className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition text-center"
+            </button>
+            <button
+              onClick={() => {
+                setStep('basic');
+                setFormData({
+                  title: '', tagline: '', description: '',
+                  category: 'technology', tags: [],
+                  fundingGoal: '', minimumInvestment: '', equityOffered: '',
+                });
+                setVideoFile(null);
+                setVideoPreview('');
+                setDocuments([]);
+              }}
+              className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
             >
               Create Another Pitch
-            </a>
+            </button>
           </div>
         </div>
       )}

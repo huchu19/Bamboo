@@ -27,7 +27,7 @@ export default function LoginPage() {
       if (userProfile?.role === 'inventor') {
         router.push('/dashboard');
       } else {
-        router.push('/discover');
+        router.push('/investor/dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'Failed to login. Please check your credentials.');
@@ -87,18 +87,17 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <div className="mt-6 text-center text-sm">
+      <div className="mt-6 text-center text-sm space-y-3">
         <p className="text-gray-600">
           Don't have an account?{' '}
           <Link href="/register" className="text-green-600 font-semibold hover:text-green-700">
             Create one
           </Link>
         </p>
-      </div>
-
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <p className="text-xs text-gray-500 text-center">
-          Demo: Use any email/password combo (stub auth)
+        <p>
+          <Link href="/forgot-password" className="text-gray-500 hover:text-green-600 text-xs">
+            Forgot your password?
+          </Link>
         </p>
       </div>
     </div>

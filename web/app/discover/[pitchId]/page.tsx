@@ -1,91 +1,102 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import type { Pitch } from '@/types';
 import { formatCurrency, calculateFundingProgress } from '@/types';
 
-// Sample pitch data (would come from Firestore in real app)
-const SAMPLE_PITCHES: Record<string, Pitch> = {
-  '1': {
-    id: '1',
-    inventorId: 'inv1',
-    inventorName: 'Sarah Chen',
-    title: 'EcoTrack - Carbon Footprint Analytics',
-    tagline: 'AI-powered carbon tracking for businesses',
-    description:
-      'EcoTrack is an enterprise SaaS platform that helps companies measure, monitor, and reduce their carbon footprint in real-time. Our AI analyzes supply chain data, energy consumption, and manufacturing processes to provide actionable insights.\n\nKey Features:\n• Real-time carbon tracking\n• AI-powered reduction recommendations\n• Automated compliance reporting\n• Integration with existing systems\n\nMarket Opportunity:\nThe global carbon management software market is expected to reach $5.2B by 2030. With 200+ enterprise clients already and 120% YoY growth, we\'re positioned to capture significant market share.',
-    category: 'sustainability',
-    tags: ['AI', 'sustainability', 'B2B', 'SaaS'],
-    videoURL: 'https://example.com/video1.mp4',
-    documents: [
-      {
-        name: 'Business Plan',
-        url: 'https://example.com/doc1.pdf',
-        type: 'application/pdf',
-        uploadedAt: Date.now() - 86400000,
-      },
-      {
-        name: 'Financial Projections',
-        url: 'https://example.com/doc2.pdf',
-        type: 'application/pdf',
-        uploadedAt: Date.now() - 86400000,
-      },
-    ],
-    fundingGoal: 500000,
-    amountRaised: 350000,
-    minimumInvestment: 10000,
-    equityOffered: 12,
-    fundingDeadline: Date.now() + 86400000 * 30,
-    status: 'live',
-    isVerified: true,
-    verifiedAt: Date.now(),
-    viewCount: 1240,
-    watchlistCount: 89,
-    investorCount: 12,
-    listingFeePaid: true,
-    verifiedBadgePaid: true,
-    createdAt: Date.now() - 86400000 * 5,
-    updatedAt: Date.now(),
-    publishedAt: Date.now() - 86400000 * 5,
-  },
-  '2': {
-    id: '2',
-    inventorId: 'inv2',
-    inventorName: 'Marcus Johnson',
-    title: 'FinFlow - Smart Budget Analytics',
-    tagline: 'Personalized financial planning for millennials',
-    description:
-      'FinFlow helps millennials take control of their finances with AI-powered budgeting, investment recommendations, and personalized financial insights.',
-    category: 'fintech',
-    tags: ['fintech', 'AI', 'consumer'],
-    videoURL: 'https://example.com/video2.mp4',
-    documents: [],
-    fundingGoal: 1000000,
-    amountRaised: 620000,
-    minimumInvestment: 10000,
-    equityOffered: 8,
-    status: 'live',
-    isVerified: false,
-    viewCount: 2100,
-    watchlistCount: 156,
-    investorCount: 28,
-    listingFeePaid: true,
-    verifiedBadgePaid: false,
-    createdAt: Date.now() - 86400000 * 3,
-    updatedAt: Date.now(),
-    publishedAt: Date.now() - 86400000 * 3,
-  },
+const categoryEmoji: Record<string, string> = {
+  technology: '💻', health: '🏥', fintech: '💳', sustainability: '🌱',
+  'food-beverage': '🍽️', education: '📚', 'real-estate': '🏠',
+  entertainment: '🎬', 'consumer-goods': '🛍️', 'b2b-saas': '⚙️',
 };
 
 export default function PitchDetailPage({ params }: { params: { pitchId: string } }) {
-  const pitch = SAMPLE_PITCHES[params.pitchId];
-  const [investmentAmount, setInvestmentAmount] = useState<number>(0);
-  const [showInvestmentForm, setShowInvestmentForm] = useState(false);
-  const [investmentStep, setInvestmentStep] = useState<'amount' | 'review' | 'confirm'>(
-    'amount'
-  );
+  const { pitchId } = params;
+  const { firebaseUser, role } = useAuth();
+
+  const [pitch, setPitch] = useState<Pitch | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isWatchlisted, setIsWatchlisted] = useState(false);
+  const [watchlistLoading, setWatchlistLoading] = useState(false);
+
+  const [showInvestmentForm, setShowInvestmentForm] = useState(false);
+  const [investmentStep, setInvestmentStep] = useState<'amount' | 'review' | 'confirm' | 'success'>('amount');
+  const [investmentAmount, setInvestmentAmount] = useState(0);
+  const [investmentLoading, setInvestmentLoading] = useState(false);
+
+  // Load pitch from Firestore
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+
+    import('@/lib/firebase/firestore').then(({ onPitchChange }) => {
+      unsubscribe = onPitchChange(pitchId, (data) => {
+        setPitch(data);
+        setLoading(false);
+      });
+    });
+
+    return () => unsubscribe?.();
+  }, [pitchId]);
+
+  // Check watchlist status
+  useEffect(() => {
+    if (!firebaseUser?.uid) return;
+
+    import('@/lib/firebase/firestore').then(({ isInWatchlist }) => {
+      isInWatchlist(firebaseUser.uid, pitchId).then(setIsWatchlisted);
+    });
+  }, [firebaseUser?.uid, pitchId]);
+
+  const handleWatchlistToggle = async () => {
+    if (!firebaseUser?.uid) return;
+    setWatchlistLoading(true);
+    try {
+      const { addToWatchlist, removeFromWatchlist } = await import('@/lib/firebase/firestore');
+      if (isWatchlisted) {
+        await removeFromWatchlist(firebaseUser.uid, pitchId);
+        setIsWatchlisted(false);
+      } else {
+        await addToWatchlist(firebaseUser.uid, pitchId);
+        setIsWatchlisted(true);
+      }
+    } catch (err) {
+      console.error('Watchlist error:', err);
+    } finally {
+      setWatchlistLoading(false);
+    }
+  };
+
+  const handleConfirmInvestment = async () => {
+    if (!firebaseUser?.uid || !pitch) return;
+    setInvestmentLoading(true);
+    try {
+      const { createInvestment } = await import('@/lib/firebase/firestore');
+      await createInvestment({
+        investorId: firebaseUser.uid,
+        pitchId: pitch.id,
+        amount: investmentAmount,
+      });
+      setInvestmentStep('success');
+    } catch (err) {
+      console.error('Investment error:', err);
+      alert('Investment failed. Please try again.');
+    } finally {
+      setInvestmentLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading pitch...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!pitch) {
     return (
@@ -95,7 +106,7 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
             ← Back to Discover
           </Link>
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <p className="text-gray-600">Pitch not found</p>
+            <p className="text-gray-600">Pitch not found.</p>
           </div>
         </div>
       </div>
@@ -104,24 +115,13 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
 
   const fundingProgress = calculateFundingProgress(pitch.amountRaised, pitch.fundingGoal);
   const amountInput = investmentAmount || 0;
-  const equityPortion = (amountInput / pitch.fundingGoal) * pitch.equityOffered;
-
-  const categoryEmoji: Record<string, string> = {
-    technology: '💻',
-    health: '🏥',
-    fintech: '💳',
-    sustainability: '🌱',
-    'food-beverage': '🍽️',
-    education: '📚',
-    'real-estate': '🏠',
-    entertainment: '🎬',
-    'consumer-goods': '🛍️',
-    'b2b-saas': '⚙️',
-  };
+  const equityPortion = pitch.fundingGoal > 0
+    ? (amountInput / pitch.fundingGoal) * pitch.equityOffered
+    : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
+      {/* Back nav */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link href="/discover" className="text-green-600 hover:text-green-700 text-sm font-medium">
@@ -131,10 +131,16 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Video Section */}
-        <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl aspect-video flex items-center justify-center mb-8 border border-green-200">
-          <div className="text-6xl">🎥</div>
-        </div>
+        {/* Video Placeholder */}
+        {pitch.videoURL ? (
+          <div className="rounded-2xl overflow-hidden aspect-video mb-8 bg-black">
+            <video src={pitch.videoURL} controls className="w-full h-full" />
+          </div>
+        ) : (
+          <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl aspect-video flex items-center justify-center mb-8 border border-green-200">
+            <div className="text-6xl">🎥</div>
+          </div>
+        )}
 
         {/* Header */}
         <div className="bg-white rounded-xl border border-gray-200 p-8 mb-8">
@@ -142,7 +148,7 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <span className="inline-block bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">
-                  {categoryEmoji[pitch.category] || '🚀'} {pitch.category.replace('-', ' ')}
+                  {categoryEmoji[pitch.category] || '🚀'} {pitch.category.replace(/-/g, ' ')}
                 </span>
                 {pitch.isVerified && (
                   <span className="inline-block bg-green-100 text-green-700 text-sm font-semibold px-3 py-1 rounded-full">
@@ -153,19 +159,21 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
               <h1 className="text-4xl font-bold text-gray-900 mb-2">{pitch.title}</h1>
               <p className="text-xl text-gray-600 mb-6">{pitch.tagline}</p>
             </div>
-            <button
-              onClick={() => setIsWatchlisted(!isWatchlisted)}
-              className={`px-4 py-2 rounded-lg font-medium transition ${
-                isWatchlisted
-                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {isWatchlisted ? '♥ Watchlisted' : '♡ Add to Watchlist'}
-            </button>
+            {firebaseUser && (
+              <button
+                onClick={handleWatchlistToggle}
+                disabled={watchlistLoading}
+                className={`px-4 py-2 rounded-lg font-medium transition flex-shrink-0 ${
+                  isWatchlisted
+                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                } disabled:opacity-50`}
+              >
+                {isWatchlisted ? '♥ Watchlisted' : '♡ Watchlist'}
+              </button>
+            )}
           </div>
 
-          {/* Founder info */}
           <div className="pb-6 border-b border-gray-200">
             <p className="text-sm text-gray-600">Founded by</p>
             <p className="text-lg font-semibold text-gray-900">{pitch.inventorName}</p>
@@ -181,7 +189,7 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div
                   className="bg-green-600 h-3 rounded-full transition-all"
-                  style={{ width: `${fundingProgress}%` }}
+                  style={{ width: `${Math.min(fundingProgress, 100)}%` }}
                 />
               </div>
             </div>
@@ -208,28 +216,36 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
               </div>
               <div>
                 <p className="text-sm text-gray-600">Min. Investment</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(pitch.minimumInvestment)}
-                </p>
+                <p className="text-2xl font-bold text-gray-900">{formatCurrency(pitch.minimumInvestment)}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-3 gap-8">
-          {/* Left column - Description & Documents */}
-          <div className="col-span-2 space-y-8">
-            {/* Description */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="md:col-span-2 space-y-8">
             <div className="bg-white rounded-xl border border-gray-200 p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">About This Pitch</h2>
-              <div className="prose prose-sm max-w-none text-gray-600 whitespace-pre-wrap">
+              <div className="text-gray-600 whitespace-pre-wrap leading-relaxed">
                 {pitch.description}
               </div>
+
+              {pitch.tags && pitch.tags.length > 0 && (
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {pitch.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Documents */}
-            {pitch.documents.length > 0 && (
+            {pitch.documents && pitch.documents.length > 0 && (
               <div className="bg-white rounded-xl border border-gray-200 p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Documents</h2>
                 <div className="space-y-3">
@@ -244,7 +260,6 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
                       <span className="text-2xl">📄</span>
                       <div className="flex-1">
                         <p className="font-semibold text-gray-900">{doc.name}</p>
-                        <p className="text-sm text-gray-500">{doc.type}</p>
                       </div>
                       <span className="text-green-600">↓</span>
                     </a>
@@ -254,33 +269,41 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
             )}
           </div>
 
-          {/* Right column - Investment CTA */}
-          <div className="col-span-1">
+          {/* Right column: Invest CTA */}
+          <div className="md:col-span-1">
             <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24 space-y-4">
-              <button
-                onClick={() => {
-                  setShowInvestmentForm(true);
-                  setInvestmentStep('amount');
-                }}
-                className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
-              >
-                Invest Now
-              </button>
-
-              <p className="text-xs text-gray-500 text-center">
-                By investing, you accept our{' '}
-                <span className="text-green-600 cursor-pointer hover:underline">terms</span>
-              </p>
-
-              {/* Stats */}
-              <div className="pt-4 border-t border-gray-200 space-y-3">
-                <div className="text-sm">
-                  <p className="text-gray-600">Status</p>
-                  <p className="font-semibold text-gray-900">Active</p>
+              {role === 'investor' || !firebaseUser ? (
+                <button
+                  onClick={() => {
+                    if (!firebaseUser) {
+                      window.location.href = '/login';
+                      return;
+                    }
+                    setInvestmentStep('amount');
+                    setShowInvestmentForm(true);
+                  }}
+                  className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
+                >
+                  {firebaseUser ? 'Invest Now' : 'Sign in to Invest'}
+                </button>
+              ) : (
+                <div className="text-sm text-gray-500 text-center py-2">
+                  Switch to an investor account to invest.
                 </div>
-                <div className="text-sm">
+              )}
+
+              <div className="pt-4 border-t border-gray-200 space-y-3 text-sm">
+                <div>
+                  <p className="text-gray-600">Status</p>
+                  <p className="font-semibold text-gray-900 capitalize">{pitch.status}</p>
+                </div>
+                <div>
                   <p className="text-gray-600">Views</p>
-                  <p className="font-semibold text-gray-900">{pitch.viewCount}</p>
+                  <p className="font-semibold text-gray-900">{pitch.viewCount || 0}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Watchlisted by</p>
+                  <p className="font-semibold text-gray-900">{pitch.watchlistCount || 0}</p>
                 </div>
               </div>
             </div>
@@ -292,18 +315,22 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
       {showInvestmentForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full">
-            {/* Header */}
-            <div className="border-b border-gray-200 p-6">
+            <div className="border-b border-gray-200 p-6 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {investmentStep === 'success' ? 'Investment Confirmed' : `Invest in ${pitch.title}`}
+              </h2>
               <button
-                onClick={() => setShowInvestmentForm(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl absolute top-4 right-4"
+                onClick={() => {
+                  setShowInvestmentForm(false);
+                  setInvestmentStep('amount');
+                  setInvestmentAmount(0);
+                }}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
               >
                 ✕
               </button>
-              <h2 className="text-2xl font-bold text-gray-900">Invest in {pitch.title}</h2>
             </div>
 
-            {/* Content */}
             <div className="p-6">
               {investmentStep === 'amount' && (
                 <div className="space-y-4">
@@ -324,15 +351,12 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
                       />
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      Minimum investment: {formatCurrency(pitch.minimumInvestment)}
+                      Minimum: {formatCurrency(pitch.minimumInvestment)}
                     </p>
                   </div>
-
                   <button
                     onClick={() => {
-                      if (amountInput >= pitch.minimumInvestment) {
-                        setInvestmentStep('review');
-                      }
+                      if (amountInput >= pitch.minimumInvestment) setInvestmentStep('review');
                     }}
                     disabled={amountInput < pitch.minimumInvestment}
                     className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -354,18 +378,16 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
                       <span className="font-semibold text-gray-900">{equityPortion.toFixed(3)}%</span>
                     </div>
                     <div className="border-t border-gray-200 pt-3 flex justify-between">
-                      <span className="text-gray-900 font-medium">Expected Return (est.)</span>
-                      <span className="font-bold text-green-600">+{(equityPortion * 2).toFixed(1)}%</span>
+                      <span className="text-gray-900 font-medium">Est. Return (2×)</span>
+                      <span className="font-bold text-green-600">+{(equityPortion * 2).toFixed(2)}%</span>
                     </div>
                   </div>
-
                   <button
                     onClick={() => setInvestmentStep('confirm')}
                     className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition"
                   >
                     Continue to Payment
                   </button>
-
                   <button
                     onClick={() => setInvestmentStep('amount')}
                     className="w-full bg-gray-100 text-gray-900 py-2.5 rounded-lg font-semibold hover:bg-gray-200 transition"
@@ -379,29 +401,51 @@ export default function PitchDetailPage({ params }: { params: { pitchId: string 
                 <div className="space-y-4">
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <p className="text-sm text-green-700">
-                      💳 Payment processing (Stripe stub - demo mode)
+                      💳 This is a demo — no real charge will be made. Your investment will be
+                      recorded in Firestore.
                     </p>
                   </div>
-
                   <button
-                    onClick={() => {
-                      alert(
-                        `✓ Investment of ${formatCurrency(amountInput)} confirmed!\n\nYour investment has been recorded. In production, you would be charged via Stripe.`
-                      );
-                      setShowInvestmentForm(false);
-                      setInvestmentAmount(0);
-                    }}
-                    className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition"
+                    onClick={handleConfirmInvestment}
+                    disabled={investmentLoading}
+                    className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Confirm Investment
+                    {investmentLoading ? 'Processing...' : `Confirm ${formatCurrency(amountInput)} Investment`}
                   </button>
-
                   <button
                     onClick={() => setInvestmentStep('review')}
+                    disabled={investmentLoading}
                     className="w-full bg-gray-100 text-gray-900 py-2.5 rounded-lg font-semibold hover:bg-gray-200 transition"
                   >
                     Back
                   </button>
+                </div>
+              )}
+
+              {investmentStep === 'success' && (
+                <div className="text-center space-y-4">
+                  <div className="text-5xl">🎉</div>
+                  <h3 className="text-xl font-bold text-gray-900">Investment Recorded!</h3>
+                  <p className="text-gray-600 text-sm">
+                    Your {formatCurrency(amountInput)} investment in{' '}
+                    <strong>{pitch.title}</strong> has been confirmed and saved.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setShowInvestmentForm(false);
+                      setInvestmentStep('amount');
+                      setInvestmentAmount(0);
+                    }}
+                    className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition"
+                  >
+                    Done
+                  </button>
+                  <Link
+                    href="/investor/dashboard"
+                    className="block w-full bg-gray-100 text-gray-900 py-2.5 rounded-lg font-semibold hover:bg-gray-200 transition text-center"
+                  >
+                    View Portfolio
+                  </Link>
                 </div>
               )}
             </div>

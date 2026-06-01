@@ -6,139 +6,197 @@ import {
   doc,
   getDoc,
   getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
   collection,
   query,
   where,
   orderBy,
   limit,
   onSnapshot,
+  runTransaction,
   Unsubscribe,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './config';
 import type { User, Pitch, Investment, Payment } from '../../types';
+import type { CreateInvestmentInput } from '../../types';
 
-/**
- * Get user by ID
- */
+// ─── Users ────────────────────────────────────────────────────────────────────
+
 export const getUser = async (userId: string): Promise<User | null> => {
   const userDoc = await getDoc(doc(db, 'users', userId));
   return userDoc.exists() ? (userDoc.data() as User) : null;
 };
 
-/**
- * Listen to user document changes
- */
 export const onUserChange = (userId: string, callback: (user: User | null) => void): Unsubscribe => {
-  return onSnapshot(doc(db, 'users', userId), (doc) => {
-    callback(doc.exists() ? (doc.data() as User) : null);
+  return onSnapshot(doc(db, 'users', userId), (snap) => {
+    callback(snap.exists() ? (snap.data() as User) : null);
   });
 };
 
-/**
- * Get all pitches (with pagination)
- */
-export const getPitches = async (limitCount = 20, startAfter?: any): Promise<Pitch[]> => {
-  const pitchesQuery = query(
+// ─── Pitches ──────────────────────────────────────────────────────────────────
+
+export const getPitches = async (limitCount = 20): Promise<Pitch[]> => {
+  const q = query(
     collection(db, 'pitches'),
     where('status', '==', 'live'),
     orderBy('publishedAt', 'desc'),
     limit(limitCount)
   );
-
-  const snapshot = await getDocs(pitchesQuery);
-  return snapshot.docs.map((doc) => doc.data() as Pitch);
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Pitch));
 };
 
-/**
- * Listen to live pitches
- */
 export const onPitchesChange = (callback: (pitches: Pitch[]) => void): Unsubscribe => {
-  const pitchesQuery = query(
+  const q = query(
     collection(db, 'pitches'),
     where('status', '==', 'live'),
     orderBy('publishedAt', 'desc'),
     limit(20)
   );
-
-  return onSnapshot(pitchesQuery, (snapshot) => {
-    const pitches = snapshot.docs.map((doc) => doc.data() as Pitch);
-    callback(pitches);
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Pitch)));
   });
 };
 
-/**
- * Get pitch by ID
- */
 export const getPitch = async (pitchId: string): Promise<Pitch | null> => {
   const pitchDoc = await getDoc(doc(db, 'pitches', pitchId));
-  return pitchDoc.exists() ? (pitchDoc.data() as Pitch) : null;
+  return pitchDoc.exists() ? ({ id: pitchDoc.id, ...pitchDoc.data() } as Pitch) : null;
 };
 
-/**
- * Listen to pitch changes
- */
 export const onPitchChange = (pitchId: string, callback: (pitch: Pitch | null) => void): Unsubscribe => {
-  return onSnapshot(doc(db, 'pitches', pitchId), (doc) => {
-    callback(doc.exists() ? (doc.data() as Pitch) : null);
+  return onSnapshot(doc(db, 'pitches', pitchId), (snap) => {
+    callback(snap.exists() ? ({ id: snap.id, ...snap.data() } as Pitch) : null);
   });
 };
 
-/**
- * Get inventor's pitches
- */
 export const getInventorPitches = async (inventorId: string): Promise<Pitch[]> => {
-  const pitchesQuery = query(collection(db, 'pitches'), where('inventorId', '==', inventorId));
-  const snapshot = await getDocs(pitchesQuery);
-  return snapshot.docs.map((doc) => doc.data() as Pitch);
+  const q = query(
+    collection(db, 'pitches'),
+    where('inventorId', '==', inventorId),
+    orderBy('createdAt', 'desc')
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Pitch));
 };
 
-/**
- * Get investor's investments
- */
+export const onInventorPitchesChange = (
+  inventorId: string,
+  callback: (pitches: Pitch[]) => void
+): Unsubscribe => {
+  const q = query(
+    collection(db, 'pitches'),
+    where('inventorId', '==', inventorId),
+    orderBy('createdAt', 'desc')
+  );
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Pitch)));
+  });
+};
+
+export const createPitch = async (pitchId: string, pitchData: Omit<Pitch, 'id'>): Promise<void> => {
+  await setDoc(doc(db, 'pitches', pitchId), { ...pitchData, id: pitchId });
+};
+
+export const updatePitch = async (pitchId: string, updates: Partial<Pitch>): Promise<void> => {
+  await updateDoc(doc(db, 'pitches', pitchId), { ...updates, updatedAt: Date.now() });
+};
+
+// ─── Investments ──────────────────────────────────────────────────────────────
+
 export const getInvestorInvestments = async (investorId: string): Promise<Investment[]> => {
-  const investmentsQuery = query(
+  const q = query(
     collection(db, 'investments'),
     where('investorId', '==', investorId),
     orderBy('createdAt', 'desc')
   );
-
-  const snapshot = await getDocs(investmentsQuery);
-  return snapshot.docs.map((doc) => doc.data() as Investment);
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Investment));
 };
 
-/**
- * Listen to investor's investments
- */
 export const onInvestorInvestmentsChange = (
   investorId: string,
   callback: (investments: Investment[]) => void
 ): Unsubscribe => {
-  const investmentsQuery = query(
+  const q = query(
     collection(db, 'investments'),
     where('investorId', '==', investorId),
     orderBy('createdAt', 'desc')
   );
-
-  return onSnapshot(investmentsQuery, (snapshot) => {
-    const investments = snapshot.docs.map((doc) => doc.data() as Investment);
-    callback(investments);
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Investment)));
   });
 };
 
-/**
- * Get watchlist items for investor
- */
+export const createInvestment = async (data: CreateInvestmentInput): Promise<string> => {
+  const investmentId = `inv_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+  await runTransaction(db, async (tx) => {
+    const pitchRef = doc(db, 'pitches', data.pitchId);
+    const pitchSnap = await tx.get(pitchRef);
+    if (!pitchSnap.exists()) throw new Error('Pitch not found');
+
+    const pitch = pitchSnap.data() as Pitch;
+    const equityPortion = (data.amount / pitch.fundingGoal) * pitch.equityOffered;
+
+    const investment: Investment = {
+      id: investmentId,
+      investorId: data.investorId,
+      pitchId: data.pitchId,
+      inventorId: pitch.inventorId,
+      amount: data.amount,
+      equityPortion,
+      status: 'completed',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      completedAt: Date.now(),
+    };
+
+    tx.set(doc(db, 'investments', investmentId), investment);
+    tx.update(pitchRef, {
+      amountRaised: (pitch.amountRaised || 0) + data.amount,
+      investorCount: (pitch.investorCount || 0) + 1,
+      updatedAt: Date.now(),
+    });
+  });
+
+  return investmentId;
+};
+
+// ─── Watchlist ────────────────────────────────────────────────────────────────
+
 export const getWatchlist = async (userId: string): Promise<string[]> => {
   const snapshot = await getDocs(collection(db, 'watchlist', userId, 'items'));
-  return snapshot.docs.map((doc) => doc.id);
+  return snapshot.docs.map((d) => d.id);
 };
 
-/**
- * Listen to watchlist changes
- */
 export const onWatchlistChange = (userId: string, callback: (pitchIds: string[]) => void): Unsubscribe => {
   return onSnapshot(collection(db, 'watchlist', userId, 'items'), (snapshot) => {
-    const pitchIds = snapshot.docs.map((doc) => doc.id);
-    callback(pitchIds);
+    callback(snapshot.docs.map((d) => d.id));
   });
+};
+
+export const addToWatchlist = async (userId: string, pitchId: string): Promise<void> => {
+  await setDoc(doc(db, 'watchlist', userId, 'items', pitchId), {
+    pitchId,
+    addedAt: Date.now(),
+  });
+};
+
+export const removeFromWatchlist = async (userId: string, pitchId: string): Promise<void> => {
+  await deleteDoc(doc(db, 'watchlist', userId, 'items', pitchId));
+};
+
+export const isInWatchlist = async (userId: string, pitchId: string): Promise<boolean> => {
+  const snap = await getDoc(doc(db, 'watchlist', userId, 'items', pitchId));
+  return snap.exists();
+};
+
+export const getWatchlistPitches = async (userId: string): Promise<Pitch[]> => {
+  const pitchIds = await getWatchlist(userId);
+  if (pitchIds.length === 0) return [];
+  const pitches = await Promise.all(pitchIds.map((id) => getPitch(id)));
+  return pitches.filter((p): p is Pitch => p !== null);
 };
