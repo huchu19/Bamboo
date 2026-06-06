@@ -80,6 +80,8 @@ export default function PitchDetail({
 
           <PitchVideoPlayer pitch={pitch} />
 
+          {pitch.id === "edunexus" && <PlatformMetricsStrip />}
+
           <section className="grid sm:grid-cols-[auto_1fr] gap-6 items-center bg-card ring-1 ring-[color:var(--border)] rounded-3xl p-6">
             <EquityChart raised={pitch.raised} equityOffered={pitch.equityOffered} size={160} />
             <div className="min-w-0">
@@ -94,7 +96,7 @@ export default function PitchDetail({
                   <dt className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
                     Min check
                   </dt>
-                  <dd className="font-bold font-mono text-sm mt-0.5 tabular-nums">$5,000</dd>
+                  <dd className="font-bold font-mono text-sm mt-0.5 tabular-nums">{pitch.id === "edunexus" ? "$6,300" : "$5,000"}</dd>
                 </div>
                 <div className="bg-card p-3">
                   <dt className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
@@ -282,6 +284,35 @@ function InvestForm() {
         <span className="group-hover:translate-x-1 transition-transform">→</span>
       </button>
     </form>
+  );
+}
+
+function PlatformMetricsStrip() {
+  const metrics: { label: string; value: string }[] = [
+    { label: "Active students", value: "12,400+" },
+    { label: "Registered teachers", value: "800+" },
+    { label: "Lessons generated", value: "50,000+" },
+    { label: "Completion rate", value: "95%" },
+    { label: "Active classrooms", value: "7" },
+  ];
+  return (
+    <section className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] rounded-3xl p-6 ring-1 ring-white/10 bamboo-grain">
+      <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-4">
+        Live platform metrics · in production
+      </p>
+      <dl className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-white/10 rounded-xl overflow-hidden ring-1 ring-white/10">
+        {metrics.map((m) => (
+          <div key={m.label} className="bg-[color:var(--ink)] p-4">
+            <dd className="font-display text-2xl md:text-3xl text-[color:var(--gold)] tracking-tighter tabular-nums">
+              {m.value}
+            </dd>
+            <dt className="text-[9px] font-mono uppercase tracking-widest text-white/55 mt-1">
+              {m.label}
+            </dt>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 

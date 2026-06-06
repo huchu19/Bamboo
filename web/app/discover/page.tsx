@@ -7,7 +7,7 @@ import { DiscoverPitchCard } from "@/components/bamboo/DiscoverPitchCard";
 import { Reveal } from "@/components/bamboo/Reveal";
 import { PITCHES } from "@/lib/mock-pitches";
 
-const SECTORS = ["All", "Hardware", "Fintech", "ClimateTech", "Healthcare", "Media"];
+const SECTORS = ["All", "EdTech", "Hardware", "Fintech", "ClimateTech", "Healthcare", "Media"];
 const STAGES = ["All Stages", "Pre-Seed", "Seed", "Series A"];
 
 export default function DiscoverPage() {

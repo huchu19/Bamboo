@@ -7,12 +7,12 @@ import { BambooLeaf } from "./BambooIcons";
 import { getPitch } from "@/lib/mock-pitches";
 
 export function HeroFeaturedVideo() {
-  const oxo = getPitch("oxo");
+  const pitch = getPitch("edunexus");
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
   const [canPlay, setCanPlay] = useState(false);
 
-  const hasVideo = !!oxo?.videoUrl;
+  const hasVideo = !!pitch?.videoUrl;
 
   const toggleMute = () => {
     const v = videoRef.current;
@@ -26,20 +26,20 @@ export function HeroFeaturedVideo() {
       {hasVideo ? (
         <video
           ref={videoRef}
-          src={oxo!.videoUrl}
-          poster={oxo!.posterUrl}
+          src={pitch!.videoUrl}
+          poster={pitch!.posterUrl}
           autoPlay
           muted
           loop
           playsInline
           preload="metadata"
           onCanPlay={() => setCanPlay(true)}
-          className="absolute inset-0 size-full object-cover opacity-80"
+          className="absolute inset-0 size-full object-cover opacity-90"
         />
       ) : (
         <Image
           src="/featured-pitch.jpg"
-          alt="Oxo vertical home farm — featured pitch"
+          alt="EduNexus — featured pitch"
           fill
           className="object-cover opacity-70"
           sizes="(min-width: 1024px) 40vw, 100vw"
@@ -54,30 +54,30 @@ export function HeroFeaturedVideo() {
           <span className="bg-[color:var(--gold)] text-[color:var(--gold-foreground)] text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter flex items-center gap-1">
             <BambooLeaf size={10} /> Root-Verified
           </span>
-          <span className="text-white/60 text-[10px] font-mono uppercase">Hardware</span>
+          <span className="text-white/60 text-[10px] font-mono uppercase">EdTech</span>
         </div>
         <h2 className="text-white text-2xl font-display uppercase leading-tight tracking-tight">
-          Oxo: The Vertical Home Farm
+          EduNexus: AI-Powered Adaptive Learning
         </h2>
         <div className="flex justify-between items-end mt-6">
           <div className="text-white">
             <p className="text-[10px] uppercase opacity-60 font-mono tracking-widest">Seeking</p>
-            <p className="text-xl font-bold font-mono text-[color:var(--gold)]">$2.4M</p>
+            <p className="text-xl font-bold font-mono text-[color:var(--gold)]">$2.3M</p>
           </div>
           {hasVideo ? (
             <button
               type="button"
               onClick={toggleMute}
               aria-label={muted ? "Unmute pitch" : "Mute pitch"}
-              className="bg-white/10 hover:bg-[color:var(--gold)] backdrop-blur-md size-12 rounded-full flex items-center justify-center transition-all"
+              className="bg-white/10 hover:bg-[color:var(--gold)] backdrop-blur-md size-12 rounded-full flex items-center justify-center transition-all cursor-pointer"
             >
               <span className="text-white text-sm">{muted ? "🔇" : "🔊"}</span>
             </button>
           ) : (
             <Link
-              href="/discover/oxo"
+              href="/discover/edunexus"
               aria-label="Play pitch video"
-              className="bg-white/10 hover:bg-[color:var(--gold)] backdrop-blur-md size-12 rounded-full flex items-center justify-center transition-all"
+              className="bg-white/10 hover:bg-[color:var(--gold)] backdrop-blur-md size-12 rounded-full flex items-center justify-center transition-all cursor-pointer"
             >
               <span className="text-white translate-x-0.5">▶</span>
             </Link>
