@@ -10,7 +10,10 @@ import {
   getBytes,
   deleteObject,
 } from 'firebase/storage';
-import { storage } from './config';
+import { storage as _storage } from './config';
+
+// Helpers in this file only run after the user is authenticated; assert non-null.
+const storage = _storage!;
 
 export interface UploadProgress {
   bytesTransferred: number;

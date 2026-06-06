@@ -1,213 +1,269 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
-import { formatCurrency } from '@/types';
-import type { Investment, Pitch } from '@/types';
-
-interface InvestmentWithPitch extends Investment {
-  pitch?: Pitch;
-}
-
-const statusColors: Record<string, string> = {
-  completed: 'bg-green-100 text-green-700',
-  pending: 'bg-yellow-100 text-yellow-700',
-  processing: 'bg-blue-100 text-blue-700',
-  failed: 'bg-red-100 text-red-700',
-};
+import { BambooLeaf, VerifiedLeafBadge } from '@/components/bamboo/BambooIcons';
+import { BambooProgress } from '@/components/bamboo/BambooProgress';
+import { BambooDivider } from '@/components/bamboo/BambooDivider';
+import { DiscoverPitchCard } from '@/components/bamboo/DiscoverPitchCard';
+import { getPitch } from '@/lib/mock-pitches';
+import {
+  INVESTMENTS,
+  ACTIVITY,
+  PORTFOLIO_TARGET,
+} from '@/lib/mock-investor-data';
+import { useWatchlist } from '@/lib/watchlist-store';
 
 export default function InvestorDashboard() {
-  const { user, firebaseUser } = useAuth();
-  const [investments, setInvestments] = useState<InvestmentWithPitch[]>([]);
-  const [loading, setLoading] = useState(true);
+  const investments = INVESTMENTS.map((inv) => ({
+    ...inv,
+    pitch: getPitch(inv.pitchId)!,
+  }));
 
-  useEffect(() => {
-    if (!firebaseUser?.uid) return;
+  const totalPlanted = investments.reduce((sum, inv) => sum + inv.amount, 0);
+  const activeSprouts = investments.filter((i) => i.status === 'completed').length;
+  const avgEquity =
+    investments.reduce((sum, i) => sum + i.equityPct, 0) / investments.length;
+  const rootScoreAvg = 88; // mock — would be derived from pitch quality signals
+  const best = [...investments].sort((a, b) => b.amount - a.amount)[0];
+  const portfolioPct = Math.min(100, Math.round((totalPlanted / PORTFOLIO_TARGET) * 100));
 
-    let unsubscribe: (() => void) | undefined;
-
-    import('@/lib/firebase/firestore').then(async ({ onInvestorInvestmentsChange, getPitch }) => {
-      unsubscribe = onInvestorInvestmentsChange(firebaseUser.uid, async (data) => {
-        // Enrich investments with pitch data
-        const enriched = await Promise.all(
-          data.map(async (inv) => {
-            const pitch = await getPitch(inv.pitchId).catch(() => undefined);
-            return { ...inv, pitch: pitch ?? undefined };
-          })
-        );
-        setInvestments(enriched);
-        setLoading(false);
-      });
-    });
-
-    return () => unsubscribe?.();
-  }, [firebaseUser?.uid]);
-
-  const totalInvested = investments.reduce((sum, inv) => sum + inv.amount, 0);
-  const completedCount = investments.filter((inv) => inv.status === 'completed').length;
-
-  // Category breakdown
-  const categoryBreakdown = investments.reduce<Record<string, number>>((acc, inv) => {
-    const cat = inv.pitch?.category || 'other';
-    acc[cat] = (acc[cat] || 0) + inv.amount;
-    return acc;
-  }, {});
-
-  const displayName = user?.displayName || firebaseUser?.displayName || 'there';
+  const { ids: watchlistIds } = useWatchlist();
+  const watchlist = watchlistIds
+    .slice(0, 3)
+    .map((id) => getPitch(id))
+    .filter(Boolean) as ReturnType<typeof getPitch>[];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Welcome back, {displayName}! 👋</h1>
-        <p className="text-gray-600 mt-2">Your investment portfolio at a glance</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <p className="text-sm text-gray-600 mb-2">Total Invested</p>
-          <p className="text-3xl font-bold text-green-600">{formatCurrency(totalInvested)}</p>
-          <p className="text-xs text-gray-500 mt-2">across all deals</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <p className="text-sm text-gray-600 mb-2">Investments</p>
-          <p className="text-3xl font-bold text-gray-900">{investments.length}</p>
-          <p className="text-xs text-gray-500 mt-2">{completedCount} completed</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <p className="text-sm text-gray-600 mb-2">Unique Deals</p>
-          <p className="text-3xl font-bold text-gray-900">
-            {new Set(investments.map((i) => i.pitchId)).size}
+    <div className="space-y-12">
+      {/* Header */}
+      <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div>
+          <span className="font-mono text-[color:var(--gold)] text-[10px] uppercase tracking-widest">
+            Investor Console · 01
+          </span>
+          <h1 className="font-display text-5xl md:text-6xl uppercase tracking-tighter mt-3 leading-[0.9]">
+            Investor&apos;s <span className="text-[color:var(--gold)]">Grove</span>
+          </h1>
+          <p className="text-foreground/60 mt-3 max-w-md text-sm leading-relaxed">
+            Your planted capital, your watch shelf, and every stalk pushing through the
+            canopy this week.
           </p>
-          <p className="text-xs text-gray-500 mt-2">companies</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <p className="text-sm text-gray-600 mb-2">Categories</p>
-          <p className="text-3xl font-bold text-gray-900">
-            {Object.keys(categoryBreakdown).length}
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[color:var(--ink)] text-[color:var(--ink-foreground)] text-[10px] font-mono uppercase tracking-widest">
+            <VerifiedLeafBadge size={12} /> Accredited
+          </span>
+          <Link
+            href="/discover"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] text-[11px] font-bold uppercase tracking-widest hover:opacity-90 transition-all"
+          >
+            <BambooLeaf size={11} />
+            Walk the Grove
+          </Link>
+        </div>
+      </header>
+
+      {/* Portfolio summary */}
+      <section className="grid lg:grid-cols-2 gap-6">
+        <div className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] rounded-3xl p-8 ring-1 ring-white/10 bamboo-grain relative overflow-hidden">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-white/50">
+            Total Planted
           </p>
-          <p className="text-xs text-gray-500 mt-2">sectors</p>
-        </div>
-      </div>
-
-      <div className="flex gap-4">
-        <Link
-          href="/discover"
-          className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition"
-        >
-          Browse Pitches
-        </Link>
-        <Link
-          href="/investor/watchlist"
-          className="inline-block bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition"
-        >
-          View Watchlist
-        </Link>
-      </div>
-
-      {/* Investment History */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Investment History</h2>
-        </div>
-
-        {loading ? (
-          <div className="p-12 text-center">
-            <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-gray-500 text-sm">Loading investments...</p>
+          <p className="font-display text-6xl md:text-7xl text-[color:var(--gold)] tracking-tighter mt-2 tabular-nums">
+            ${totalPlanted.toLocaleString()}
+          </p>
+          <p className="text-sm text-white/60 mt-2">
+            Across {investments.length} sprouts · target ${PORTFOLIO_TARGET.toLocaleString()}
+          </p>
+          <div className="mt-6">
+            <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest text-white/60 mb-2">
+              <span>Toward target</span>
+              <span className="text-[color:var(--gold)] font-bold">{portfolioPct}%</span>
+            </div>
+            <BambooProgress value={portfolioPct} segments={10} />
           </div>
-        ) : investments.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="text-5xl mb-4">💼</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No investments yet</h3>
-            <p className="text-gray-600 mb-6">
-              Browse pitches and make your first investment to start building your portfolio.
-            </p>
-            <Link
-              href="/discover"
-              className="inline-block bg-green-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-green-700 transition text-sm"
+        </div>
+
+        <div className="grid grid-cols-2 gap-px bg-[color:var(--border)] rounded-3xl overflow-hidden ring-1 ring-[color:var(--border)]">
+          <StatTile label="Active Sprouts" value={String(activeSprouts)} sub="completed deals" />
+          <StatTile label="Avg Root Score" value={`${rootScoreAvg}/100`} sub="across portfolio" />
+          <StatTile
+            label="Avg Equity"
+            value={`${(avgEquity * 100).toFixed(2)}%`}
+            sub="per investment"
+          />
+          <StatTile
+            label="Best Performer"
+            value={best.pitch.company}
+            sub={`+${best.pitch.raised}% raised`}
+          />
+        </div>
+      </section>
+
+      {/* Investment list */}
+      <section>
+        <div className="flex items-end justify-between mb-4">
+          <div>
+            <span className="font-mono text-[color:var(--gold)] text-[10px] uppercase tracking-widest">
+              Portfolio · 02
+            </span>
+            <h2 className="font-display text-3xl md:text-4xl uppercase tracking-tighter mt-2">
+              Your Sprouts
+            </h2>
+          </div>
+          <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+            {investments.length} positions
+          </span>
+        </div>
+        <div className="bg-card ring-1 ring-[color:var(--border)] rounded-3xl overflow-hidden divide-y divide-[color:var(--border)]">
+          {investments.map((inv) => (
+            <div
+              key={inv.id}
+              className="p-5 flex flex-wrap items-center gap-5 hover:bg-secondary/50 transition-colors"
             >
-              Browse Pitches
-            </Link>
+              <div
+                className={`size-14 rounded-xl bg-gradient-to-br ${inv.pitch.posterColor} shrink-0 ring-1 ring-white/10`}
+              />
+              <div className="flex-1 min-w-[10rem]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-bold">{inv.pitch.company}</p>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                    {inv.pitch.sector}
+                  </span>
+                  <span className="text-[9px] font-mono uppercase tracking-widest bg-secondary px-2 py-0.5 rounded-full">
+                    {inv.pitch.stage}
+                  </span>
+                  {inv.status === 'processing' && (
+                    <span className="text-[9px] font-mono uppercase tracking-widest bg-[color:var(--gold)]/15 text-[color:var(--gold)] px-2 py-0.5 rounded-full">
+                      Processing
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-1">
+                  Planted {new Date(inv.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-mono text-lg font-bold text-[color:var(--gold)] tabular-nums">
+                  ${inv.amount.toLocaleString()}
+                </p>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                  {(inv.equityPct * 100).toFixed(2)}% equity
+                </p>
+              </div>
+              <Link
+                href={`/discover/${inv.pitchId}`}
+                className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] hover:underline"
+              >
+                View pitch →
+              </Link>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <BambooDivider label="Watching" className="!my-2" />
+
+      {/* Watchlist preview */}
+      <section>
+        <div className="flex items-end justify-between mb-4">
+          <div>
+            <span className="font-mono text-[color:var(--gold)] text-[10px] uppercase tracking-widest">
+              Saved Seeds · 03
+            </span>
+            <h2 className="font-display text-3xl md:text-4xl uppercase tracking-tighter mt-2">
+              On Your Watch
+            </h2>
+          </div>
+          <Link
+            href="/investor/watchlist"
+            className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] hover:underline"
+          >
+            View full watchlist →
+          </Link>
+        </div>
+        {watchlist.length === 0 ? (
+          <div className="bg-card ring-1 ring-[color:var(--border)] rounded-2xl p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              No saved seeds yet.{' '}
+              <Link href="/discover" className="text-[color:var(--gold)] font-bold hover:underline">
+                Walk the grove →
+              </Link>
+            </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
-            {investments.map((inv) => (
-              <div key={inv.id} className="p-6 hover:bg-gray-50 transition">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">
-                      {inv.pitch?.title || 'Unknown Pitch'}
-                    </h3>
-                    {inv.pitch && (
-                      <p className="text-sm text-gray-500 capitalize mt-0.5">
-                        {inv.pitch.category.replace(/-/g, ' ')}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-green-600 text-lg">{formatCurrency(inv.amount)}</p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[inv.status] || 'bg-gray-100 text-gray-600'}`}>
-                      {inv.status}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-6 text-sm text-gray-500 mt-3">
-                  {inv.equityPortion !== undefined && (
-                    <span>Equity: {inv.equityPortion.toFixed(3)}%</span>
-                  )}
-                  <span>
-                    {new Date(inv.createdAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </span>
-                  {inv.pitch && (
-                    <Link
-                      href={`/discover/${inv.pitchId}`}
-                      className="text-green-600 hover:underline ml-auto"
-                    >
-                      View pitch →
-                    </Link>
-                  )}
-                </div>
-              </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {watchlist.map((p) => (
+              <DiscoverPitchCard key={p!.id} pitch={p!} />
             ))}
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Category Breakdown */}
-      {Object.keys(categoryBreakdown).length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Portfolio by Sector</h2>
-          <div className="space-y-3">
-            {Object.entries(categoryBreakdown)
-              .sort(([, a], [, b]) => b - a)
-              .map(([cat, amount]) => {
-                const pct = totalInvested > 0 ? (amount / totalInvested) * 100 : 0;
-                return (
-                  <div key={cat}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-700 capitalize">{cat.replace(/-/g, ' ')}</span>
-                      <span className="font-semibold text-gray-900">
-                        {formatCurrency(amount)} ({Math.round(pct)}%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div
-                        className="bg-green-600 h-2 rounded-full"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+      {/* Activity + CTA */}
+      <section className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-card ring-1 ring-[color:var(--border)] rounded-3xl p-6">
+          <div className="flex items-end justify-between mb-5">
+            <div>
+              <span className="font-mono text-[color:var(--gold)] text-[10px] uppercase tracking-widest">
+                Pulse · 04
+              </span>
+              <h3 className="font-display text-2xl uppercase tracking-tighter mt-2">
+                What&apos;s Growing
+              </h3>
+            </div>
           </div>
+          <ul className="space-y-3">
+            {ACTIVITY.map((a, i) => (
+              <li key={i} className="flex items-start gap-3 text-sm">
+                <span className="mt-0.5 size-7 rounded-full bg-secondary flex items-center justify-center shrink-0 text-[color:var(--primary)]">
+                  <BambooLeaf size={12} />
+                </span>
+                <p className="flex-1 text-foreground/80">{a.copy}</p>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground shrink-0">
+                  {a.when} ago
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
-      )}
+        <Link
+          href="/discover"
+          className="group bg-gradient-to-br from-[color:var(--ink)] to-[color:var(--primary-deep)] text-[color:var(--ink-foreground)] rounded-3xl p-6 ring-1 ring-white/10 bamboo-grain relative overflow-hidden flex flex-col justify-between min-h-[16rem]"
+        >
+          <div>
+            <span className="font-mono text-[color:var(--gold)] text-[10px] uppercase tracking-widest">
+              Discover
+            </span>
+            <h3 className="font-display text-2xl uppercase tracking-tighter mt-2 leading-tight">
+              Sprouts Worth A Look
+            </h3>
+            <p className="text-white/60 text-sm mt-3">
+              New pitches verified this week. Walk the grove and find your next stake.
+            </p>
+          </div>
+          <span className="self-start inline-flex items-center gap-2 mt-6 px-3 py-1.5 rounded-full bg-[color:var(--gold)] text-[color:var(--gold-foreground)] text-[10px] font-bold uppercase tracking-widest group-hover:gap-3 transition-all">
+            Walk the Grove
+            <span>→</span>
+          </span>
+        </Link>
+      </section>
+    </div>
+  );
+}
+
+function StatTile({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="bg-card p-5">
+      <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+        {label}
+      </p>
+      <p className="font-display text-2xl md:text-3xl tracking-tighter mt-1 truncate">
+        {value}
+      </p>
+      <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70 mt-1">
+        {sub}
+      </p>
     </div>
   );
 }

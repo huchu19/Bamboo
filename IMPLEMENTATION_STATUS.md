@@ -1,231 +1,148 @@
 # Bamboo Implementation Status
 
-## ✅ Phase 1: Foundation (COMPLETED)
-
-### Monorepo Setup
-- [x] Initialize `/shared`, `/web`, `/mobile` packages
-- [x] Configure TypeScript across all packages
-- [x] Set up Next.js 14 with App Router
-- [x] Set up Expo with Expo Router
-- [x] Git repository initialization
-
-### Firebase Configuration
-- [x] Firebase config files for web and mobile
-- [x] Auth helper functions (register, login, logout)
-- [x] Firestore helper functions (CRUD operations)
-- [x] Firebase Storage helper functions (upload, download)
-- [x] AuthContext for web app
-- [x] Dynamic Firebase imports (avoid SSR errors)
-
-### Shared Types Package
-- [x] User types (User, InventorProfile, InvestorProfile)
-- [x] Pitch types (Pitch, PitchStatus, PitchCategory)
-- [x] Investment types
-- [x] Payment types
-- [x] Constants (fees, categories)
-- [x] Utility formatters (currency, dates, equity calculations)
-
-### Web App Foundation
-- [x] Landing page with hero section
-- [x] How it works section
-- [x] Stats placeholder section
-- [x] CTA section
-- [x] Navigation header with login/signup CTAs
-- [x] Footer
-- [x] Tailwind CSS setup
-- [x] Global styles
-- [x] Theme system with CSS variables
-- [x] Theme toggle component (light/dark mode)
-- [x] Card component with variants (default, elevated, bordered)
-
-### Project Documentation
-- [x] Comprehensive README
-- [x] Firebase collections schema
-- [x] Implementation plan
-- [x] Environment variable templates
+> **MVP-first mode (2026-06-02).** Auth + Firestore are bypassed in dev. Focus
+> is the investor-side demo. See [MILESTONES.md](./MILESTONES.md) for phase
+> ordering and `web/CLAUDE.md` for the bypass toggle.
 
 ---
 
-## ⏳ Phase 2: Auth & Core Inventor Flow (IN PROGRESS)
+## ✅ Phase 1: Foundation — DONE
+Monorepo, types, landing page, theme, Firebase scaffolding, Card components,
+nav, footer.
 
-### Auth Pages (TODO)
-- [ ] Login page (`/login`)
-- [ ] Register page with role selection (`/register`)
-- [ ] Role selector UI component (Inventor vs Investor cards)
-- [ ] Protected route wrapper / AuthGuard component
-- [ ] Password reset page
+## ✅ Phase 2: Auth & Inventor Build — DONE (bypassed in dev)
+Login, register, role selector, password reset, `ProtectedRoute`, pitch
+creation wizard, video/doc uploads, inventor dashboard, inventor layout. All
+shipped against Firebase. Bypassed for MVP demo via `NEXT_PUBLIC_DEV_BYPASS_AUTH`.
 
-### Pitch Creation (TODO)
-- [ ] Multi-step pitch creation wizard (7 steps)
-  - [ ] Step 1: Basic info (title, tagline, category, description)
-  - [ ] Step 2: Video upload (60s validation, Firebase Storage)
-  - [ ] Step 3: Document uploads (PDFs)
-  - [ ] Step 4: Funding details (goal, equity, min investment)
-  - [ ] Step 5: Review
-  - [ ] Step 6: Payment (listing fee stub)
-  - [ ] Step 7: Confirmation
-- [ ] Video uploader component with progress bar
-- [ ] Document uploader component
-- [ ] File size & format validation
-
-### Inventor Dashboard (TODO)
-- [ ] Dashboard overview page
-- [ ] Pitch status summary
-- [ ] Interest metrics (views, watchlist adds, investor count)
-- [ ] Recent investors table
-- [ ] Payment history table
-- [ ] Verified badge upsell prompt
+## ✅ Phase 3: Investor Build — DONE (mock-driven in dev)
+Discovery feed, search/filters/sort, pitch detail, watchlist toggle,
+investment modal (Firestore transaction), investor dashboard, investor layout.
+Currently reads from `web/lib/mock-pitches.ts`.
 
 ---
 
-## ⏳ Phase 3: Discovery & Investor Flow (TODO)
+## 🔥 Phase 4: MVP Demo Polish — IN PROGRESS
 
-### Discovery Feed (TODO)
-- [ ] Pitch listing page (`/discover`)
-- [ ] Pitch grid component
-- [ ] PitchCard component (thumbnail, verified badge, funding progress)
-- [ ] Search bar
-- [ ] Filter sidebar (category, verified, funding stage)
-- [ ] Sort options
-- [ ] Pagination / infinite scroll
+### 4.1 Three real demo pitches (BLOCKER for demo day)
+- [ ] Oxo: 60s pitch video at `web/public/demo/oxo/pitch.mp4`
+- [ ] Oxo: `poster.jpg`, `deck.pdf`, `financials.pdf`, `unit-economics.pdf`
+- [ ] Ledgr: video, poster, deck, market analysis, regulatory memo
+- [ ] Northbound: video, poster, deck, whitepaper, LCA report
+- [ ] Verify each `/discover/{id}` page plays the video and opens the PDFs
 
-### Pitch Detail Page (TODO)
-- [ ] Pitch detail page (`/discover/[pitchId]`)
-- [ ] Video player (muted autoplay, click to unmute)
-- [ ] Pitch description section
-- [ ] Documents section (downloadable PDFs)
-- [ ] Funding progress bar with metrics
-- [ ] Investor list (anonymized)
-- [ ] Similar pitches carousel
-- [ ] Invest CTA (sticky footer on mobile)
+### 4.2 Discovery polish
+- [ ] Wire `PitchCardSkeleton` into discovery loading state
+- [ ] Card hover/focus refinements
+- [ ] Ticker speed/contrast pass
+- [ ] Mobile filter drawer
+- [ ] Empty-state polish
 
-### Investment Flow (TODO)
-- [ ] Investment modal/sheet
-  - [ ] Amount input (validation: >= min investment)
-  - [ ] Review summary (equity calculation)
-  - [ ] Payment stub UI
-  - [ ] Confirmation
-- [ ] Real-time portfolio updates
-- [ ] Investment notification system
+### 4.3 Pitch detail polish
+- [ ] Custom video player styling
+- [ ] Document list cards with icons + hover
+- [ ] `BambooProgress` for funding bar (replace any ad-hoc bars)
+- [ ] `EquityChart` integration on traction section
+- [ ] Sticky invest CTA (desktop rail / mobile bottom)
+- [ ] Founder block → `/founder/{id}` link with bio
 
-### Investor Dashboard (TODO)
-- [ ] Dashboard overview
-- [ ] Portfolio summary card (total invested, estimated value, positions)
-- [ ] Allocation chart (Recharts pie chart by category)
-- [ ] Investments table
-- [ ] Watchlist preview
-- [ ] Recommended pitches
+### 4.4 Investment flow
+- [ ] 4-step modal: amount → review → confirm → success
+- [ ] Live equity preview
+- [ ] Subtle success animation
+- [ ] Persist mock investments to `localStorage`
+- [ ] Success toast
 
-### Watchlist (TODO)
-- [ ] Watchlist page (`/watchlist`)
-- [ ] Add/remove pitch from watchlist
-- [ ] Watchlist UI with saved pitches
+### 4.5 Landing page demo path
+- [ ] Featured pitch hero using `featured-pitch.jpg`
+- [ ] "Walk the Grove" CTA → `/discover` (no auth wall)
+- [ ] Audit copy for stale auth references
 
 ---
 
-## ⏳ Phase 4: Polish & Mobile (TODO)
+## ⏭ Phase 5: Inventor Demo Polish — NEXT
+- [ ] Inventor dashboard pulls from `getPitchesByFounder('maya-chen')`
+- [ ] Funding progress driven by mock data
+- [ ] Pitch creation wizard writes to localStorage (no Firestore in dev)
+- [ ] Verified badge upsell styled
+- [ ] Stats: raised, views, investors from mocks
 
-### Mobile App (Expo)
-- [ ] Create pitch screen (matching web wizard)
+---
+
+## 🔐 Phase 6: Re-enable Auth + Persistence — POST-DEMO
+- [ ] Toggle `NEXT_PUBLIC_DEV_BYPASS_AUTH=false`
+- [ ] Verify `ProtectedRoute` gates
+- [ ] Re-test pitch creation Firestore round-trip
+- [ ] Re-test investment atomic transaction
+- [ ] Write Firestore security rules
+- [ ] Write Cloud Storage rules
+- [ ] Seed 3 demo pitches into Firestore
+- [ ] Decide mock fallback strategy
+
+---
+
+## 📱 Phase 7: Mobile (Expo) — DEFERRED
+- [ ] Create pitch screen
 - [ ] Discover feed (bottom sheet filters)
-- [ ] Pitch detail with video (expo-av player)
-- [ ] Investment flow (bottom sheet UI)
-- [ ] Inventor dashboard (tab-based)
-- [ ] Investor dashboard (tab-based)
-- [ ] Watchlist screen
-- [ ] Portfolio screen
-
-### Landing Page Enhancements
-- [ ] Featured pitches carousel
-- [ ] Testimonials section
-- [ ] Pricing/fee preview section
-- [ ] Animation and motion effects
-
-### Verified Badge System
-- [ ] Verified badge UI component
-- [ ] Verified badge modal/info
-- [ ] Admin dashboard stub for approval (post-MVP)
-
-### Notifications
-- [ ] Notification data model (Firestore subcollection)
-- [ ] Notification bell UI
-- [ ] Notification list / dropdown
-- [ ] Real-time listeners for new notifications
-
-### Additional Components
-- [ ] Toast/notification system
-- [ ] Loading skeletons
-- [ ] Error states and error boundaries
-- [ ] Empty state screens
-- [ ] Mobile bottom navigation
+- [ ] Pitch detail with `expo-av`
+- [ ] Investment bottom sheet
+- [ ] Inventor + investor dashboards
+- [ ] Watchlist + portfolio
+- [ ] Settings
 
 ---
 
-## ⏳ Phase 5: Integrations & Differentiators (POST-MVP)
-
-### Real Stripe Integration
-- [ ] Replace payment stubs with real Stripe SDK
-- [ ] Payment intent creation
-- [ ] Webhook handlers for payment events
+## 💳 Phase 8: Real Stripe + Differentiators — POST-MVP
+- [ ] Stripe Elements for listing fee
+- [ ] Stripe Elements for investments
+- [ ] Webhook handlers
 - [ ] Refund handling
-- [ ] Stripe Connect for marketplace payouts (future)
-
-### Differentiating Features
-- [ ] Investor match score algorithm
-- [ ] Community Q&A on pitches
-- [ ] Due diligence checklist
+- [ ] Stripe Connect (marketplace payouts)
+- [ ] Match-score algorithm
+- [ ] Community Q&A
+- [ ] Due-diligence checklist
 - [ ] Pitch analytics dashboard
-- [ ] Bamboo score (inventor trust rating)
+- [ ] Bamboo score
 - [ ] Push notifications (Expo + FCM)
-- [ ] Milestone-based funding tranches
-- [ ] Secondary market for investment resale
+- [ ] Milestone-based tranches
+- [ ] Secondary market
+- [ ] Tax reporting
 
 ---
 
-## Build & Deploy Status
+## Build & Deploy
 
-### Current
-- ✅ Next.js production build passes (no TypeScript errors)
-- ✅ Expo project configured
-- ✅ Firebase configuration ready
-
-### Next
-- [ ] Configure Firebase Firestore security rules
-- [ ] Configure Firebase Storage security rules
-- [ ] Set up Firebase emulator for local development
-- [ ] Deploy web to Vercel
-- [ ] Deploy mobile to Expo
+- ✅ Next.js dev build passes
+- ✅ Expo configured
+- ✅ Firebase scaffolded (unused in dev mode)
+- [ ] Deploy demo to Vercel under preview URL
 
 ---
 
-## Known Issues & TODOs
+## Known Issues / TODOs
 
-1. **Firebase Rules**: Security rules not yet created (currently using default rules)
-2. **Payment Stubs**: Using mock Stripe implementation (ready for real integration)
-3. **Admin Dashboard**: No admin panel yet for approving verified badges
-4. **Mobile Navigation**: Tab structure defined but screens not yet built
-5. **Real-time Updates**: Listeners configured but UI not yet consuming them
+1. **Auth bypass leakage**: confirm `NEXT_PUBLIC_DEV_BYPASS_AUTH` defaults to
+   `false` in any production deploy
+2. **Mock investments not persisted yet** — need localStorage layer
+3. **Firebase rules**: still default test mode (revisit in Phase 6)
+4. **Admin panel**: no UI for verified-badge approval (post-MVP)
+5. **Mobile**: deferred entirely until web demo locks
 
 ---
 
 ## Quick Commands
 
 ```bash
-# Web development
+# Web dev (auth bypass on by default)
 cd web && npm run dev
 
-# Mobile development
-cd mobile && npm start
+# Web dev with real auth (when re-enabling)
+NEXT_PUBLIC_DEV_BYPASS_AUTH=false npm run dev
 
-# Build for production
-cd web && npm run build
-
-# Type checking
-cd shared && npx tsc --noEmit
-cd web && npm run lint
+# Type check
+cd web && npx tsc --noEmit
 ```
 
 ---
 
-**Last Updated**: May 24, 2026  
-**Plan File**: `/Users/huchu/.claude/plans/bamboo-investing-platform-plant-validated-lamport.md`
+**Last Updated**: 2026-06-02

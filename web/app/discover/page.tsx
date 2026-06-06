@@ -1,172 +1,148 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import PitchCard from '@/components/pitch/PitchCard';
-import type { Pitch, PitchCategory } from '@/types';
+import { useState, useMemo } from "react";
+import { SiteNav } from "@/components/bamboo/SiteNav";
+import { BambooLeaf, RootGlyph } from "@/components/bamboo/BambooIcons";
+import { DiscoverPitchCard } from "@/components/bamboo/DiscoverPitchCard";
+import { Reveal } from "@/components/bamboo/Reveal";
+import { PITCHES } from "@/lib/mock-pitches";
 
-const PITCH_CATEGORIES: PitchCategory[] = [
-  'technology', 'health', 'fintech', 'sustainability', 'food-beverage',
-  'education', 'real-estate', 'entertainment', 'consumer-goods', 'b2b-saas',
-];
-
-const categoryEmoji: Record<PitchCategory, string> = {
-  technology: '💻', health: '🏥', fintech: '💳', sustainability: '🌱',
-  'food-beverage': '🍽️', education: '📚', 'real-estate': '🏠',
-  entertainment: '🎬', 'consumer-goods': '🛍️', 'b2b-saas': '⚙️',
-};
+const SECTORS = ["All", "Hardware", "Fintech", "ClimateTech", "Healthcare", "Media"];
+const STAGES = ["All Stages", "Pre-Seed", "Seed", "Series A"];
 
 export default function DiscoverPage() {
-  const [pitches, setPitches] = useState<Pitch[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<PitchCategory | 'all'>('all');
+  const [sector, setSector] = useState("All");
+  const [stage, setStage] = useState("All Stages");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
-  const [sortBy, setSortBy] = useState<'recent' | 'trending' | 'funding'>('recent');
 
-  useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
-
-    import('@/lib/firebase/firestore').then(({ onPitchesChange }) => {
-      unsubscribe = onPitchesChange((data) => {
-        setPitches(data);
-        setLoading(false);
-      });
-    });
-
-    return () => unsubscribe?.();
-  }, []);
-
-  const filteredPitches = useMemo(() => {
-    let filtered = pitches;
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(
+  const filtered = useMemo(
+    () =>
+      PITCHES.filter(
         (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.tagline.toLowerCase().includes(q) ||
-          p.inventorName.toLowerCase().includes(q)
-      );
-    }
-
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter((p) => p.category === selectedCategory);
-    }
-
-    if (verifiedOnly) {
-      filtered = filtered.filter((p) => p.isVerified);
-    }
-
-    if (sortBy === 'trending') {
-      return [...filtered].sort((a, b) => b.viewCount - a.viewCount);
-    } else if (sortBy === 'funding') {
-      return [...filtered].sort((a, b) => b.amountRaised - a.amountRaised);
-    } else {
-      return [...filtered].sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0));
-    }
-  }, [pitches, searchQuery, selectedCategory, verifiedOnly, sortBy]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading pitches...</p>
-        </div>
-      </div>
-    );
-  }
+          (sector === "All" || p.sector === sector) &&
+          (stage === "All Stages" || p.stage === stage) &&
+          (!verifiedOnly || p.verified),
+      ),
+    [sector, stage, verifiedOnly],
+  );
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-3">Discover Pitches</h1>
-        <p className="text-xl text-gray-600">Find innovative ideas to invest in</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <SiteNav />
 
-      {/* Search and Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-            <input
-              type="text"
-              placeholder="Search pitches, founders..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value as PitchCategory | 'all')}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
-            >
-              <option value="all">All Categories</option>
-              {PITCH_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {categoryEmoji[cat]} {cat.replace(/-/g, ' ')}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
-            >
-              <option value="recent">Most Recent</option>
-              <option value="trending">Trending</option>
-              <option value="funding">Highest Funded</option>
-            </select>
-          </div>
-
-          <div className="flex items-end">
-            <label className="flex items-center gap-2 cursor-pointer text-sm">
-              <input
-                type="checkbox"
-                checked={verifiedOnly}
-                onChange={(e) => setVerifiedOnly(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
-              />
-              <span className="text-gray-700">✓ Verified Only</span>
-            </label>
-          </div>
+      {/* Ticker */}
+      <div className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] overflow-hidden border-b border-white/5">
+        <div className="flex gap-12 py-2 animate-ticker whitespace-nowrap font-mono text-[10px] uppercase tracking-widest">
+          {[...PITCHES, ...PITCHES].map((p, i) => (
+            <span key={i} className="flex items-center gap-2">
+              <span className={p.raised > 50 ? "text-[color:var(--gold)]" : "text-white/50"}>●</span>
+              <span className="text-white/80">{p.company}</span>
+              <span className="text-white/40">{p.asking}</span>
+              <span className="text-[color:var(--gold)]">+{p.raised}%</span>
+            </span>
+          ))}
         </div>
       </div>
 
-      {/* Pitch Grid */}
-      {pitches.length === 0 ? (
-        <div className="text-center py-24">
-          <div className="text-5xl mb-4">🌱</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No pitches yet</h3>
-          <p className="text-gray-600">Be the first to list a pitch and attract investors.</p>
+      <header className="max-w-7xl mx-auto px-6 pt-16 pb-10">
+        <div className="flex items-end justify-between gap-6 flex-wrap">
+          <div>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              The Grove · {filtered.length} seeds in bloom
+            </span>
+            <h1 className="font-display text-6xl md:text-7xl uppercase tracking-tighter mt-3">
+              Watch It Grow.
+            </h1>
+            <p className="text-sm text-muted-foreground mt-2 max-w-md">
+              Every grove starts with one seed. Walk the rows, find the next one.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-xs font-mono">
+            <button
+              onClick={() => setVerifiedOnly((v) => !v)}
+              className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 cursor-pointer ${
+                verifiedOnly
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-[color:var(--input)] hover:border-foreground"
+              }`}
+            >
+              <BambooLeaf size={11} className={verifiedOnly ? "text-[color:var(--gold)]" : "opacity-60"} />
+              Root-Verified
+            </button>
+          </div>
         </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPitches.length > 0 ? (
-              filteredPitches.map((pitch) => <PitchCard key={pitch.id} pitch={pitch} />)
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <div className="text-4xl mb-4">🔍</div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No pitches found</h3>
-                <p className="text-gray-600">Try adjusting your filters</p>
-              </div>
-            )}
-          </div>
 
-          <div className="mt-8 text-center text-gray-500 text-sm">
-            Showing {filteredPitches.length} of {pitches.length} pitches
+        <div className="mt-8 flex flex-col md:flex-row gap-4">
+          <div className="flex gap-2 flex-wrap">
+            {SECTORS.map((s) => (
+              <button
+                key={s}
+                onClick={() => setSector(s)}
+                className={`px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest rounded-full transition-all cursor-pointer ${
+                  sector === s
+                    ? "bg-foreground text-background"
+                    : "bg-secondary hover:bg-muted text-muted-foreground"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
           </div>
-        </>
-      )}
+          <div className="md:ml-auto flex gap-2 flex-wrap">
+            {STAGES.map((s) => (
+              <button
+                key={s}
+                onClick={() => setStage(s)}
+                className={`px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest rounded-full transition-all cursor-pointer ${
+                  stage === s
+                    ? "bg-foreground text-background"
+                    : "bg-secondary hover:bg-muted text-muted-foreground"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 pb-32">
+        {filtered.length === 0 ? (
+          <div className="text-center py-24 max-w-md mx-auto">
+            <div className="flex justify-center mb-6">
+              <RootGlyph size={120} className="text-[color:var(--primary)]/50" />
+            </div>
+            <h2 className="font-display text-4xl uppercase tracking-tighter">
+              No seeds match.
+            </h2>
+            <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+              The grove is wider than these filters. Loosen them up — or come back when
+              new seeds break ground.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSector("All");
+                setStage("All Stages");
+                setVerifiedOnly(false);
+              }}
+              className="mt-6 px-5 py-2.5 text-xs font-bold uppercase tracking-widest border border-[color:var(--input)] rounded-lg hover:bg-secondary transition-all inline-flex items-center gap-2 cursor-pointer"
+            >
+              <BambooLeaf size={12} className="text-[color:var(--gold)]" />
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((p, i) => (
+              <Reveal key={p.id} delay={(i % 3) * 80}>
+                <DiscoverPitchCard pitch={p} />
+              </Reveal>
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
+

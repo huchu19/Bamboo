@@ -33,3 +33,8 @@ android/
 # Misc
 .cache/
 .prettierignore
+
+# Private docs (kept local)
+INVESTOR_QUESTIONNAIRE.html
+INVESTOR_QUESTIONNAIRE.md
+

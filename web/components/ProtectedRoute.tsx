@@ -10,10 +10,11 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, role } = useAuth();
+  const { isAuthenticated, isLoading, role, devBypass } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
+    if (devBypass) return; // MVP: skip all gating, just render.
     if (isLoading) return;
     if (!isAuthenticated) {
       router.replace('/login');
@@ -22,7 +23,9 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     if (requiredRole && role !== requiredRole) {
       router.replace(role === 'inventor' ? '/dashboard' : '/investor/dashboard');
     }
-  }, [isAuthenticated, isLoading, role, requiredRole, router]);
+  }, [devBypass, isAuthenticated, isLoading, role, requiredRole, router]);
+
+  if (devBypass) return <>{children}</>;
 
   if (isLoading) {
     return (

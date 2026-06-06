@@ -1,221 +1,327 @@
-'use client';
-
 import Link from "next/link";
-import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
+import { SiteNav } from "@/components/bamboo/SiteNav";
+import { BambooStalk } from "@/components/bamboo/BambooStalk";
+import { BambooLeaf, RootGlyph } from "@/components/bamboo/BambooIcons";
+import { BambooDivider } from "@/components/bamboo/BambooDivider";
+import { HeroFeaturedVideo } from "@/components/bamboo/HeroFeaturedVideo";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-primary)" }}>
-      <Navigation />
+    <div className="min-h-screen bg-background text-foreground selection:bg-[color:var(--gold)]/40 relative">
+      <SiteNav />
+      <BambooStalk />
 
-      {/* Hero Section */}
-      <section
-        className="flex-1 px-4 sm:px-6 lg:px-8 py-24 sm:py-32 relative overflow-hidden"
-        style={{ background: "var(--bg-primary)" }}
-      >
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-5" style={{ background: "var(--accent-green)" }} />
-        <div className="max-w-4xl mx-auto relative z-10">
-          <div className="mb-8 inline-block px-4 py-2 rounded-full" style={{ background: "var(--bg-tertiary)" }}>
-            <span className="text-sm font-semibold" style={{ color: "var(--accent-green)" }}>
-              The Future of Investing
-            </span>
-          </div>
-          <h1 className="mb-8">
-            Move Markets.
-            <br />
-            <span style={{ color: "var(--accent-green)" }}>Build Empires.</span>
-          </h1>
-          <p className="text-lg mb-12 max-w-2xl" style={{ color: "var(--text-secondary)", lineHeight: 1.8 }}>
-            Connect with ambitious entrepreneurs and exclusive investment opportunities. Curated deals from visionary founders. Your portfolio, your terms.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              href="/register?role=inventor"
-              className="font-semibold px-8 py-4 rounded-lg text-center transition-all"
-              style={{
-                background: "var(--accent-green)",
-                color: "white",
-                boxShadow: "var(--shadow-md)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = "var(--shadow-lg)";
-                e.currentTarget.style.transform = "translateY(-2px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = "var(--shadow-md)";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              Founder? Launch Your Deal
-            </Link>
-            <Link
-              href="/register?role=investor"
-              className="font-semibold px-8 py-4 rounded-lg text-center transition-all"
-              style={{
-                background: "var(--bg-tertiary)",
-                color: "var(--accent-green)",
-                border: `2px solid var(--accent-green)`,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "var(--accent-green)";
-                e.currentTarget.style.color = "white";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "var(--bg-tertiary)";
-                e.currentTarget.style.color = "var(--accent-green)";
-              }}
-            >
-              Investor? Access Deals
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section
-        className="py-20 border-b"
-        style={{
-          background: "var(--bg-secondary)",
-          borderColor: "var(--border-light)",
-        }}
-      >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-8 text-center">
-            <div>
-              <div className="text-5xl font-bold mb-3" style={{ color: "var(--accent-green)" }}>
-                0
-              </div>
-              <p style={{ color: "var(--text-secondary)" }}>Pitches Closed</p>
+      {/* Hero — Plant Your Seed */}
+      <header className="relative pt-20 pb-32 px-6 overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-12 gap-8">
+          <div className="col-span-12 lg:col-span-7">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[color:var(--ink)] text-[color:var(--ink-foreground)] mb-8 animate-reveal">
+              <BambooLeaf size={11} className="text-[color:var(--gold)]" />
+              <span className="text-[10px] font-mono uppercase tracking-widest">
+                The Grove · Q1 2026 · $42M planted last quarter
+              </span>
             </div>
-            <div>
-              <div className="text-5xl font-bold mb-3" style={{ color: "var(--accent-gold)" }}>
-                0
-              </div>
-              <p style={{ color: "var(--text-secondary)" }}>Active Investors</p>
-            </div>
-            <div>
-              <div className="text-5xl font-bold mb-3" style={{ color: "var(--accent-green)" }}>
-                $0M
-              </div>
-              <p style={{ color: "var(--text-secondary)" }}>Capital Deployed</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-24" style={{ background: "var(--bg-primary)" }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center mb-16">How It Works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-            {/* Founders */}
-            <div>
-              <h3 className="mb-8 flex items-center gap-3">
-                <span
-                  className="w-10 h-10 rounded-full flex items-center justify-center font-bold"
-                  style={{ background: "var(--accent-green)", color: "white" }}
-                >
-                  ➔
+            <h1 className="font-display text-[clamp(4rem,12vw,9rem)] leading-[0.85] uppercase tracking-tighter mb-4 animate-reveal">
+              Plant <span className="text-[color:var(--gold)]">Your</span> Seed.
+            </h1>
+            <p className="font-display text-3xl md:text-4xl uppercase tracking-tighter text-foreground/60 mb-8 animate-reveal [animation-delay:100ms]">
+              Grow Your Portfolio.
+            </p>
+            <p className="max-w-lg text-lg text-pretty leading-relaxed text-foreground/70 animate-reveal [animation-delay:200ms]">
+              Bamboo is the fastest-growing organism on earth — and the grove where founders
+              plant their pitch and investors grow connected portfolios. Seed becomes
+              business. Roots become network. Everyone grows together.
+            </p>
+            <div className="flex flex-wrap gap-4 mt-12 animate-reveal [animation-delay:300ms]">
+              <Link
+                href="/discover"
+                className="group relative bg-gradient-to-br from-primary to-[color:var(--primary-deep)] text-primary-foreground px-8 py-4 rounded-xl font-bold flex flex-col items-start gap-1 hover:opacity-90 transition-all"
+              >
+                <span className="text-[10px] uppercase tracking-widest text-[color:var(--gold)]">Investors</span>
+                <span className="text-lg flex items-center gap-2">
+                  Walk the Grove
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </span>
-                For Founders
+              </Link>
+              <Link
+                href="/dashboard"
+                className="border-2 border-foreground/15 hover:border-primary px-8 py-4 rounded-xl font-bold flex flex-col items-start gap-1 transition-all"
+              >
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Founders</span>
+                <span className="text-lg">Plant Your Pitch</span>
+              </Link>
+            </div>
+
+            {/* Mini ticker */}
+            <div className="mt-12 grid grid-cols-3 gap-px bg-[color:var(--border)] rounded-xl overflow-hidden ring-1 ring-[color:var(--border)] max-w-md">
+              {[
+                ["$240M+", "Planted"],
+                ["1,800", "Founders"],
+                ["12 days", "Avg Bloom"],
+              ].map(([k, v]) => (
+                <div key={k} className="bg-card p-3">
+                  <p className="font-display text-xl text-foreground">{k}</p>
+                  <p className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">{v}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Featured Pitch Card */}
+          <div className="col-span-12 lg:col-span-5 relative mt-12 lg:mt-0 animate-reveal [animation-delay:400ms]">
+            <div className="bg-card rounded-[2rem] p-4 shadow-2xl shadow-primary/20 ring-1 ring-primary/10 rotate-2 hover:rotate-0 transition-transform duration-700">
+              <HeroFeaturedVideo />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* How It Works — Take Root */}
+      <section className="py-24 bg-[color:var(--ink)] text-[color:var(--ink-foreground)] bamboo-grain relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="max-w-2xl mb-16 flex flex-col md:flex-row md:items-end gap-8">
+            <div className="flex-1">
+              <span className="font-mono text-[color:var(--gold)] text-xs uppercase tracking-widest">The Grove · 02</span>
+              <h2 className="font-display text-5xl md:text-6xl uppercase tracking-tighter mt-4">
+                Take Root.
+              </h2>
+              <p className="text-white/60 mt-3 max-w-lg">
+                Bamboo grows in connected groves through shared root systems. Every investor
+                and every founder feeds the same network. From seed to bloom in 12 days.
+              </p>
+            </div>
+            <RootGlyph size={120} className="text-[color:var(--gold)]/60 shrink-0" />
+          </div>
+          <div className="grid md:grid-cols-3 gap-0 border-x border-white/10">
+            {[
+              {
+                step: "01 / PLANT",
+                title: "The 60s Seed",
+                copy: "Founders plant a 60-second pitch. Zero decks, zero fluff. Just the idea, ready to germinate.",
+              },
+              {
+                step: "02 / ROOT",
+                title: "The Vault",
+                copy: "Financials, cap tables, and term sheets feed the root system. Root-Verified status unlocks priority.",
+              },
+              {
+                step: "03 / GROW",
+                title: "The Bloom",
+                copy: "Accredited investors commit via Stripe-backed escrow. Capital flows through the grove, audit-trailed.",
+              },
+            ].map((s, i) => (
+              <div
+                key={s.step}
+                className={`p-12 group hover:bg-white/5 transition-colors ${
+                  i < 2 ? "border-b md:border-b-0 md:border-r border-white/10" : ""
+                }`}
+              >
+                <span className="font-mono text-[color:var(--gold)] text-sm mb-8 block">{s.step}</span>
+                <h3 className="font-display text-4xl uppercase tracking-tighter mb-4">{s.title}</h3>
+                <p className="text-white/60 text-sm leading-relaxed">{s.copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Dual audience strip */}
+      <section className="py-32 px-6">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-px bg-[color:var(--border)]">
+          <div className="bg-background p-12">
+            <span className="font-mono text-xs uppercase tracking-widest text-[color:var(--gold)]">For Founders</span>
+            <h3 className="font-display text-5xl uppercase tracking-tighter mt-4 mb-6">
+              Skip the warm intro.
+            </h3>
+            <ul className="space-y-3 text-sm text-foreground/80 mb-10">
+              {[
+                "Plant a 60-second pitch, no decks needed",
+                "Upload your data room to a SOC-2 vault",
+                "Earn Root-Verified for top-of-grove priority",
+                "Receive offers directly — your inbox, your terms",
+              ].map((t) => (
+                <li key={t} className="flex gap-3 items-start">
+                  <BambooLeaf size={13} className="text-[color:var(--gold)] mt-1 shrink-0" /> {t}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 text-sm font-semibold bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground px-6 py-3 rounded-full hover:opacity-90 transition-all"
+            >
+              Plant your pitch →
+            </Link>
+          </div>
+          <div className="bg-background p-12">
+            <span className="font-mono text-xs uppercase tracking-widest text-[color:var(--gold)]">For Investors</span>
+            <h3 className="font-display text-5xl uppercase tracking-tighter mt-4 mb-6">
+              Conviction in 60 seconds.
+            </h3>
+            <ul className="space-y-3 text-sm text-foreground/80 mb-10">
+              {[
+                "Curated grove of Root-Verified founders",
+                "Watch the pitch before opening the vault",
+                "Financials, cap tables, term sheets — one click",
+                "Wire through Stripe escrow with audit trail",
+              ].map((t) => (
+                <li key={t} className="flex gap-3 items-start">
+                  <BambooLeaf size={13} className="text-[color:var(--gold)] mt-1 shrink-0" /> {t}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/discover"
+              className="inline-flex items-center gap-2 text-sm font-semibold border-2 border-primary text-primary px-6 py-3 rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
+            >
+              Walk the grove →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <BambooDivider label="For Investors" />
+
+      {/* Accreditation callout */}
+      <section className="px-6 pb-32">
+        <div className="max-w-5xl mx-auto bg-card ring-1 ring-[color:var(--border)] rounded-[2rem] p-10 md:p-14 flex flex-col md:flex-row gap-8 md:items-center justify-between">
+          <div className="max-w-xl">
+            <span className="font-mono text-xs uppercase tracking-widest text-[color:var(--gold)]">Root-Verified Investors</span>
+            <h3 className="font-display text-4xl uppercase tracking-tighter mt-3 mb-4">
+              Trust grows in the roots.
+            </h3>
+            <p className="text-sm text-foreground/70 leading-relaxed">
+              Every investor in the grove is gated through accreditation before they can
+              commit capital. ID, income, and KYC verified — so founders only meet serious
+              backers and capital only meets compliant deals.
+            </p>
+          </div>
+          <div className="shrink-0 grid grid-cols-2 gap-4 font-mono text-xs">
+            {[
+              ["ID", "Verified"],
+              ["Income", "Verified"],
+              ["KYC", "Cleared"],
+            ].map(([k, v]) => (
+              <div key={k} className="bg-background ring-1 ring-[color:var(--border)] rounded-xl p-4">
+                <p className="text-foreground/50 uppercase tracking-widest text-[10px]">{k}</p>
+                <p className="font-bold mt-1">{v}</p>
+              </div>
+            ))}
+            <div className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] rounded-xl p-4 bamboo-grain">
+              <p className="uppercase tracking-widest text-[10px] text-[color:var(--gold)]">Status</p>
+              <p className="font-bold mt-1">Rooted</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing — Harvest */}
+      <section id="pricing" className="py-32 px-6 bg-secondary/40">
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <span className="font-mono text-xs uppercase tracking-widest text-[color:var(--gold)]">The Harvest</span>
+          <h2 className="font-display text-6xl uppercase tracking-tighter mt-4 mb-4">
+            Harvest what you grow.
+          </h2>
+          <p className="text-muted-foreground">
+            Flat fees, zero carry. We take zero percent of your raise — you keep your cap table clean.
+          </p>
+        </div>
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
+          <div className="bg-card p-10 rounded-[2rem] ring-1 ring-[color:var(--border)] flex flex-col justify-between">
+            <div>
+              <h3 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+                Standard Seed
               </h3>
-              <ol className="space-y-6">
+              <p className="text-4xl font-display uppercase mb-6">Plant Your Pitch</p>
+              <ul className="space-y-4 text-sm mb-12">
                 {[
-                  "Create your pitch with a 60-second video showcase",
-                  "Upload financials, decks, and key metrics",
-                  "List for $49 — no hidden fees",
-                  "Attract capital and close deals",
-                ].map((item, i) => (
-                  <li key={i} className="flex gap-4">
-                    <span
-                      className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                      style={{
-                        background: "var(--accent-gold)",
-                        color: "var(--bg-primary)",
-                      }}
-                    >
-                      {i + 1}
-                    </span>
-                    <span style={{ color: "var(--text-secondary)" }}>{item}</span>
+                  "60s pitch video hosting",
+                  "Public Grove discovery feed",
+                  "Investor inbox + inquiries",
+                  "Document vault (500 MB)",
+                ].map((t) => (
+                  <li key={t} className="flex items-center gap-3">
+                    <BambooLeaf size={13} className="text-primary" /> {t}
                   </li>
                 ))}
-              </ol>
+              </ul>
             </div>
-
-            {/* Investors */}
-            <div>
-              <h3 className="mb-8 flex items-center gap-3">
-                <span
-                  className="w-10 h-10 rounded-full flex items-center justify-center font-bold"
-                  style={{ background: "var(--accent-green)", color: "white" }}
-                >
-                  $
-                </span>
-                For Investors
-              </h3>
-              <ol className="space-y-6">
+            <button className="w-full py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all">
+              $49 / Seed
+            </button>
+          </div>
+          <div className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] p-10 rounded-[2rem] flex flex-col justify-between relative overflow-hidden bamboo-grain">
+            <div className="absolute -top-12 -right-12 font-display text-[10rem] text-[color:var(--gold)]/10 uppercase pointer-events-none select-none">
+              Rooted
+            </div>
+            <div className="relative">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] text-[10px] font-bold rounded-full uppercase tracking-tighter mb-4">
+                <BambooLeaf size={10} /> Recommended
+              </div>
+              <p className="text-4xl font-display uppercase mb-6 text-[color:var(--gold)]">Root-Verified</p>
+              <ul className="space-y-4 text-sm mb-12 text-white/80">
                 {[
-                  "Browse curated, vetted investment opportunities",
-                  "Review detailed pitch materials and metrics",
-                  "Make informed decisions — your way",
-                  "Track returns and build your portfolio",
-                ].map((item, i) => (
-                  <li key={i} className="flex gap-4">
-                    <span
-                      className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                      style={{
-                        background: "var(--accent-gold)",
-                        color: "var(--bg-primary)",
-                      }}
-                    >
-                      {i + 1}
-                    </span>
-                    <span style={{ color: "var(--text-secondary)" }}>{item}</span>
+                  "ID & financial verification",
+                  "SOC-2 vault (5 GB)",
+                  "Top-of-grove priority placement",
+                  "Trust signal on every surface",
+                ].map((t) => (
+                  <li key={t} className="flex items-center gap-3">
+                    <BambooLeaf size={13} className="text-[color:var(--gold)]" /> {t}
                   </li>
                 ))}
-              </ol>
+              </ul>
             </div>
+            <button className="w-full py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] font-bold rounded-xl shadow-lg shadow-[color:var(--gold)]/20 hover:opacity-90 transition-all">
+              $99 One-time
+            </button>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section
-        className="py-24"
-        style={{
-          background: "var(--accent-green)",
-          backgroundImage: "linear-gradient(135deg, var(--accent-green) 0%, #16574d 100%)",
-        }}
-      >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-white mb-6">Ready to make your move?</h2>
-          <p className="text-lg text-green-100 mb-12 max-w-2xl mx-auto">
-            Join the network of ambitious founders and discerning investors building the future.
-          </p>
-          <Link
-            href="/register"
-            className="inline-block font-semibold px-8 py-4 rounded-lg transition-all"
-            style={{
-              background: "white",
-              color: "var(--accent-green)",
-              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 12px 32px rgba(0, 0, 0, 0.2)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.15)";
-            }}
-          >
-            Create Your Account
-          </Link>
+      {/* Footer */}
+      <footer className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] border-t border-white/5 pt-24 pb-12 bamboo-grain">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-24">
+            <div className="max-w-sm">
+              <span className="font-display text-4xl tracking-tighter uppercase flex items-center gap-2">
+                <BambooLeaf size={22} className="text-[color:var(--gold)] -rotate-12" />
+                Bamboo
+              </span>
+              <p className="mt-4 text-white/60 text-sm leading-relaxed">
+                The capital grove for serious founders and investors. Plant your seed.
+                Grow your portfolio.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-16">
+              <div className="flex flex-col gap-4">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] flex items-center gap-1.5">
+                  <BambooLeaf size={10} /> Grove
+                </p>
+                <Link href="/discover" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Walk the Grove</Link>
+                <Link href="/dashboard" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Tend the Grove</Link>
+                <Link href="#pricing" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Harvest</Link>
+              </div>
+              <div className="flex flex-col gap-4">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] flex items-center gap-1.5">
+                  <BambooLeaf size={10} /> Company
+                </p>
+                <a href="#" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Manifesto</a>
+                <a href="#" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Security</a>
+                <a href="#" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Contact</a>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-12 border-t border-white/10">
+            <p className="text-[10px] font-mono text-white/40">
+              © 2026 BAMBOO ASSET CORP. — Past growth is not indicative of future bloom.
+            </p>
+            <div className="flex items-center gap-3">
+              <div className="size-2 rounded-full bg-[color:var(--gold)] animate-pulse" />
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/60">Grove Open · Network Online</p>
+            </div>
+          </div>
         </div>
-      </section>
-
-      <Footer />
+      </footer>
     </div>
   );
 }

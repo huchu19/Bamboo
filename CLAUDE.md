@@ -6,6 +6,30 @@ A two-sided investing marketplace connecting innovative entrepreneurs with impac
 
 ---
 
+## 🚧 MVP Demo Mode (current)
+
+The project is in **MVP demo mode**. Auth and Firestore reads/writes are
+bypassed in dev so we can iterate on the investor-facing demo at zero latency.
+
+- **Toggle**: `NEXT_PUBLIC_DEV_BYPASS_AUTH` in `web/.env.local` (default ON;
+  set to `false` to re-enable real auth).
+- **What's bypassed**: `AuthContext` returns a mock user; `ProtectedRoute`
+  short-circuits; pages read from `web/lib/mock-pitches.ts` instead of Firestore.
+- **Dev role switcher**: floating pill (bottom-right) toggles inventor ↔
+  investor and links to the relevant dashboard. Rendered by
+  `web/components/DevRoleSwitcher.tsx` from the root layout. Auto-hides when
+  bypass is off.
+- **Three demo pitches**: Oxo / Ledgr / Northbound have `isDemo: true` with
+  slots for real `videoUrl`, `posterUrl`, and `documents`. Drop assets into
+  `web/public/demo/{oxo,ledgr,northbound}/`. Other pitches are filler.
+- **Re-enabling**: see Phase 6 in [MILESTONES.md](./MILESTONES.md).
+
+Do not delete the bypass plumbing — it's the single switch we flip at demo
+end. The Firebase-backed code paths under `web/lib/firebase/` are untouched
+and load again the moment the env flag flips.
+
+---
+
 ## Project Overview
 
 Bamboo is a greenfield full-stack application built to connect inventors with investors. The platform enables:

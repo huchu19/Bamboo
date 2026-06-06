@@ -96,6 +96,7 @@ export default function CreatePitchPage() {
     try {
       const { collection, doc } = await import('firebase/firestore');
       const { db } = await import('@/lib/firebase/config');
+      if (!db) throw new Error('Firebase is not configured.');
       const { createPitch } = await import('@/lib/firebase/firestore');
       const {
         uploadPitchVideo,
@@ -151,7 +152,7 @@ export default function CreatePitchPage() {
         minimumInvestment: parseInt(formData.minimumInvestment) * 100,
         equityOffered: parseFloat(formData.equityOffered),
         amountRaised: 0,
-        status: 'under_review',
+        status: 'pending_review',
         isVerified: false,
         viewCount: 0,
         watchlistCount: 0,
@@ -671,7 +672,7 @@ export default function CreatePitchPage() {
               <li>Your pitch is reviewed by our team (24–48 hours)</li>
               <li>Once approved, it goes live to all investors</li>
               <li>Track investor interest from your dashboard</li>
-              <li>Optional: Upgrade to Verified Badge ($199) for extra credibility</li>
+              <li>Optional: Upgrade to Verified Badge ($99) for extra credibility</li>
             </ol>
           </div>
 

@@ -13,6 +13,15 @@ import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from './config';
 import type { User, UserRole } from '../../types';
 
+function requireAuth() {
+  if (!auth) throw new Error('Firebase auth is not configured. Set NEXT_PUBLIC_FIREBASE_* in web/.env.local');
+  return auth;
+}
+function requireDb() {
+  if (!db) throw new Error('Firebase Firestore is not configured. Set NEXT_PUBLIC_FIREBASE_* in web/.env.local');
+  return db;
+}
+
 /**
  * Register a new user
  */
@@ -23,7 +32,7 @@ export const registerUser = async (
   role: UserRole
 ): Promise<FirebaseUser> => {
   // Create auth user
-  const { user } = await createUserWithEmailAndPassword(auth, email, password);
+  const { user } = await createUserWithEmailAndPassword(requireAuth(), email, password);
 
   // Update profile
   await updateProfile(user, { displayName });
@@ -54,7 +63,7 @@ export const registerUser = async (
     };
   }
 
-  await setDoc(doc(db, 'users', user.uid), userDoc);
+  await setDoc(doc(requireDb(), 'users', user.uid), userDoc);
 
   return user;
 };
@@ -63,7 +72,7 @@ export const registerUser = async (
  * Sign in existing user
  */
 export const loginUser = async (email: string, password: string): Promise<FirebaseUser> => {
-  const { user } = await signInWithEmailAndPassword(auth, email, password);
+  const { user } = await signInWithEmailAndPassword(requireAuth(), email, password);
   return user;
 };
 
@@ -71,19 +80,23 @@ export const loginUser = async (email: string, password: string): Promise<Fireba
  * Sign out current user
  */
 export const logoutUser = async (): Promise<void> => {
-  await signOut(auth);
+  await signOut(requireAuth());
 };
 
 /**
  * Get current auth user
  */
 export const getCurrentUser = (): FirebaseUser | null => {
-  return auth.currentUser;
+  return auth?.currentUser ?? null;
 };
 
 /**
  * Listen to auth state changes
  */
 export const onAuthStateChange = (callback: (user: FirebaseUser | null) => void) => {
+  if (!auth) {
+    callback(null);
+    return () => {};
+  }
   return auth.onAuthStateChanged(callback);
 };

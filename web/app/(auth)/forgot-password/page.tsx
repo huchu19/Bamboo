@@ -17,6 +17,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const { auth } = await import('@/lib/firebase/config');
+      if (!auth) throw new Error('Firebase is not configured.');
       await sendPasswordResetEmail(auth, email);
       setSent(true);
     } catch (err: any) {

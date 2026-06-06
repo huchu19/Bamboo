@@ -19,9 +19,13 @@ import {
   Unsubscribe,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from './config';
+import { db as _db } from './config';
 import type { User, Pitch, Investment, Payment } from '../../types';
 import type { CreateInvestmentInput } from '../../types';
+
+// Helpers in this file only run after AuthContext has loaded a signed-in user,
+// which requires Firebase to be configured. Assert non-null at the boundary.
+const db = _db!;
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 
