@@ -35,13 +35,23 @@ export function DiscoverPitchCard({ pitch }: { pitch: Pitch }) {
       />
 
       <div className={`relative aspect-video bg-gradient-to-br ${pitch.posterColor} overflow-hidden`}>
-        <div
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 30% 40%, rgba(255,255,255,.3) 0, transparent 50%)",
-          }}
-        />
+        {pitch.posterUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={pitch.posterUrl}
+            alt={`${pitch.company} pitch poster`}
+            loading="lazy"
+            className="absolute inset-0 size-full object-cover"
+          />
+        ) : (
+          <div
+            className="absolute inset-0 opacity-30"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 30% 40%, rgba(255,255,255,.3) 0, transparent 50%)",
+            }}
+          />
+        )}
         <button
           type="button"
           aria-label={`Play ${pitch.company} pitch`}
