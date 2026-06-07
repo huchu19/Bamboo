@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import Link from "next/link";
 import { SiteNav } from "@/components/bamboo/SiteNav";
 import { BambooLeaf } from "@/components/bamboo/BambooIcons";
 import { BambooProgress } from "@/components/bamboo/BambooProgress";
@@ -191,9 +192,12 @@ function Overview() {
           <p className="text-xs text-white/70 mt-2">
             Lock the top of Discover for 7 days. Avg +4× views.
           </p>
-          <button className="mt-4 w-full py-2.5 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-all">
+          <Link
+            href="/contact"
+            className="mt-4 block w-full py-2.5 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-all text-center"
+          >
             Contact Us · Boost
-          </button>
+          </Link>
         </section>
       </aside>
     </div>
@@ -250,27 +254,33 @@ function UploadPanel() {
 function BillingPanel() {
   return (
     <div className="grid md:grid-cols-2 gap-6">
-      <div className="bg-card ring-1 ring-[color:var(--border)] rounded-2xl p-8">
+      <Link
+        href="/contact"
+        className="block bg-card ring-1 ring-[color:var(--border)] rounded-2xl p-8 hover:ring-foreground transition-all"
+      >
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
           Listing Fee
         </p>
         <p className="font-display text-5xl uppercase tracking-tighter mt-2">Contact Us</p>
         <p className="text-xs text-muted-foreground mt-1">Pricing finalised on listing</p>
         <div className="mt-6 pt-6 border-t border-[color:var(--border)] text-xs font-mono uppercase tracking-widest text-muted-foreground">
-          Speak with our team to plant your pitch
+          Speak with our team to plant your pitch →
         </div>
-      </div>
+      </Link>
 
-      <div className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] rounded-2xl p-8 ring-1 ring-white/10">
+      <Link
+        href="/contact"
+        className="block bg-[color:var(--ink)] text-[color:var(--ink-foreground)] rounded-2xl p-8 ring-1 ring-white/10 hover:ring-[color:var(--gold)] transition-all"
+      >
         <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)]">
           Verified Badge
         </p>
         <p className="font-display text-5xl uppercase tracking-tighter mt-2 text-[color:var(--gold)]">Contact Us</p>
         <p className="text-xs text-white/60 mt-1">Pricing finalised on verification</p>
-        <button className="mt-6 w-full py-2.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold uppercase tracking-widest transition-all">
-          Talk to our team
-        </button>
-      </div>
+        <span className="mt-6 block w-full py-2.5 bg-white/10 rounded-lg text-xs font-bold uppercase tracking-widest text-center">
+          Talk to our team →
+        </span>
+      </Link>
     </div>
   );
 }

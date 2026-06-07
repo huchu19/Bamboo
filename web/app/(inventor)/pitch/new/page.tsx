@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import type { PitchCategory } from '@/types';
 
@@ -604,12 +605,20 @@ export default function CreatePitchPage() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
               <h3 className="font-semibold text-blue-900 mb-2">💳 Pitch Listing Fee</h3>
               <p className="text-blue-700 mb-4">
-                Listing pricing is being finalised. <strong>Contact us</strong> to publish your
-                pitch to investors.
+                Listing pricing is being finalised.{' '}
+                <Link href="/contact" className="underline font-semibold hover:text-blue-900">
+                  Contact us
+                </Link>{' '}
+                to publish your pitch to investors.
               </p>
               <div className="flex justify-between py-3 border-t border-blue-200">
                 <span className="font-semibold text-blue-900">Total</span>
-                <span className="font-bold text-blue-900 text-lg">Contact Us</span>
+                <Link
+                  href="/contact"
+                  className="font-bold text-blue-900 text-lg underline hover:text-blue-700"
+                >
+                  Contact Us
+                </Link>
               </div>
             </div>
 
@@ -672,7 +681,13 @@ export default function CreatePitchPage() {
               <li>Your pitch is reviewed by our team (24–48 hours)</li>
               <li>Once approved, it goes live to all investors</li>
               <li>Track investor interest from your dashboard</li>
-              <li>Optional: Upgrade to Verified Badge (Contact Us) for extra credibility</li>
+              <li>
+                Optional: Upgrade to Verified Badge (
+                <Link href="/contact" className="underline text-green-700 hover:text-green-800">
+                  Contact Us
+                </Link>
+                ) for extra credibility
+              </li>
             </ol>
           </div>
 

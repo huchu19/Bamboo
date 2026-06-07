@@ -245,9 +245,12 @@ export default function Home() {
                 ))}
               </ul>
             </div>
-            <button className="w-full py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all">
+            <Link
+              href="/contact"
+              className="block w-full py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-center"
+            >
               Contact Us
-            </button>
+            </Link>
           </div>
           <div className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] p-10 rounded-[2rem] flex flex-col justify-between relative overflow-hidden bamboo-grain">
             <div className="absolute -top-12 -right-12 font-display text-[10rem] text-[color:var(--gold)]/10 uppercase pointer-events-none select-none">
@@ -271,9 +274,12 @@ export default function Home() {
                 ))}
               </ul>
             </div>
-            <button className="w-full py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] font-bold rounded-xl shadow-lg shadow-[color:var(--gold)]/20 hover:opacity-90 transition-all">
+            <Link
+              href="/contact"
+              className="block w-full py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] font-bold rounded-xl shadow-lg shadow-[color:var(--gold)]/20 hover:opacity-90 transition-all text-center"
+            >
               Contact Us
-            </button>
+            </Link>
           </div>
         </div>
       </section>
