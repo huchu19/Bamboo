@@ -246,7 +246,7 @@ export default function Home() {
               </ul>
             </div>
             <button className="w-full py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all">
-              $49 / Seed
+              Contact Us
             </button>
           </div>
           <div className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] p-10 rounded-[2rem] flex flex-col justify-between relative overflow-hidden bamboo-grain">
@@ -272,7 +272,7 @@ export default function Home() {
               </ul>
             </div>
             <button className="w-full py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] font-bold rounded-xl shadow-lg shadow-[color:var(--gold)]/20 hover:opacity-90 transition-all">
-              $99 One-time
+              Contact Us
             </button>
           </div>
         </div>

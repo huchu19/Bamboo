@@ -192,7 +192,7 @@ function Overview() {
             Lock the top of Discover for 7 days. Avg +4× views.
           </p>
           <button className="mt-4 w-full py-2.5 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-all">
-            $249 · Boost now
+            Contact Us · Boost
           </button>
         </section>
       </aside>
@@ -252,23 +252,23 @@ function BillingPanel() {
     <div className="grid md:grid-cols-2 gap-6">
       <div className="bg-card ring-1 ring-[color:var(--border)] rounded-2xl p-8">
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-          Listing Fee · paid
+          Listing Fee
         </p>
-        <p className="font-display text-5xl uppercase tracking-tighter mt-2">$49</p>
-        <p className="text-xs text-muted-foreground mt-1">Pitch live until Dec 2026</p>
+        <p className="font-display text-5xl uppercase tracking-tighter mt-2">Contact Us</p>
+        <p className="text-xs text-muted-foreground mt-1">Pricing finalised on listing</p>
         <div className="mt-6 pt-6 border-t border-[color:var(--border)] text-xs font-mono uppercase tracking-widest text-muted-foreground">
-          Invoice #BMB-0421 · paid via card ····4242
+          Speak with our team to plant your pitch
         </div>
       </div>
 
       <div className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] rounded-2xl p-8 ring-1 ring-white/10">
         <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)]">
-          Verified Badge · active
+          Verified Badge
         </p>
-        <p className="font-display text-5xl uppercase tracking-tighter mt-2 text-[color:var(--gold)]">$99</p>
-        <p className="text-xs text-white/60 mt-1">Renewed annually · next charge 04/27</p>
+        <p className="font-display text-5xl uppercase tracking-tighter mt-2 text-[color:var(--gold)]">Contact Us</p>
+        <p className="text-xs text-white/60 mt-1">Pricing finalised on verification</p>
         <button className="mt-6 w-full py-2.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold uppercase tracking-widest transition-all">
-          Manage subscription
+          Talk to our team
         </button>
       </div>
     </div>
