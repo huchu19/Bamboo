@@ -1,7 +1,15 @@
 /**
  * Stripe payment stub - ready to be wired with real Stripe SDK
  * This interface defines the contract for payment processing
+ *
+ * TODO(stripe): Replace stub calls with real Stripe Elements + webhook handlers
+ *   when pricing is finalised. Current MVP keeps all pricing surfaces pointed at
+ *   /contact instead. See MILESTONES.md Phase 8.
  */
+
+const stubLog = process.env.NODE_ENV !== 'production'
+  ? (...args: unknown[]) => console.log(...args)
+  : () => {};
 
 export interface PaymentIntent {
   clientSecret: string;
@@ -30,7 +38,7 @@ export const stripeStub = {
     metadata: Record<string, string> = {}
   ): Promise<PaymentIntent> => {
     // STUB: Mock implementation
-    console.log('🔄 [STUB] Creating payment intent', { amount, currency, metadata });
+    stubLog('🔄 [STUB] Creating payment intent', { amount, currency, metadata });
 
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -48,7 +56,7 @@ export const stripeStub = {
    */
   confirmPayment: async (clientSecret: string, _paymentMethod: any): Promise<PaymentResult> => {
     // STUB: Mock implementation
-    console.log('💳 [STUB] Confirming payment', { clientSecret });
+    stubLog('💳 [STUB] Confirming payment', { clientSecret });
 
     // Simulate processing delay
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -70,7 +78,7 @@ export const stripeStub = {
     type: 'listing_fee' | 'verified_badge' | 'investment'
   ): Promise<PaymentResult> => {
     // STUB: Always succeeds
-    console.log(`💰 [STUB] Processing ${type} payment: ${amount} cents`);
+    stubLog(`💰 [STUB] Processing ${type} payment: ${amount} cents`);
 
     // Simulate payment processing
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -87,7 +95,7 @@ export const stripeStub = {
    * Real: calls Stripe refund API
    */
   refundPayment: async (transactionId: string): Promise<PaymentResult> => {
-    console.log('↩️ [STUB] Refunding payment', { transactionId });
+    stubLog('↩️ [STUB] Refunding payment', { transactionId });
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
