@@ -1,0 +1,5 @@
+mobile/
+*.md
+!web/**/*.md
+.firebase/
+INVESTOR_QUESTIONNAIRE.html

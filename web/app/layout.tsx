@@ -24,7 +24,12 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Bamboo",
   description:
     "The capital grove where Root-Verified founders plant 60-second pitches and accredited investors grow connected portfolios.",
@@ -34,6 +39,7 @@ export const metadata: Metadata = {
     description:
       "Bamboo is the fastest-growing organism on earth — and the grove where founders plant their pitch and investors grow connected portfolios.",
     type: "website",
+    url: siteUrl,
   },
 };
 
