@@ -4,13 +4,14 @@ import { useRef, useState, use } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteNav } from "@/components/bamboo/SiteNav";
-import { BambooLeaf, BambooNode, VerifiedLeafBadge } from "@/components/bamboo/BambooIcons";
+import { BambooLeaf, VerifiedLeafBadge } from "@/components/bamboo/BambooIcons";
 import { FounderAvatar } from "@/components/bamboo/FounderAvatar";
 import { EquityChart, TractionSpark } from "@/components/bamboo/EquityChart";
 import { BambooDivider } from "@/components/bamboo/BambooDivider";
 import { getPitch, PITCHES, type Pitch } from "@/lib/mock-pitches";
 import { useWatchlist } from "@/lib/watchlist-store";
 import { InvestModal } from "@/components/bamboo/InvestModal";
+import { DocumentCard } from "@/components/bamboo/DocumentCard";
 
 export default function PitchDetail({
   params,
@@ -128,38 +129,19 @@ export default function PitchDetail({
 
           <section>
             <h2 className="font-display text-3xl uppercase tracking-tighter mb-4">The Vault</h2>
-            <div className="space-y-2">
-              {[
-                { title: "Business Plan", size: "2.4 MB", pages: 32, locked: false },
-                { title: "Financial Model (3-year)", size: "880 KB", pages: 12, locked: false },
-                { title: "Pitch Deck", size: "5.1 MB", pages: 18, locked: false },
-                { title: "Cap Table & Term Sheet", size: "210 KB", pages: 4, locked: true },
-              ].map((doc) => (
-                <details key={doc.title} className="group bg-card ring-1 ring-[color:var(--border)] rounded-xl overflow-hidden">
-                  <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-secondary transition-all">
-                    <div className="flex items-center gap-3">
-                      <span className="size-10 rounded-lg bg-secondary flex items-center justify-center text-primary">
-                        {doc.locked ? <BambooNode size={16} /> : <BambooLeaf size={16} />}
-                      </span>
-                      <div>
-                        <p className="font-bold text-sm">{doc.title}</p>
-                        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">
-                          {doc.size} · {doc.pages} pages
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground group-open:text-[color:var(--gold)]">
-                      {doc.locked ? "Request" : "Preview ↓"}
-                    </span>
-                  </summary>
-                  <div className="p-4 pt-0 text-sm text-muted-foreground">
-                    {doc.locked
-                      ? "This document requires NDA acceptance. Submit a non-binding interest first."
-                      : "Preview is available to accredited investors. Click to open the full document."}
-                  </div>
-                </details>
-              ))}
-            </div>
+            {pitch.documents && pitch.documents.length > 0 ? (
+              <div className="space-y-2">
+                {pitch.documents.map((doc) => (
+                  <DocumentCard key={doc.label} doc={doc} />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-card ring-1 ring-[color:var(--border)] rounded-xl p-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Documents haven&apos;t been shared for this round yet.
+                </p>
+              </div>
+            )}
           </section>
 
           <BambooDivider label="Capital" className="!my-2" />

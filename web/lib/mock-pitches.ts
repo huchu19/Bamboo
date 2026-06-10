@@ -2,10 +2,18 @@ import { getDemoAsset } from "./demo-assets";
 
 export type PitchDocument = {
   label: string;
-  /** Path under /public, e.g. "/demo/oxo/deck.pdf". */
+  /** Path under /public, e.g. "/demo/edunexus/deck.pdf". */
   url: string;
   /** Bytes or pretty string — purely for display. */
   size?: string;
+  /**
+   * When true, the document is part of the showcase intent but the file hasn't
+   * been authored yet. UI renders a non-clickable "Coming soon" card instead
+   * of a link that 404s.
+   */
+  comingSoon?: boolean;
+  /** Optional gated doc (Cap Table / Term Sheet). UI shows a Request button. */
+  locked?: boolean;
 };
 
 export type Pitch = {
@@ -59,9 +67,10 @@ export const PITCHES: Pitch[] = [
     videoUrl: getDemoAsset("edunexus", "video"),
     posterUrl: getDemoAsset("edunexus", "poster"),
     documents: [
-      { label: "Pitch Deck", url: "/demo/edunexus/deck.pdf", size: "4.2 MB" },
-      { label: "Financial Model", url: "/demo/edunexus/financials.pdf", size: "1.1 MB" },
-      { label: "Unit Economics", url: "/demo/edunexus/unit-economics.pdf", size: "780 KB" },
+      { label: "Pitch Deck", url: "/demo/edunexus/deck.pdf", size: "4.2 MB", comingSoon: true },
+      { label: "Financial Model", url: "/demo/edunexus/financials.pdf", size: "1.1 MB", comingSoon: true },
+      { label: "Unit Economics", url: "/demo/edunexus/unit-economics.pdf", size: "780 KB", comingSoon: true },
+      { label: "Cap Table & Term Sheet", url: "/demo/edunexus/cap-table.pdf", size: "210 KB", locked: true },
     ],
   },
   {
@@ -86,9 +95,10 @@ export const PITCHES: Pitch[] = [
     videoUrl: getDemoAsset("ledgr", "video"),
     posterUrl: getDemoAsset("ledgr", "poster"),
     documents: [
-      { label: "Pitch Deck", url: "/demo/ledgr/deck.pdf", size: "3.8 MB" },
-      { label: "Market Analysis", url: "/demo/ledgr/market.pdf", size: "2.3 MB" },
-      { label: "Regulatory Memo", url: "/demo/ledgr/regulatory.pdf", size: "640 KB" },
+      { label: "Pitch Deck", url: "/demo/ledgr/deck.pdf", size: "3.8 MB", comingSoon: true },
+      { label: "Market Analysis", url: "/demo/ledgr/market.pdf", size: "2.3 MB", comingSoon: true },
+      { label: "Regulatory Memo", url: "/demo/ledgr/regulatory.pdf", size: "640 KB", comingSoon: true },
+      { label: "Cap Table & Term Sheet", url: "/demo/ledgr/cap-table.pdf", size: "190 KB", locked: true },
     ],
   },
   {
@@ -113,9 +123,10 @@ export const PITCHES: Pitch[] = [
     videoUrl: getDemoAsset("northbound", "video"),
     posterUrl: getDemoAsset("northbound", "poster"),
     documents: [
-      { label: "Pitch Deck", url: "/demo/northbound/deck.pdf", size: "5.6 MB" },
-      { label: "Technical Whitepaper", url: "/demo/northbound/whitepaper.pdf", size: "3.1 MB" },
-      { label: "LCA Report", url: "/demo/northbound/lca.pdf", size: "1.4 MB" },
+      { label: "Pitch Deck", url: "/demo/northbound/deck.pdf", size: "5.6 MB", comingSoon: true },
+      { label: "Technical Whitepaper", url: "/demo/northbound/whitepaper.pdf", size: "3.1 MB", comingSoon: true },
+      { label: "LCA Report", url: "/demo/northbound/lca.pdf", size: "1.4 MB", comingSoon: true },
+      { label: "Cap Table & Term Sheet", url: "/demo/northbound/cap-table.pdf", size: "230 KB", locked: true },
     ],
   },
   {
