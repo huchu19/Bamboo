@@ -1,0 +1,79 @@
+rules_version = '2';
+
+// Bamboo Cloud Storage security rules.
+//
+// Path conventions (see web/lib/firebase/storage.ts):
+//   pitches/{pitchId}/video/pitch-video.mp4    pitch video (one per pitch)
+//   pitches/{pitchId}/documents/{fileName}     vault docs (PDFs etc.)
+//   users/{uid}/avatar/profile.jpg             user avatar
+//
+// Reads on pitch assets are public (the discovery feed needs them) and writes
+// require the caller to actually own the pitch document in Firestore. User
+// avatars are owned by the user.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function ownsPitch(pitchId) {
+      return isSignedIn()
+        && firestore.exists(/databases/(default)/documents/pitches/$(pitchId))
+        && firestore.get(/databases/(default)/documents/pitches/$(pitchId)).data.inventorId
+            == request.auth.uid;
+    }
+
+    // Max file sizes — generous enough for a 60s 1080p MP4, tight enough to
+    // prevent abuse.
+    function videoOk() {
+      return request.resource.size < 200 * 1024 * 1024
+        && request.resource.contentType.matches('video/.*');
+    }
+
+    function docOk() {
+      return request.resource.size < 25 * 1024 * 1024
+        && request.resource.contentType.matches('application/pdf|application/vnd\\..*|image/.*');
+    }
+
+    function imgOk() {
+      return request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Pitch video
+    // ────────────────────────────────────────────────────────────────────────
+
+    match /pitches/{pitchId}/video/{fileName} {
+      allow read: if true;
+      allow write: if ownsPitch(pitchId) && videoOk();
+      allow delete: if ownsPitch(pitchId);
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Pitch documents (vault)
+    // ────────────────────────────────────────────────────────────────────────
+
+    match /pitches/{pitchId}/documents/{fileName} {
+      allow read: if true;
+      allow write: if ownsPitch(pitchId) && docOk();
+      allow delete: if ownsPitch(pitchId);
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // User avatars
+    // ────────────────────────────────────────────────────────────────────────
+
+    match /users/{userId}/avatar/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == userId && imgOk();
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Default deny.
+    // ────────────────────────────────────────────────────────────────────────
+  }
+}

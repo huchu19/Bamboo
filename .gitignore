@@ -38,3 +38,7 @@ android/
 INVESTOR_QUESTIONNAIRE.html
 INVESTOR_QUESTIONNAIRE.md
 
+# Firebase secrets
+scripts/service-account.json
+.firebase/
+

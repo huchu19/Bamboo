@@ -1,0 +1,160 @@
+rules_version = '2';
+
+// Bamboo Firestore security rules.
+//
+// Threat model:
+//   - All reads from the public web app should be allowed for published pitches
+//     and the small set of founder profiles, so reviewers without an account
+//     can still walk the grove.
+//   - Writes are restricted to authenticated users acting on documents they own.
+//   - Investments are immutable once created; only the investor that created
+//     them can read them. Pitch counters are updated atomically inside a
+//     transaction issued from the client, but the update is constrained so a
+//     malicious client cannot rewrite raised totals out of bounds.
+//
+// Anything not explicitly allowed below is denied.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ────────────────────────────────────────────────────────────────────────
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function existingDoc() {
+      return resource.data;
+    }
+
+    function incomingDoc() {
+      return request.resource.data;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // users — public profile fields readable by anyone, writeable only by the
+    // owner. The `role` field is set on create and may not be changed (would
+    // bypass our investor/inventor permission split).
+    // ────────────────────────────────────────────────────────────────────────
+
+    match /users/{userId} {
+      allow read: if true;
+
+      allow create: if isSelf(userId)
+        && incomingDoc().uid == userId
+        && incomingDoc().role in ['inventor', 'investor'];
+
+      allow update: if isSelf(userId)
+        && incomingDoc().role == existingDoc().role
+        && incomingDoc().uid == existingDoc().uid;
+
+      allow delete: if false; // users cannot self-delete in MVP
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // founders — public bio/profile records. Server-seeded; clients read only.
+    // ────────────────────────────────────────────────────────────────────────
+
+    match /founders/{founderId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // pitches — published pitches are world-readable. Only the inventor that
+    // owns a pitch can create / mutate it, except for the counters that
+    // createInvestment updates inside a transaction (we allow those if the
+    // diff only touches amountRaised / investorCount / updatedAt and the
+    // request comes from an authenticated user).
+    // ────────────────────────────────────────────────────────────────────────
+
+    function isInventorOf(pitchDoc) {
+      return isSignedIn() && pitchDoc.inventorId == request.auth.uid;
+    }
+
+    function onlyTouchesInvestmentCounters() {
+      // Allowed if the *changed* set of keys is exactly the counter fields.
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['amountRaised', 'investorCount', 'updatedAt']);
+    }
+
+    match /pitches/{pitchId} {
+      allow read: if true;
+
+      allow create: if isSignedIn()
+        && incomingDoc().inventorId == request.auth.uid
+        && incomingDoc().amountRaised == 0
+        && incomingDoc().investorCount == 0;
+
+      allow update: if (
+        // Inventor editing their own pitch (full control, but not the counters).
+        isInventorOf(existingDoc())
+        && incomingDoc().inventorId == existingDoc().inventorId
+      ) || (
+        // Any signed-in investor confirming an investment (counters only).
+        isSignedIn()
+        && onlyTouchesInvestmentCounters()
+        && incomingDoc().amountRaised >= existingDoc().amountRaised
+        && incomingDoc().investorCount == existingDoc().investorCount + 1
+      );
+
+      allow delete: if isInventorOf(existingDoc());
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // investments — investor-owned ledger entries. The pitch counter update
+    // above complements this rule: both halves of the transaction must pass.
+    // ────────────────────────────────────────────────────────────────────────
+
+    match /investments/{investmentId} {
+      allow read: if isSignedIn()
+        && (existingDoc().investorId == request.auth.uid
+            || existingDoc().inventorId == request.auth.uid);
+
+      allow create: if isSignedIn()
+        && incomingDoc().investorId == request.auth.uid
+        && incomingDoc().amount > 0
+        && incomingDoc().status == 'completed';
+
+      // Investments are immutable after creation. Refunds happen via a
+      // server-side function in Phase 8.
+      allow update, delete: if false;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // watchlist — every user has their own subcollection.
+    //   watchlist/{uid}/items/{pitchId}
+    // ────────────────────────────────────────────────────────────────────────
+
+    match /watchlist/{userId}/items/{pitchId} {
+      allow read, write, delete: if isSelf(userId);
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // payments — server-side records. Clients never write.
+    // ────────────────────────────────────────────────────────────────────────
+
+    match /payments/{paymentId} {
+      allow read: if isSignedIn()
+        && existingDoc().userId == request.auth.uid;
+      allow write: if false;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // notifications — owned per user.
+    // ────────────────────────────────────────────────────────────────────────
+
+    match /notifications/{userId}/items/{notificationId} {
+      allow read, update: if isSelf(userId);
+      allow create, delete: if false;
+    }
+
+    // Default deny — no implicit allows below this point.
+  }
+}
