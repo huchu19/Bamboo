@@ -10,6 +10,7 @@ import { EquityChart, TractionSpark } from "@/components/bamboo/EquityChart";
 import { BambooDivider } from "@/components/bamboo/BambooDivider";
 import { getPitch, PITCHES, type Pitch } from "@/lib/mock-pitches";
 import { useWatchlist } from "@/lib/watchlist-store";
+import { InvestModal } from "@/components/bamboo/InvestModal";
 
 export default function PitchDetail({
   params,
@@ -18,7 +19,14 @@ export default function PitchDetail({
 }) {
   const { pitchId } = use(params);
   const pitch = getPitch(pitchId);
+  const [investOpen, setInvestOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   if (!pitch) return notFound();
+
+  function handleRecorded(amount: number) {
+    setToast(`Investment of $${amount.toLocaleString("en-US")} recorded`);
+    window.setTimeout(() => setToast(null), 4000);
+  }
 
   const similar = PITCHES.filter((p) => p.id !== pitch.id && p.sector === pitch.sector).slice(0, 3);
   const fallback = PITCHES.filter((p) => p.id !== pitch.id).slice(0, 3);
@@ -198,7 +206,7 @@ export default function PitchDetail({
               </div>
             </div>
 
-            <InvestForm />
+            <InvestForm onOpen={() => setInvestOpen(true)} />
 
             <p className="mt-4 text-[10px] font-mono text-white/40 text-center">
               Powered by Stripe · Funds held in escrow until close
@@ -231,59 +239,69 @@ export default function PitchDetail({
             />
           </div>
         </div>
-        <Link
-          href="#invest"
+        <button
+          type="button"
+          onClick={() => setInvestOpen(true)}
           className="shrink-0 px-4 py-2.5 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-[11px] inline-flex items-center gap-1.5"
         >
           <BambooLeaf size={11} />
           Plant Capital
-        </Link>
+        </button>
       </div>
+
+      <InvestModal
+        pitch={pitch}
+        open={investOpen}
+        onClose={() => setInvestOpen(false)}
+        onRecorded={handleRecorded}
+      />
+
+      {/* Success toast */}
+      {toast && (
+        <div
+          role="status"
+          className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-full bg-[color:var(--ink)] text-[color:var(--ink-foreground)] ring-1 ring-[color:var(--gold)]/30 shadow-xl flex items-center gap-2 animate-[fade_220ms_ease-out]"
+        >
+          <span className="grid place-items-center h-4 w-4 rounded-full bg-[color:var(--gold)]/20">
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--gold)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          </span>
+          <span className="text-xs font-mono text-[color:var(--gold)]">{toast}</span>
+        </div>
+      )}
     </div>
   );
 }
 
-function InvestForm() {
-  const [amount, setAmount] = useState(10000);
+function InvestForm({ onOpen }: { onOpen: () => void }) {
   const presets = [5000, 10000, 25000, 50000];
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="space-y-3">
-      <label className="text-[10px] font-mono uppercase tracking-widest text-white/60">
-        Your Investment
-      </label>
-      <div className="relative">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[color:var(--gold)] font-mono">$</span>
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
-          className="w-full pl-8 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-xl font-mono font-bold text-[color:var(--gold)] focus:outline-none focus:ring-2 focus:ring-[color:var(--gold)]"
-        />
-      </div>
+    <div className="space-y-3">
+      <p className="text-[10px] font-mono uppercase tracking-widest text-white/60">
+        Plant from
+      </p>
       <div className="grid grid-cols-4 gap-1.5">
         {presets.map((p) => (
           <button
             key={p}
             type="button"
-            onClick={() => setAmount(p)}
-            className={`py-1.5 text-[10px] font-mono uppercase rounded transition-all ${
-              amount === p
-                ? "bg-[color:var(--gold)] text-[color:var(--gold-foreground)]"
-                : "bg-white/5 text-white/60 hover:bg-white/10"
-            }`}
+            onClick={onOpen}
+            className="py-1.5 text-[10px] font-mono uppercase rounded transition-all bg-white/5 text-white/60 hover:bg-white/10"
           >
             ${p / 1000}k
           </button>
         ))}
       </div>
       <button
-        type="submit"
+        type="button"
+        onClick={onOpen}
         className="w-full py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 group"
       >
         Plant Capital
         <span className="group-hover:translate-x-1 transition-transform">→</span>
       </button>
-    </form>
+    </div>
   );
 }
 

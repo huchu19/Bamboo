@@ -37,44 +37,51 @@ video + documents under `web/public/demo/{id}/`.
 ## 🔥 Phase 4: MVP Demo Polish — IN PROGRESS
 
 **Timeline**: 2026-06-02 → 2026-06-16 (target)
-**Status**: 0% — this is where we are now
+**Status**: ~60% — detail page, discovery, and landing path are strong; the
+investment flow and real demo assets are the remaining gaps.
 **Goal**: Make the investor-side demo feel like a finished product. Discovery,
 pitch detail, and the investment flow are the entire surface a reviewer
 touches. Nothing else matters until these are pristine.
 
+> Note: the showcase pitch formerly named "Oxo" is now **EduNexus** (AI-powered
+> adaptive learning). It has a real hosted video + poster via
+> `web/lib/demo-assets.json` (Vercel Blob). Ledgr and Northbound still fall
+> back to gradient placeholders.
+
 ### 4.1 Three real demo pitches (HIGHEST PRIORITY)
-- [ ] Record / source 60s pitch videos for Oxo, Ledgr, Northbound
-- [ ] Drop into `web/public/demo/{id}/pitch.mp4` (already wired via `videoUrl`)
-- [ ] Author proper PDFs: deck, financials, supporting docs (3 each)
-- [ ] Generate poster frames `poster.jpg` for each video
+- [x] EduNexus 60s pitch video + poster wired via `demo-assets.json`
+- [ ] Source video + poster for Ledgr and Northbound (still empty strings)
+- [ ] Author proper PDFs: deck, financials, supporting docs (3 each) — **all
+      `documents[].url` currently 404 (no files in `web/public/demo/{id}/`)**
 - [ ] Verify each opens correctly from `/discover/{id}`
 
 ### 4.2 Discovery feed polish
-- [ ] Hover/focus states feel premium on `DiscoverPitchCard`
+- [x] Hover/focus states on `DiscoverPitchCard`
+- [x] `posterUrl` thumbnails on grid cards
+- [x] Ticker animation
 - [ ] Empty-state illustration tightened
-- [ ] Ticker animation tuned (current speed, contrast)
-- [ ] Skeleton loading states (`PitchCardSkeleton` already exists — wire it)
+- [ ] Skeleton loading states (`PitchCardSkeleton` exists — **not yet wired**)
 - [ ] Mobile breakpoints: cards stack cleanly, filters collapse to drawer
 
 ### 4.3 Pitch detail page polish
-- [ ] HTML5 video player styling (custom controls or polished defaults)
-- [ ] Document list cards with file-type icons, hover affordance
-- [ ] Funding progress visual upgrade (use `BambooProgress` consistently)
-- [ ] Traction sparkline → richer `EquityChart` integration
-- [ ] Sticky "Invest" CTA on scroll (desktop side rail, mobile bottom bar)
-- [ ] Founder block links to `/founder/{id}` with full bio
+- [x] HTML5 video player styling (custom `PitchVideoPlayer`)
+- [x] Funding progress / `EquityChart` integration on traction section
+- [x] Sticky "Invest" CTA (desktop side rail + mobile bottom bar)
+- [x] Founder block links to `/founder/{id}`
+- [ ] Document list cards: file-type icons + hover, hide/disable when file absent
 
-### 4.4 Investment flow polish (still stubbed)
+### 4.4 Investment flow polish — ⬅ NEXT UP (weakest area)
 - [ ] 4-step modal: amount → review → confirm → success
+      (currently a single input whose submit does nothing)
 - [ ] Equity preview updates live as user types
 - [ ] Confetti / success animation on confirm (subtle, branded)
 - [ ] Mock investment writes to localStorage so it persists for the demo
 - [ ] Toast confirming "investment recorded"
 
 ### 4.5 Landing page demo path
-- [ ] Featured pitch hero (currently `featured-pitch.jpg` is unused)
-- [ ] "Walk the Grove" CTA goes straight to `/discover` (no login wall)
-- [ ] Removed any auth-gated copy that no longer applies
+- [x] "Walk the Grove" CTA goes straight to `/discover` (no login wall)
+- [x] Auth-gated copy audited
+- [ ] Featured pitch hero polish (`featured-pitch.jpg`)
 
 ### Success Criteria
 - A reviewer can click from landing → discover → pitch detail → invest → success
@@ -139,7 +146,7 @@ secondary market, tax reporting.
 Phase 1 (Foundation)             │████████████████████████│ ✅ DONE
 Phase 2 (Auth & Inventor build)  │████████████████████████│ ✅ DONE (bypassed)
 Phase 3 (Investor build)         │████████████████████████│ ✅ DONE (mocked)
-Phase 4 (MVP Demo Polish)        │██░░░░░░░░░░░░░░░░░░░░░░│ 🔥 NOW
+Phase 4 (MVP Demo Polish)        │██████████████░░░░░░░░░░│ 🔥 NOW (~60%)
 Phase 5 (Inventor Demo Polish)   │░░░░░░░░░░░░░░░░░░░░░░░░│ ⏭  NEXT
 Phase 6 (Re-enable Auth)         │░░░░░░░░░░░░░░░░░░░░░░░░│ 🔐 POST-DEMO
 Phase 7 (Mobile)                 │░░░░░░░░░░░░░░░░░░░░░░░░│ 📱 DEFERRED
@@ -158,5 +165,5 @@ Phase 8 (Stripe + extras)        │░░░░░░░░░░░░░░�
 
 ---
 
-**Last Updated**: 2026-06-02
+**Last Updated**: 2026-06-09
 **Owned By**: Hussain Naqvi

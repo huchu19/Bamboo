@@ -22,41 +22,46 @@ Currently reads from `web/lib/mock-pitches.ts`.
 
 ---
 
-## 🔥 Phase 4: MVP Demo Polish — IN PROGRESS
+## 🔥 Phase 4: MVP Demo Polish — IN PROGRESS (~60%)
+
+> Showcase pitch "Oxo" was renamed **EduNexus**. Real assets are wired via
+> `web/lib/demo-assets.json` (Vercel Blob URLs), not local `/public/demo` files.
 
 ### 4.1 Three real demo pitches (BLOCKER for demo day)
-- [ ] Oxo: 60s pitch video at `web/public/demo/oxo/pitch.mp4`
-- [ ] Oxo: `poster.jpg`, `deck.pdf`, `financials.pdf`, `unit-economics.pdf`
-- [ ] Ledgr: video, poster, deck, market analysis, regulatory memo
-- [ ] Northbound: video, poster, deck, whitepaper, LCA report
-- [ ] Verify each `/discover/{id}` page plays the video and opens the PDFs
+- [x] EduNexus: hosted 60s video + poster via `demo-assets.json`
+- [ ] Ledgr: video + poster (empty strings → gradient fallback)
+- [ ] Northbound: video + poster (empty strings → gradient fallback)
+- [ ] PDFs: every `documents[].url` 404s — no files exist under
+      `web/public/demo/{id}/`. Author or stub deck/financials/supporting docs.
+- [ ] Verify each `/discover/{id}` page plays video and opens PDFs
 
 ### 4.2 Discovery polish
-- [ ] Wire `PitchCardSkeleton` into discovery loading state
-- [ ] Card hover/focus refinements
-- [ ] Ticker speed/contrast pass
+- [x] Card hover/focus refinements (`DiscoverPitchCard`)
+- [x] `posterUrl` thumbnails on grid cards
+- [x] Ticker
+- [ ] Wire `PitchCardSkeleton` into discovery loading state (component unused)
 - [ ] Mobile filter drawer
 - [ ] Empty-state polish
 
 ### 4.3 Pitch detail polish
-- [ ] Custom video player styling
-- [ ] Document list cards with icons + hover
-- [ ] `BambooProgress` for funding bar (replace any ad-hoc bars)
-- [ ] `EquityChart` integration on traction section
-- [ ] Sticky invest CTA (desktop rail / mobile bottom)
-- [ ] Founder block → `/founder/{id}` link with bio
+- [x] Custom video player styling (`PitchVideoPlayer`)
+- [x] `EquityChart` integration on traction section
+- [x] Sticky invest CTA (desktop rail + mobile bottom bar)
+- [x] Founder block → `/founder/{id}` link
+- [ ] Document list cards with icons + hover (and hide when file absent)
 
-### 4.4 Investment flow
+### 4.4 Investment flow — ⬅ ACTIVE
 - [ ] 4-step modal: amount → review → confirm → success
+      (today: single input, `onSubmit` does nothing)
 - [ ] Live equity preview
 - [ ] Subtle success animation
-- [ ] Persist mock investments to `localStorage`
+- [ ] Persist mock investments to `localStorage` (new `investment-store.ts`)
 - [ ] Success toast
 
 ### 4.5 Landing page demo path
-- [ ] Featured pitch hero using `featured-pitch.jpg`
-- [ ] "Walk the Grove" CTA → `/discover` (no auth wall)
-- [ ] Audit copy for stale auth references
+- [x] "Walk the Grove" CTA → `/discover` (no auth wall)
+- [x] Audit copy for stale auth references
+- [ ] Featured pitch hero polish using `featured-pitch.jpg`
 
 ---
 
@@ -115,6 +120,7 @@ Currently reads from `web/lib/mock-pitches.ts`.
 - ✅ Next.js dev build passes
 - ✅ Expo configured
 - ✅ Firebase scaffolded (unused in dev mode)
+- ✅ Vercel-clean build (`.vercelignore`, `vercel.json`, stripe stub guarded)
 - [ ] Deploy demo to Vercel under preview URL
 
 ---
@@ -123,7 +129,7 @@ Currently reads from `web/lib/mock-pitches.ts`.
 
 1. **Auth bypass leakage**: confirm `NEXT_PUBLIC_DEV_BYPASS_AUTH` defaults to
    `false` in any production deploy
-2. **Mock investments not persisted yet** — need localStorage layer
+2. **Mock investments not persisted yet** — building `investment-store.ts` now
 3. **Firebase rules**: still default test mode (revisit in Phase 6)
 4. **Admin panel**: no UI for verified-badge approval (post-MVP)
 5. **Mobile**: deferred entirely until web demo locks
@@ -145,4 +151,4 @@ cd web && npx tsc --noEmit
 
 ---
 
-**Last Updated**: 2026-06-02
+**Last Updated**: 2026-06-09
