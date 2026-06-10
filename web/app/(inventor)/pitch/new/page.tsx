@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useDraftPitches } from '@/lib/draft-pitches-store';
 import type { PitchCategory } from '@/types';
 
 const PITCH_CATEGORIES: { value: PitchCategory; label: string; emoji: string }[] = [
@@ -21,7 +22,8 @@ const PITCH_CATEGORIES: { value: PitchCategory; label: string; emoji: string }[]
 
 export default function CreatePitchPage() {
   const router = useRouter();
-  const { firebaseUser, user } = useAuth();
+  const { firebaseUser, user, devBypass } = useAuth();
+  const { save: saveDraft } = useDraftPitches();
 
   const [step, setStep] = useState<
     'basic' | 'video' | 'documents' | 'funding' | 'review' | 'payment' | 'confirmation'
@@ -93,6 +95,38 @@ export default function CreatePitchPage() {
   const handleSubmit = async () => {
     if (!firebaseUser) return;
     setLoading(true);
+
+    // Dev-bypass: persist to localStorage instead of Firebase. The wizard's
+    // visible behaviour (progress bar, confirmation step) stays identical.
+    if (devBypass) {
+      try {
+        setUploadStatus('Saving draft locally…');
+        setUploadProgress(40);
+        await new Promise((r) => setTimeout(r, 250));
+        setUploadProgress(80);
+        saveDraft({
+          title: formData.title,
+          tagline: formData.tagline,
+          description: formData.description,
+          category: formData.category,
+          tags: formData.tags,
+          fundingGoalCents: parseInt(formData.fundingGoal || '0', 10) * 100,
+          minimumInvestmentCents: parseInt(formData.minimumInvestment || '0', 10) * 100,
+          equityOffered: parseFloat(formData.equityOffered || '0'),
+          videoFileName: videoFile?.name,
+          documentFileNames: documents.map((d) => d.name),
+        });
+        setUploadProgress(100);
+        setStep('confirmation');
+      } catch (error) {
+        console.error('Failed to save draft pitch:', error);
+        alert('Could not save your pitch locally. Please try again.');
+      } finally {
+        setLoading(false);
+        setUploadStatus('');
+      }
+      return;
+    }
 
     try {
       const { collection, doc } = await import('firebase/firestore');

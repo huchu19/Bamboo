@@ -7,22 +7,23 @@ import { BambooDivider } from '@/components/bamboo/BambooDivider';
 import { DiscoverPitchCard } from '@/components/bamboo/DiscoverPitchCard';
 import { getPitch } from '@/lib/mock-pitches';
 import {
-  INVESTMENTS,
   ACTIVITY,
   PORTFOLIO_TARGET,
 } from '@/lib/mock-investor-data';
 import { useWatchlist } from '@/lib/watchlist-store';
+import { useInvestments } from '@/lib/investment-store';
 
 export default function InvestorDashboard() {
-  const investments = INVESTMENTS.map((inv) => ({
-    ...inv,
-    pitch: getPitch(inv.pitchId)!,
-  }));
+  const { investments: rawInvestments } = useInvestments();
+  const investments = rawInvestments
+    .map((inv) => ({ ...inv, pitch: getPitch(inv.pitchId) }))
+    .filter((i): i is typeof i & { pitch: NonNullable<typeof i.pitch> } => Boolean(i.pitch));
 
   const totalPlanted = investments.reduce((sum, inv) => sum + inv.amount, 0);
   const activeSprouts = investments.filter((i) => i.status === 'completed').length;
-  const avgEquity =
-    investments.reduce((sum, i) => sum + i.equityPct, 0) / investments.length;
+  const avgEquity = investments.length
+    ? investments.reduce((sum, i) => sum + i.equityPct, 0) / investments.length
+    : 0;
   const rootScoreAvg = 88; // mock — would be derived from pitch quality signals
   const best = [...investments].sort((a, b) => b.amount - a.amount)[0];
   const portfolioPct = Math.min(100, Math.round((totalPlanted / PORTFOLIO_TARGET) * 100));
@@ -94,8 +95,8 @@ export default function InvestorDashboard() {
           />
           <StatTile
             label="Best Performer"
-            value={best.pitch.company}
-            sub={`+${best.pitch.raised}% raised`}
+            value={best?.pitch.company ?? '—'}
+            sub={best ? `+${best.pitch.raised}% raised` : 'No investments yet'}
           />
         </div>
       </section>

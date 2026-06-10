@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { SiteNav } from "@/components/bamboo/SiteNav";
 import { BambooLeaf, RootGlyph } from "@/components/bamboo/BambooIcons";
 import { DiscoverPitchCard } from "@/components/bamboo/DiscoverPitchCard";
@@ -14,6 +14,7 @@ export default function DiscoverPage() {
   const [sector, setSector] = useState("All");
   const [stage, setStage] = useState("All Stages");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const filtered = useMemo(
     () =>
@@ -25,6 +26,30 @@ export default function DiscoverPage() {
       ),
     [sector, stage, verifiedOnly],
   );
+
+  const activeFilterCount =
+    (sector !== "All" ? 1 : 0) + (stage !== "All Stages" ? 1 : 0) + (verifiedOnly ? 1 : 0);
+
+  function clearFilters() {
+    setSector("All");
+    setStage("All Stages");
+    setVerifiedOnly(false);
+  }
+
+  // Lock body scroll while the mobile filter drawer is open.
+  useEffect(() => {
+    if (!mobileFiltersOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileFiltersOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [mobileFiltersOpen]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,7 +82,7 @@ export default function DiscoverPage() {
               Every grove starts with one seed. Walk the rows, find the next one.
             </p>
           </div>
-          <div className="flex items-center gap-3 text-xs font-mono">
+          <div className="hidden md:flex items-center gap-3 text-xs font-mono">
             <button
               onClick={() => setVerifiedOnly((v) => !v)}
               className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 cursor-pointer ${
@@ -72,7 +97,36 @@ export default function DiscoverPage() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col md:flex-row gap-4">
+        {/* Mobile: single Filters button. Desktop: inline filter rows. */}
+        <div className="mt-8 md:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileFiltersOpen(true)}
+            className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-secondary ring-1 ring-[color:var(--border)] text-left transition-all active:scale-[0.99]"
+            aria-label="Open filters"
+          >
+            <span className="flex items-center gap-2">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 6h18" />
+                <path d="M7 12h10" />
+                <path d="M11 18h2" />
+              </svg>
+              <span className="text-xs font-mono uppercase tracking-widest">Filters</span>
+            </span>
+            <span className="flex items-center gap-2">
+              {activeFilterCount > 0 && (
+                <span className="inline-grid place-items-center min-w-[20px] h-5 px-1.5 rounded-full bg-[color:var(--gold)] text-[color:var(--gold-foreground)] text-[10px] font-mono font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                {filtered.length} seeds
+              </span>
+            </span>
+          </button>
+        </div>
+
+        <div className="hidden md:flex mt-8 flex-col md:flex-row gap-4">
           <div className="flex gap-2 flex-wrap">
             {SECTORS.map((s) => (
               <button
@@ -121,11 +175,7 @@ export default function DiscoverPage() {
             </p>
             <button
               type="button"
-              onClick={() => {
-                setSector("All");
-                setStage("All Stages");
-                setVerifiedOnly(false);
-              }}
+              onClick={clearFilters}
               className="mt-6 px-5 py-2.5 text-xs font-bold uppercase tracking-widest border border-[color:var(--input)] rounded-lg hover:bg-secondary transition-all inline-flex items-center gap-2 cursor-pointer"
             >
               <BambooLeaf size={12} className="text-[color:var(--gold)]" />
@@ -142,7 +192,135 @@ export default function DiscoverPage() {
           </div>
         )}
       </main>
+
+      {/* Mobile filter drawer */}
+      {mobileFiltersOpen && (
+        <div
+          className="fixed inset-0 z-50 md:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Filters"
+        >
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fade_180ms_ease-out]"
+            onClick={() => setMobileFiltersOpen(false)}
+          />
+          <div className="absolute bottom-0 inset-x-0 bg-background ring-1 ring-[color:var(--border)] rounded-t-3xl p-6 pt-3 max-h-[85vh] overflow-y-auto animate-[rise_220ms_cubic-bezier(0.16,1,0.3,1)]">
+            <div className="flex justify-center pb-3">
+              <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-muted" />
+            </div>
+
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-display text-2xl uppercase tracking-tighter">Filters</h2>
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen(false)}
+                aria-label="Close filters"
+                className="text-muted-foreground hover:text-foreground transition-colors text-lg leading-none"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <section>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+                  Verification
+                </p>
+                <button
+                  onClick={() => setVerifiedOnly((v) => !v)}
+                  className={`w-full px-4 py-3 rounded-xl border transition-all flex items-center justify-between text-sm cursor-pointer ${
+                    verifiedOnly
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-[color:var(--input)]"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <BambooLeaf size={13} className={verifiedOnly ? "text-[color:var(--gold)]" : "opacity-60"} />
+                    Root-Verified only
+                  </span>
+                  <span className={`h-5 w-9 rounded-full transition-colors relative ${verifiedOnly ? "bg-[color:var(--gold)]" : "bg-muted"}`}>
+                    <span
+                      className={`absolute top-0.5 h-4 w-4 rounded-full bg-background transition-transform ${verifiedOnly ? "translate-x-4" : "translate-x-0.5"}`}
+                    />
+                  </span>
+                </button>
+              </section>
+
+              <section>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+                  Sector
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  {SECTORS.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSector(s)}
+                      className={`px-3 py-2 text-xs font-mono uppercase tracking-widest rounded-full transition-all cursor-pointer ${
+                        sector === s
+                          ? "bg-foreground text-background"
+                          : "bg-secondary text-muted-foreground"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              <section>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+                  Stage
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  {STAGES.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setStage(s)}
+                      className={`px-3 py-2 text-xs font-mono uppercase tracking-widest rounded-full transition-all cursor-pointer ${
+                        stage === s
+                          ? "bg-foreground text-background"
+                          : "bg-secondary text-muted-foreground"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            <div className="mt-8 grid grid-cols-2 gap-3 sticky bottom-0 bg-background pt-4">
+              <button
+                type="button"
+                onClick={clearFilters}
+                disabled={activeFilterCount === 0}
+                className="py-3 rounded-lg text-xs font-mono uppercase tracking-widest border border-[color:var(--input)] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                Clear
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen(false)}
+                className="py-3 rounded-lg text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)]"
+              >
+                Show {filtered.length} seeds
+              </button>
+            </div>
+          </div>
+
+          <style jsx>{`
+            @keyframes fade {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes rise {
+              from { opacity: 0; transform: translateY(40px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   );
 }
-
