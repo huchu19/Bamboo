@@ -14,6 +14,12 @@ export type Investment = {
   equityPct: number;
   date: string;
   status: 'completed' | 'processing';
+  /**
+   * When true, the investor chose to hide their identity from the founder and
+   * any public-facing list. The investor's own dashboard still shows the full
+   * record — anonymity is one-way, viewer-dependent.
+   */
+  anonymous: boolean;
 };
 
 /** Seed from the dashboard mocks so portfolio numbers stay consistent. */
@@ -25,6 +31,7 @@ const SEED: Investment[] = INVESTMENTS.map((i: MockInvestment) => ({
   equityPct: i.equityPct,
   date: i.date,
   status: i.status,
+  anonymous: Boolean(i.anonymous),
 }));
 
 type Listener = () => void;
@@ -95,6 +102,7 @@ export function useInvestments() {
       company: string;
       amount: number;
       equityPct: number;
+      anonymous?: boolean;
     }): Investment => {
       const created: Investment = {
         id: `inv-${Date.now()}`,
@@ -104,6 +112,7 @@ export function useInvestments() {
         equityPct: entry.equityPct,
         date: new Date().toISOString().slice(0, 10),
         status: 'completed',
+        anonymous: Boolean(entry.anonymous),
       };
       write([created, ...read()]);
       return created;

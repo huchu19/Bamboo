@@ -6,6 +6,7 @@ import { SiteNav } from "@/components/bamboo/SiteNav";
 import { BambooLeaf } from "@/components/bamboo/BambooIcons";
 import { BambooProgress } from "@/components/bamboo/BambooProgress";
 import { getPitchesByFounder, PITCHES, type Pitch } from "@/lib/mock-pitches";
+import { useInvestments } from "@/lib/investment-store";
 
 const FOUNDER_ID = "hussain-naqvi"; // demo inventor — owns EduNexus
 
@@ -118,13 +119,50 @@ function Overview({ pitch, raisedAmount }: { pitch: Pitch; raisedAmount: number 
     { k: "Inquiries", v: inquiries.toString(), trend: "+8" },
   ];
 
-  // Synthesize inbound inquiries from the investor count.
-  const inbound = [
-    { name: "Cassia Capital", note: "Wants intro call this week", amount: "$250K", time: "2h" },
-    { name: "Marcus Ng", note: "Reviewing financials", amount: "$50K", time: "6h" },
-    { name: "Veritas Syndicate", note: "Soft commit · pending NDA", amount: "$500K", time: "1d" },
-    { name: "Olivia Bishop", note: "Requested cap table", amount: "$25K", time: "2d" },
-  ].slice(0, Math.min(4, Math.ceil(inquiries / 12)));
+  // Pull real recorded investments for *this* pitch from the local store.
+  // Anonymous investments are rendered as "Anonymous backer" with a masked
+  // avatar — the founder still sees the amount because they need it.
+  const { investments: liveInvestments } = useInvestments();
+  type InboundRow = {
+    id: string;
+    name: string;
+    note: string;
+    amount: string;
+    time: string;
+    anonymous?: boolean;
+  };
+
+  const liveInbound: InboundRow[] = liveInvestments
+    .filter((inv) => inv.pitchId === pitch.id)
+    .slice(0, 4)
+    .map((inv) => ({
+      id: inv.id,
+      name: inv.anonymous ? "Anonymous backer" : "Recent backer",
+      note: inv.anonymous
+        ? "Identity hidden · committed via Bamboo"
+        : `Soft commit · ${(inv.equityPct * 100).toFixed(2)}% equity`,
+      amount: `$${inv.amount.toLocaleString()}`,
+      time: "just now",
+      anonymous: inv.anonymous,
+    }));
+
+  const synthetic: InboundRow[] = [
+    { id: "syn-cassia",  name: "Cassia Capital",      note: "Wants intro call this week",  amount: "$250K", time: "2h" },
+    { id: "syn-marcus",  name: "Marcus Ng",           note: "Reviewing financials",        amount: "$50K",  time: "6h" },
+    { id: "syn-veritas", name: "Veritas Syndicate",   note: "Soft commit · pending NDA",   amount: "$500K", time: "1d" },
+    { id: "syn-olivia",  name: "Olivia Bishop",       note: "Requested cap table",         amount: "$25K",  time: "2d" },
+  ];
+
+  // Live entries take the top slots; synthetic ones fill any remaining slots
+  // up to a max of 4 so the founder console always feels alive.
+  const synthSliceCount = Math.max(
+    0,
+    Math.min(4, Math.ceil(inquiries / 12)) - liveInbound.length,
+  );
+  const inbound: InboundRow[] = [
+    ...liveInbound,
+    ...synthetic.slice(0, synthSliceCount),
+  ].slice(0, 4);
 
   // Root score derived from pitch.verified + raised progress.
   const rootScore = pitch.verified ? 92 : 67;
@@ -185,13 +223,33 @@ function Overview({ pitch, raisedAmount }: { pitch: Pitch; raisedAmount: number 
           ) : (
             <ul className="divide-y divide-[color:var(--border)]">
               {inbound.map((row) => (
-                <li key={row.name} className="flex items-center justify-between p-5 hover:bg-secondary transition-all">
+                <li key={row.id} className="flex items-center justify-between p-5 hover:bg-secondary transition-all">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-full bg-[color:var(--ink)] text-[color:var(--ink-foreground)] flex items-center justify-center font-bold text-xs">
-                      {row.name.slice(0, 2)}
-                    </div>
+                    {row.anonymous ? (
+                      <div
+                        className="size-9 rounded-full bg-secondary text-muted-foreground flex items-center justify-center ring-1 ring-[color:var(--border)]"
+                        title="Identity hidden by investor"
+                      >
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M3 3l18 18" />
+                          <path d="M10.6 5.1A10.5 10.5 0 0112 5c5 0 9.3 3.3 11 8a17 17 0 01-2.8 4.2" />
+                          <path d="M6.6 6.6A17 17 0 001 13c1.7 4.7 6 8 11 8 1.6 0 3.1-.3 4.5-.9" />
+                        </svg>
+                      </div>
+                    ) : (
+                      <div className="size-9 rounded-full bg-[color:var(--ink)] text-[color:var(--ink-foreground)] flex items-center justify-center font-bold text-xs">
+                        {row.name.slice(0, 2)}
+                      </div>
+                    )}
                     <div>
-                      <p className="font-bold text-sm">{row.name}</p>
+                      <p className="font-bold text-sm flex items-center gap-1.5">
+                        {row.name}
+                        {row.anonymous && (
+                          <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">
+                            Hidden
+                          </span>
+                        )}
+                      </p>
                       <p className="text-xs text-muted-foreground">{row.note}</p>
                     </div>
                   </div>

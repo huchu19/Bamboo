@@ -153,6 +153,7 @@ export const createInvestment = async (data: CreateInvestmentInput): Promise<str
       amount: data.amount,
       equityPortion,
       status: 'completed',
+      anonymous: Boolean(data.anonymous),
       createdAt: Date.now(),
       updatedAt: Date.now(),
       completedAt: Date.now(),

@@ -139,6 +139,19 @@ export default function InvestorDashboard() {
                       Processing
                     </span>
                   )}
+                  {inv.anonymous && (
+                    <span
+                      className="text-[9px] font-mono uppercase tracking-widest bg-[color:var(--ink)] text-[color:var(--ink-foreground)] px-2 py-0.5 rounded-full inline-flex items-center gap-1"
+                      title="Hidden from founder and public lists"
+                    >
+                      <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M3 3l18 18" />
+                        <path d="M10.6 5.1A10.5 10.5 0 0112 5c5 0 9.3 3.3 11 8a17 17 0 01-2.8 4.2" />
+                        <path d="M6.6 6.6A17 17 0 001 13c1.7 4.7 6 8 11 8 1.6 0 3.1-.3 4.5-.9" />
+                      </svg>
+                      Anonymous
+                    </span>
+                  )}
                 </div>
                 <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-1">
                   Planted {new Date(inv.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

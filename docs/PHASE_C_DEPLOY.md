@@ -118,6 +118,32 @@ Check the Firestore log under **Rules → Rules playground**.
 
 ---
 
+## A note on anonymous investing
+
+The `investments` collection now requires every doc to carry an `anonymous`
+boolean. Pre-existing rows (if any) without it will fail rule validation on
+read. None should exist yet — but if you ever import a legacy CSV, backfill
+the field first:
+
+```js
+// One-off admin script
+const snap = await db.collection('investments').get();
+for (const doc of snap.docs) {
+  if (doc.data().anonymous === undefined) {
+    await doc.ref.update({ anonymous: false });
+  }
+}
+```
+
+Anonymity is enforced at the **UI layer only** in this iteration. Inventors
+can technically read the underlying `investorId` field via Firestore directly
+(rules operate at the document level, not field level). Phase 8 will move
+investment reads for non-owners through a Callable Function that returns a
+redacted view when `anonymous=true`. Until that lands, be honest with
+investors about the limit.
+
+---
+
 ## Rollback
 
 If something breaks at scale:
