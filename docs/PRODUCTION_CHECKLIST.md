@@ -36,6 +36,9 @@ Walk this top-to-bottom; mark items off as they pass.
 - [ ] Newly created pitch appears on `/discover/{id}` with documents
 - [ ] Watchlist toggle persists across refresh
 - [ ] Invest modal records → inventor dashboard counter ticks up
+- [ ] Invest modal "Investing as Anonymous backer" toggle: founder sees
+  "Anonymous backer" + masked avatar; investor's own dashboard shows the
+  Anonymous pill on that row
 - [ ] Mobile filter drawer opens, applies filters, dismisses on Escape
 
 ## Defensive
@@ -60,3 +63,6 @@ Walk this top-to-bottom; mark items off as they pass.
 - [ ] Set a Vercel cron for `firebase deploy --only firestore:indexes` when
   you touch `firestore.indexes.json` (it's a no-op when no changes).
 - [ ] Decide on Stripe Connect vs. simple charges — see MILESTONES.md Phase 8.
+- [ ] Build the Callable Function that redacts `investorId` on investment reads
+  when `anonymous=true` and the caller is not the investor. Today's UI-only
+  anonymity is good enough for an MVP but not for a real privacy promise.

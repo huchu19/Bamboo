@@ -5,6 +5,8 @@ export type MockInvestment = {
   equityPct: number;
   date: string;
   status: "completed" | "processing";
+  /** When true, hide the investor from the founder + public surfaces. */
+  anonymous?: boolean;
 };
 
 export type ActivityKind = "tick" | "doc" | "back";
@@ -17,7 +19,7 @@ export type ActivityEntry = {
 
 export const INVESTMENTS: MockInvestment[] = [
   { id: "inv-1", pitchId: "edunexus",   amount: 25000, equityPct: 0.14, date: "2026-02-14", status: "completed" },
-  { id: "inv-2", pitchId: "ledgr",      amount: 50000, equityPct: 0.09, date: "2026-03-22", status: "completed" },
+  { id: "inv-2", pitchId: "ledgr",      amount: 50000, equityPct: 0.09, date: "2026-03-22", status: "completed", anonymous: true },
   { id: "inv-3", pitchId: "northbound", amount: 15000, equityPct: 0.02, date: "2026-05-01", status: "processing" },
 ];
 

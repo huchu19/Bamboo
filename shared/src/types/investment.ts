@@ -17,6 +17,14 @@ export interface Investment {
   // Status
   status: InvestmentStatus;
 
+  /**
+   * When true, the investor opted to hide their identity from the founder and
+   * any public-facing list. `investorId` still holds the real UID for the
+   * investor's portfolio + audit/compliance. Visibility is enforced in the UI
+   * + (eventually) Firestore security rules.
+   */
+  anonymous: boolean;
+
   // Payment reference
   stripePaymentIntentId?: string;
   paymentMethod?: string;
@@ -32,5 +40,7 @@ export interface CreateInvestmentInput {
   investorId: string;
   pitchId: string;
   amount: number; // in cents
+  /** Defaults to false when omitted. */
+  anonymous?: boolean;
   notes?: string;
 }

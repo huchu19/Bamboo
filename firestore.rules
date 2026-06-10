@@ -110,6 +110,13 @@ service cloud.firestore {
     // ────────────────────────────────────────────────────────────────────────
     // investments — investor-owned ledger entries. The pitch counter update
     // above complements this rule: both halves of the transaction must pass.
+    //
+    // NOTE on `anonymous`: the flag is enforced at the UI layer today; in
+    // this collection the inventor of the pitch can technically read the
+    // `investorId` field because Firestore rules operate at the document
+    // level. Phase 8 will move investment reads for non-owners behind a
+    // Callable Function that returns a redacted view when anonymous=true.
+    // Until then, the UI is the trust boundary.
     // ────────────────────────────────────────────────────────────────────────
 
     match /investments/{investmentId} {
@@ -120,7 +127,8 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && incomingDoc().investorId == request.auth.uid
         && incomingDoc().amount > 0
-        && incomingDoc().status == 'completed';
+        && incomingDoc().status == 'completed'
+        && incomingDoc().anonymous is bool;
 
       // Investments are immutable after creation. Refunds happen via a
       // server-side function in Phase 8.

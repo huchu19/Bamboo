@@ -37,6 +37,7 @@ export function InvestModal({
   const { record } = useInvestments();
   const [step, setStep] = useState<Step>('amount');
   const [amount, setAmount] = useState(10000);
+  const [anonymous, setAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const goalDollars = useMemo(() => parseAmount(pitch.asking), [pitch.asking]);
@@ -50,6 +51,7 @@ export function InvestModal({
     if (open) {
       setStep('amount');
       setAmount(10000);
+      setAnonymous(false);
       setSubmitting(false);
     }
   }, [open]);
@@ -82,6 +84,7 @@ export function InvestModal({
         company: pitch.company,
         amount,
         equityPct,
+        anonymous,
       });
       setSubmitting(false);
       setStep('success');
@@ -217,6 +220,72 @@ export function InvestModal({
                 </div>
               ))}
             </dl>
+
+            {/* Anonymity toggle — investors can hide their identity from the
+                founder and any public-facing surface. Bamboo still records the
+                real investor ID for compliance and the investor's own portfolio. */}
+            <button
+              type="button"
+              onClick={() => setAnonymous((a) => !a)}
+              aria-pressed={anonymous}
+              className={`group w-full flex items-center justify-between gap-3 rounded-xl px-4 py-3 ring-1 transition-all ${
+                anonymous
+                  ? 'bg-[color:var(--gold)]/10 ring-[color:var(--gold)]/40'
+                  : 'bg-white/5 ring-white/10 hover:bg-white/10'
+              }`}
+            >
+              <span className="flex items-center gap-2.5 text-left">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke={anonymous ? 'var(--gold)' : 'rgba(255,255,255,0.55)'}
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  className="shrink-0"
+                >
+                  {anonymous ? (
+                    <>
+                      <path d="M3 3l18 18" />
+                      <path d="M10.6 5.1A10.5 10.5 0 0112 5c5 0 9.3 3.3 11 8a17 17 0 01-2.8 4.2" />
+                      <path d="M6.6 6.6A17 17 0 001 13c1.7 4.7 6 8 11 8 1.6 0 3.1-.3 4.5-.9" />
+                      <path d="M9.9 9.9A3 3 0 0014 14" />
+                    </>
+                  ) : (
+                    <>
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </>
+                  )}
+                </svg>
+                <span className="flex flex-col">
+                  <span className="text-[11px] font-bold text-white/90">
+                    {anonymous ? 'Investing as Anonymous backer' : 'Show my name to the founder'}
+                  </span>
+                  <span className="text-[10px] font-mono text-white/45 leading-tight mt-0.5">
+                    {anonymous
+                      ? 'Founder sees "Anonymous backer" only. Your portfolio is unchanged.'
+                      : 'Tap to hide your identity from the founder & public lists.'}
+                  </span>
+                </span>
+              </span>
+              <span
+                className={`shrink-0 h-5 w-9 rounded-full transition-colors relative ${
+                  anonymous ? 'bg-[color:var(--gold)]' : 'bg-white/15'
+                }`}
+                aria-hidden="true"
+              >
+                <span
+                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white/95 transition-transform ${
+                    anonymous ? 'translate-x-4' : 'translate-x-0.5'
+                  }`}
+                />
+              </span>
+            </button>
+
             <p className="text-[10px] font-mono text-white/40 text-center leading-relaxed">
               Demo only — no real funds move. Powered by Stripe · escrow until close.
             </p>
@@ -263,6 +332,16 @@ export function InvestModal({
             <p className="text-xs text-white/55 mt-1">
               You now hold an est. {(equityPct * 100).toFixed(3)}% stake in {pitch.company}.
             </p>
+            {anonymous && (
+              <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)]/90 bg-[color:var(--gold)]/10 ring-1 ring-[color:var(--gold)]/30 rounded-full px-3 py-1">
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3 3l18 18" />
+                  <path d="M10.6 5.1A10.5 10.5 0 0112 5c5 0 9.3 3.3 11 8a17 17 0 01-2.8 4.2" />
+                  <path d="M6.6 6.6A17 17 0 001 13c1.7 4.7 6 8 11 8 1.6 0 3.1-.3 4.5-.9" />
+                </svg>
+                Visible to the founder as Anonymous
+              </p>
+            )}
             <button
               type="button"
               onClick={onClose}
