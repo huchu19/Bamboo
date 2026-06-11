@@ -47,14 +47,15 @@ Carried forward:
 
 ---
 
-## 💳 Phase 6: Real Payments (Stripe) — IN PROGRESS
+## ✅ Phase 6: Real Payments (Stripe) — DONE (2026-06-11)
 
 **Goal**: Real money can move. Inventors pay a listing fee. Investors commit funds.
 Nothing ships to real users without this.
 
-**Target**: 2026-06-24
-**Status**: parts 1 & 2 done (2026-06-11) — payment rails, listing-fee UI,
-Firestore investor dashboard, Connect stub. Remaining: 6.3 refunds & edge cases.
+**Completed**: 2026-06-11 (ahead of the 2026-06-24 target). Payment rails,
+listing-fee UI, Firestore investor dashboard, Connect stub, refunds, and
+receipt emails are all in. Connect payout *activation* (real `acct_...` id)
+and live keys land with Phase 7 production env setup.
 
 ### 6.1 Listing fee (Inventor → Bamboo)
 - [x] Integrate Stripe Elements for listing fee payment on pitch submission
@@ -92,9 +93,24 @@ Firestore investor dashboard, Connect stub. Remaining: 6.3 refunds & edge cases.
    env-level account.
 
 ### 6.3 Refunds & edge cases
-- [ ] Cancelled pitch → refund all investors
-- [ ] Failed payment → clear investment record
-- [ ] Basic receipt email via Stripe (use built-in Stripe email receipts)
+- [x] Cancelled pitch → refund all investors — `POST /api/pitch/cancel`
+      (ID-token auth, owner-only) closes the pitch and creates Stripe refunds
+      idempotency-keyed per PaymentIntent; the webhook's `charge.refunded`
+      handler marks investments refunded and rolls back pitch counters.
+      Dashboard-issued refunds flow through the same webhook path.
+      Founder dashboard has the Cancel & Refund action (MyPitchesPanel).
+- [x] Failed payment → clear investment record — satisfied by architecture:
+      investments are only ever *created* by the webhook on
+      `payment_intent.succeeded`, so a failed payment never leaves a record
+      to clear (it's audit-logged under `payments/{pi_id}` as `failed`).
+      Both payment surfaces (modal + wizard) support in-place retry.
+- [x] Basic receipt email via Stripe — `receipt_email` set on all
+      PaymentIntents from the signed-in user's email; Stripe sends receipts
+      automatically in live mode.
+
+> ⚠️ The production Stripe webhook endpoint must subscribe to
+> `payment_intent.succeeded`, `payment_intent.payment_failed`, and
+> `charge.refunded`.
 
 ---
 
@@ -188,8 +204,8 @@ Phase 2 (Auth & Inventor)      │███████████████�
 Phase 3 (Investor build)       │████████████████████████│ ✅ DONE
 Phase 4 (Demo Polish)          │████████████████████████│ ✅ DONE
 Phase 5 (Auth + Persistence)   │████████████████████████│ ✅ DONE (Jun 11)
-Phase 6 (Stripe Payments)      │░░░░░░░░░░░░░░░░░░░░░░░░│ 💳 NOW  → Jun 24
-Phase 7 (Hosting + Launch)     │░░░░░░░░░░░░░░░░░░░░░░░░│ 🚀 NEXT → Jun 28
+Phase 6 (Stripe Payments)      │████████████████████████│ ✅ DONE (Jun 11)
+Phase 7 (Hosting + Launch)     │░░░░░░░░░░░░░░░░░░░░░░░░│ 🚀 NOW  → Jun 28
 Phase 8 (Admin + Moderation)   │░░░░░░░░░░░░░░░░░░░░░░░░│ 🔍 SOON → Jul 5
 Phase 9 (Mobile)               │░░░░░░░░░░░░░░░░░░░░░░░░│ 📱 POST-LAUNCH
 Phase 10 (Growth)              │░░░░░░░░░░░░░░░░░░░░░░░░│ 📈 POST-LAUNCH
@@ -201,7 +217,8 @@ Phase 10 (Growth)              │░░░░░░░░░░░░░░░�
 
 Before inviting the first real participant:
 - [x] Phase 5 complete: real auth + Firestore persistence
-- [ ] Phase 6 complete: real payments flowing
+- [x] Phase 6 complete: real payments flowing (live keys + webhook events
+      configured in prod as part of Phase 7)
 - [ ] Phase 7 complete: live domain, production Firebase, error monitoring
 - [ ] Phase 8 complete: admin can moderate pitches before they go live
 - [ ] Zero known P0 bugs

@@ -54,7 +54,7 @@ persistence. Sticky invest CTA. EquityChart on traction section. Confetti on suc
 
 ---
 
-## 💳 Phase 6: Real Payments (Stripe) — IN PROGRESS
+## ✅ Phase 6: Real Payments (Stripe) — DONE (2026-06-11)
 
 > Architecture: client confirms via Stripe Elements; the webhook
 > (`/api/stripe/webhook`) is the single source of truth for fulfilment and
@@ -93,9 +93,20 @@ persistence. Sticky invest CTA. EquityChart on traction section. Confetti on suc
       to a real `acct_...` id; activation steps in MILESTONES.md §6.2
 
 ### 6.3 Refunds & edge cases
-- [ ] Cancelled pitch → trigger refund for all investments
-- [ ] Failed payment → surfaced in payments collection (recorded); UI retry flow
-- [ ] Stripe built-in receipt emails
+- [x] Cancelled pitch → trigger refund for all investments —
+      `POST /api/pitch/cancel` (Bearer ID-token auth via new
+      `verifyBearerToken` in `lib/firebase/admin.ts`); refunds are
+      idempotency-keyed per PaymentIntent; webhook `charge.refunded` marks
+      investments refunded + rolls back counters; `MyPitchesPanel` on the
+      founder dashboard hosts the Cancel & Refund action (real mode only)
+- [x] Failed payment → recorded in `payments/{pi_id}` as `failed`; no
+      investment record is ever created on failure (webhook-only writes);
+      modal + wizard both support in-place retry
+- [x] Stripe built-in receipt emails — `receipt_email` set from the
+      signed-in user's email on all PaymentIntents
+
+> ⚠️ Prod webhook endpoint must subscribe to: `payment_intent.succeeded`,
+> `payment_intent.payment_failed`, `charge.refunded`.
 
 ---
 
