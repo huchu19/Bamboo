@@ -38,7 +38,7 @@ export function InvestModal({
   onRecorded?: (amount: number) => void;
 }) {
   const { record } = useInvestments();
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const [step, setStep] = useState<Step>('amount');
   const [amount, setAmount] = useState(10000);
   const [anonymous, setAnonymous] = useState(false);
@@ -119,6 +119,7 @@ export function InvestModal({
           investorId: user?.uid ?? 'unknown',
           amountCents: Math.round(amount * 100),
           anonymous,
+          email: user?.email ?? firebaseUser?.email ?? undefined,
         }),
       });
       const data = await res.json();

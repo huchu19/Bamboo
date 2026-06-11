@@ -6,8 +6,12 @@
  * this route only opens the payment, it never writes to Firestore.
  *
  * Body:
- *   { type: 'investment', pitchId, investorId, amountCents, anonymous? }
- *   { type: 'listing_fee', pitchId, inventorId }
+ *   { type: 'investment', pitchId, investorId, amountCents, anonymous?, email? }
+ *   { type: 'listing_fee', pitchId, inventorId, email? }
+ *
+ * `email` sets receipt_email on the PaymentIntent — Stripe then emails a
+ * receipt automatically on capture (live mode only; test mode shows the
+ * receipt in the dashboard instead of sending it).
  */
 
 import { NextRequest } from 'next/server';
@@ -38,6 +42,13 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: 'pitchId is required.' }, { status: 400 });
   }
 
+  // Optional payer email for Stripe's automatic receipts. Loose shape check
+  // only — Stripe validates properly and a bad email must not block payment.
+  const email: string | undefined =
+    typeof body.email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)
+      ? body.email
+      : undefined;
+
   const stripe = getStripe();
 
   try {
@@ -64,6 +75,7 @@ export async function POST(request: NextRequest) {
         amount,
         currency: 'usd',
         automatic_payment_methods: { enabled: true },
+        ...(email ? { receipt_email: email } : {}),
         ...(connectAccountId
           ? { transfer_data: { destination: connectAccountId } }
           : {}),
@@ -88,6 +100,7 @@ export async function POST(request: NextRequest) {
         amount: LISTING_FEE_CENTS,
         currency: 'usd',
         automatic_payment_methods: { enabled: true },
+        ...(email ? { receipt_email: email } : {}),
         metadata: {
           type: 'listing_fee',
           pitchId,

@@ -260,6 +260,7 @@ export default function CreatePitchPage() {
           type: 'listing_fee',
           pitchId,
           inventorId: firebaseUser.uid,
+          email: user?.email ?? firebaseUser.email ?? undefined,
         }),
       });
       const data = await res.json();
