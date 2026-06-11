@@ -110,19 +110,32 @@ persistence. Sticky invest CTA. EquityChart on traction section. Confetti on suc
 
 ---
 
-## 🚀 Phase 7: Hosting & Launch — TODO
+## 🚀 Phase 7: Hosting & Launch — IN PROGRESS
 
-- [ ] Deploy to Vercel under custom domain
-- [ ] Configure production env vars (Firebase prod project + Stripe live keys)
+Code-side items landed 2026-06-11; remaining items are dashboard/manual
+actions documented in [docs/PRODUCTION_CHECKLIST.md](./docs/PRODUCTION_CHECKLIST.md).
+
+- [ ] Deploy to Vercel under custom domain (project: `bamboo-xi-ebon.vercel.app`)
+- [ ] Configure production env vars (Firebase prod project + Stripe live keys
+      + webhook events + Sentry DSN — full list in the checklist)
 - [ ] Confirm `NEXT_PUBLIC_DEV_BYPASS_AUTH=false` in Vercel production
 - [ ] Separate Firebase production project (not the dev/test project)
 - [ ] Firebase App Check enabled on production project
 - [ ] Firestore composite indexes deployed to production
-- [ ] Sentry JS error monitoring integrated
+- [x] Sentry JS error monitoring integrated — DSN-gated via Next 16
+      instrumentation files; error boundaries report explicitly; build
+      plugin only engages when a DSN exists
 - [ ] Uptime monitoring configured
-- [ ] Lighthouse audit: 90+ on `/` and `/discover`
-- [ ] Invite-only access (whitelist / invite code) for first 100 users
-- [ ] Welcome email for new signups
+- [x] Lighthouse audit run (local prod build): `/` 94/94/100/100,
+      `/discover` 85/94/100/100 — `/discover` gap is LCP-only; re-run on
+      the deployed URL. Lazy-loading Sentry took `/` from 74 → 94.
+- [x] Invite-only access — `invites` collection + generator script
+      (`scripts/generate-invites.mjs`), `/api/invites/validate` +
+      `/api/invites/redeem` (transactional, idempotent), register-form gate
+      via `NEXT_PUBLIC_INVITE_REQUIRED=true`, rules lockdown for both new
+      collections
+- [x] First-login onboarding modal (role-aware, once per uid, real mode only)
+- [ ] Welcome email for new signups (needs sender domain + service choice)
 
 ---
 

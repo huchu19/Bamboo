@@ -25,8 +25,11 @@ Real Firebase auth + Firestore persistence are now active.
   Firestore errors.
 - **Dev role switcher**: `web/components/DevRoleSwitcher.tsx` floating pill —
   only renders when bypass is on.
-- **Roadmap**: see [MILESTONES.md](./MILESTONES.md). Phase 5 (auth +
-  persistence) is done; Phase 6 (real Stripe payments) is active.
+- **Roadmap**: see [MILESTONES.md](./MILESTONES.md). Phases 5 (auth +
+  persistence) and 6 (real Stripe payments, incl. refunds + receipts) are
+  done; Phase 7 (hosting & launch) is active — code-side items (invite-only
+  access, onboarding modal, Sentry) are in; remaining work is Vercel/Firebase
+  dashboard setup per [docs/PRODUCTION_CHECKLIST.md](./docs/PRODUCTION_CHECKLIST.md).
 
 ---
 
@@ -205,14 +208,20 @@ npx tsc --noEmit  # Type check
 - Cloud Storage rules — **deployed**
 - Demo pitches + founders seeded into Firestore (`scripts/seed-firestore.mjs`)
 - Auth-aware nav (`SiteNavActions`: account menu, dashboard link, logout)
+- Real Stripe payments end-to-end (Phase 6): listing fee in the wizard,
+  investments in the modal, webhook fulfilment, refunds via
+  `/api/pitch/cancel` + `charge.refunded`, receipt emails, Connect stub
+- Investor dashboard reads investments from Firestore in real time
+- Invite-only access (`scripts/generate-invites.mjs`, `/api/invites/*`,
+  `NEXT_PUBLIC_INVITE_REQUIRED`) + first-login onboarding modal (Phase 7.4)
+- Sentry error monitoring, DSN-gated via Next instrumentation (Phase 7.3)
 
-### In Progress ⏳ (Phase 6)
-- Real Stripe payments: listing fee + investment payments, webhooks
+### In Progress ⏳ (Phase 7 — manual/dashboard steps)
+- Vercel production env + custom domain, production Firebase project,
+  uptime monitoring, welcome email — see
+  [docs/PRODUCTION_CHECKLIST.md](./docs/PRODUCTION_CHECKLIST.md)
 
 ### Not Started 🔴
-- Production Vercel deployment under custom domain (Phase 7)
-- Sentry / uptime monitoring (Phase 7)
-- Invite-only access for the 100-participant cohort (Phase 7)
 - Admin moderation panel (Phase 8)
 - Mobile screens (Phase 9)
 

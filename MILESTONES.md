@@ -122,11 +122,18 @@ Must be done before inviting any real participant.
 **Target**: 2026-06-28
 
 ### 7.1 Production deployment
-- [ ] Deploy web app to Vercel under custom domain (e.g. `bamboo.app` or similar)
-- [ ] Configure Vercel environment variables for production Firebase + Stripe live keys
+- [ ] Deploy web app to Vercel under custom domain (project exists:
+      `bamboo-xi-ebon.vercel.app`; domain still to be attached)
+- [ ] Configure Vercel environment variables for production Firebase + Stripe
+      live keys — full list in [docs/PRODUCTION_CHECKLIST.md](./docs/PRODUCTION_CHECKLIST.md)
 - [ ] Set `NEXT_PUBLIC_DEV_BYPASS_AUTH=false` in Vercel production env
-- [ ] Verify DevRoleSwitcher does not render in production
-- [ ] Run Lighthouse audit: 90+ on `/` and `/discover`
+- [x] Verify DevRoleSwitcher does not render in production — gated on
+      `devBypass` (`if (!devBypass) return null`), verified 2026-06-11
+- [x] Run Lighthouse audit — local prod build 2026-06-11: `/` 94 perf /
+      94 a11y / 100 BP / 100 SEO; `/discover` 85 perf (LCP-only gap, all
+      else ≥94). Fixed en route: Sentry was statically imported into every
+      page (~100 KB) — now lazy + dead-code-eliminated without a DSN, which
+      took `/` from 74 → 94. Re-run against the deployed URL at launch.
 
 ### 7.2 Firebase production project
 - [ ] Separate Firebase project for production (not the dev/test project)
@@ -135,14 +142,23 @@ Must be done before inviting any real participant.
 - [ ] Enable Firebase App Check to prevent abuse
 
 ### 7.3 Error monitoring
-- [ ] Integrate Sentry (or equivalent) for JS error tracking
+- [x] Integrate Sentry for JS error tracking — wired through Next 16
+      instrumentation conventions, DSN-gated (inert until
+      `NEXT_PUBLIC_SENTRY_DSN` is set; zero client bytes without it)
 - [ ] Set up uptime monitoring (e.g. Better Uptime or Vercel Analytics)
-- [ ] Global error boundary already in place (`app/error.tsx`) — verify it reports to Sentry
+- [x] Both error boundaries (`app/error.tsx`, `app/global-error.tsx`) report
+      to Sentry via dynamic import
 
 ### 7.4 Onboarding for selected participants
-- [ ] Invite-only access: whitelist of 100 emails, or invite code system
-- [ ] Welcome email template (send via Firebase Extensions or Resend)
-- [ ] Brief onboarding modal on first login explaining the beta
+- [x] Invite-only access — invite code system: `invites/{CODE}` docs minted
+      with `scripts/generate-invites.mjs`, validate + transactional redeem
+      API routes, register-form gate behind `NEXT_PUBLIC_INVITE_REQUIRED=true`,
+      optional rules-level enforcement documented in `firestore.rules`
+- [ ] Welcome email template (send via Firebase Extensions or Resend) —
+      needs a sender domain + service choice; the onboarding modal covers
+      first-run guidance until then
+- [x] Brief onboarding modal on first login explaining the beta — role-aware
+      copy, shown once per uid, real mode only
 
 ---
 
