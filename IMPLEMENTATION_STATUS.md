@@ -74,16 +74,23 @@ persistence. Sticky invest CTA. EquityChart on traction section. Confetti on suc
 ### 6.1 Listing fee
 - [x] Webhook: payment confirmed → `listingFeePaid: true` + pitch goes live
       (Phase 8 will switch to `pending_review`)
-- [ ] Stripe Elements step on pitch submission wizard (route exists, UI not wired)
-- [ ] Handle failed/cancelled listing payments (clear draft / retry)
+- [x] Stripe Elements step on pitch submission wizard — pitch is created as
+      `pending_payment` (invisible to discovery), $49 charged via the shared
+      `PaymentStep` (new `light` variant), webhook flips it `live`
+- [x] Handle failed/cancelled listing payments — unpaid pitch stays
+      `pending_payment`; retry reuses the created pitch (no re-upload)
 
 ### 6.2 Investment payments
 - [x] Investment modal: amount → review → **Stripe payment step** → success
 - [x] `stripePaymentIntentId` stored on investment record (webhook)
 - [x] Webhook: investment `completed` + pitch counters bumped in one transaction
 - [x] `payments/{pi_id}` audit record on success/failure
-- [ ] Investor dashboard reads investments from Firestore (still localStorage)
-- [ ] Stripe Connect marketplace payouts to inventors
+- [x] Investor dashboard reads investments from Firestore in real time —
+      `useInvestorInvestments` hook (`onSnapshot`, investorId == uid); dev
+      bypass still uses the localStorage store for demo data
+- [x] Stripe Connect payouts **stubbed** — `STRIPE_CONNECT_ACCOUNT_ID` env
+      var routes investment intents via `transfer_data.destination` when set
+      to a real `acct_...` id; activation steps in MILESTONES.md §6.2
 
 ### 6.3 Refunds & edge cases
 - [ ] Cancelled pitch → trigger refund for all investments
@@ -135,9 +142,10 @@ See MILESTONES.md Phase 10.
 1. **Auth bypass must be off in production** — bypass defaults `true` when the env var
    is unset; Vercel production env MUST set `NEXT_PUBLIC_DEV_BYPASS_AUTH=false` (Phase 7).
 2. **No admin panel** — pitches go directly to `status: 'live'` without review (fix in Phase 8).
-3. **Stripe is stubbed** — no real money moves until Phase 6 lands.
-4. **Investor dashboard still reads localStorage investments** — migrate to Firestore
-   reads as part of Phase 6 payment confirmation flow.
+3. **Stripe runs on test keys** — payment rails (listing fee + investments)
+   are live end-to-end, but live keys + Connect activation land in Phase 7.
+4. ~~Investor dashboard still reads localStorage investments~~ — resolved
+   2026-06-11: real-time Firestore reads via `useInvestorInvestments`.
 
 ---
 

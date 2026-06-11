@@ -53,20 +53,27 @@ Carried forward:
 Nothing ships to real users without this.
 
 **Target**: 2026-06-24
+**Status**: parts 1 & 2 done (2026-06-11) — payment rails, listing-fee UI,
+Firestore investor dashboard, Connect stub. Remaining: 6.3 refunds & edge cases.
 
 ### 6.1 Listing fee (Inventor → Bamboo)
-- [ ] Integrate Stripe Elements for listing fee payment on pitch submission
-- [ ] Webhook: confirm payment before pitch goes live
-- [ ] Handle failed/cancelled payments gracefully
+- [x] Integrate Stripe Elements for listing fee payment on pitch submission
+      (wizard payment step; pitch created as `pending_payment` before charge)
+- [x] Webhook: confirm payment before pitch goes live (`pending_payment` → `live`)
+- [x] Handle failed/cancelled payments gracefully — unpaid pitches stay
+      `pending_payment` (invisible to discovery); retry reuses the created
+      pitch without re-uploading media
 
 ### 6.2 Investment payments (Investor → Escrow)
-- [ ] Stripe Elements in investment modal (replace stub)
+- [x] Stripe Elements in investment modal (replace stub)
+- [x] Investor dashboard reads investments from Firestore in real time
+      (`onSnapshot`, investorId == uid) instead of localStorage
 - [x] Stripe Connect payout rails **stubbed** — `STRIPE_CONNECT_ACCOUNT_ID`
       env var; when set to a real `acct_...` id, investment PaymentIntents
       route funds via `transfer_data.destination`. While it's the `acct_stub`
       placeholder, funds settle on the platform account (escrow behaviour).
-- [ ] Store `stripePaymentIntentId` on investment record in Firestore
-- [ ] Webhook: update investment status on payment confirmation
+- [x] Store `stripePaymentIntentId` on investment record in Firestore
+- [x] Webhook: update investment status on payment confirmation
 
 **Activating Connect payouts (when ready):**
 1. Enable Connect in the Stripe dashboard (Settings → Connect) and pick a
