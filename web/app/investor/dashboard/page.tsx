@@ -11,12 +11,17 @@ import {
   PORTFOLIO_TARGET,
 } from '@/lib/mock-investor-data';
 import { useWatchlist } from '@/lib/watchlist-store';
-import { useInvestments } from '@/lib/investment-store';
+import { useInvestorInvestments } from '@/lib/use-investor-investments';
+import { usePitches } from '@/lib/use-pitches';
 
 export default function InvestorDashboard() {
-  const { investments: rawInvestments } = useInvestments();
+  const { investments: rawInvestments, loading: investmentsLoading } = useInvestorInvestments();
+  // Join against live Firestore pitches first (real mode), then the mock
+  // catalogue (dev bypass / seeded demo positions).
+  const { pitches } = usePitches();
+  const findPitch = (id: string) => pitches.find((p) => p.id === id) ?? getPitch(id);
   const investments = rawInvestments
-    .map((inv) => ({ ...inv, pitch: getPitch(inv.pitchId) }))
+    .map((inv) => ({ ...inv, pitch: findPitch(inv.pitchId) }))
     .filter((i): i is typeof i & { pitch: NonNullable<typeof i.pitch> } => Boolean(i.pitch));
 
   const totalPlanted = investments.reduce((sum, inv) => sum + inv.amount, 0);
@@ -117,6 +122,21 @@ export default function InvestorDashboard() {
           </span>
         </div>
         <div className="bg-card ring-1 ring-[color:var(--border)] rounded-3xl overflow-hidden divide-y divide-[color:var(--border)]">
+          {investmentsLoading && (
+            <div className="p-8 text-center">
+              <p className="text-sm text-muted-foreground">Loading your portfolio…</p>
+            </div>
+          )}
+          {!investmentsLoading && investments.length === 0 && (
+            <div className="p-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                No sprouts planted yet.{' '}
+                <Link href="/discover" className="text-[color:var(--gold)] font-bold hover:underline">
+                  Walk the grove →
+                </Link>
+              </p>
+            </div>
+          )}
           {investments.map((inv) => (
             <div
               key={inv.id}
