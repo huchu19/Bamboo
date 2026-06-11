@@ -18,6 +18,11 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    // Dynamic import keeps the render path dependency-free; capture is a
+    // no-op when no Sentry DSN is configured.
+    import("@sentry/nextjs")
+      .then((Sentry) => Sentry.captureException(error))
+      .catch(() => {});
     if (process.env.NODE_ENV !== "production") {
       console.error("[Bamboo global error]", error);
     }

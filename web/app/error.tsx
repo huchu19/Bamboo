@@ -13,9 +13,11 @@ export default function GroveError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // In production this is where Sentry / a similar service would receive
-    // the report. We log to the console in dev and keep production silent
-    // beyond the digest tag.
+    // Errors caught by this boundary never reach Sentry's global handlers,
+    // so report explicitly. No-op while no DSN is configured.
+    import("@sentry/nextjs")
+      .then((Sentry) => Sentry.captureException(error))
+      .catch(() => {});
     if (process.env.NODE_ENV !== "production") {
       console.error("[Grove error boundary]", error);
     }
