@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useDraftPitches } from '@/lib/draft-pitches-store';
-import type { PitchCategory } from '@/types';
+import { isStripeEnabled } from '@/lib/stripe/client';
+import { LISTING_FEE_CENTS } from '@/lib/fees';
+import { PaymentStep } from '@/components/bamboo/PaymentStep';
+import type { PitchCategory, PitchStatus } from '@/types';
 
 const PITCH_CATEGORIES: { value: PitchCategory; label: string; emoji: string }[] = [
   { value: 'technology', label: 'Technology', emoji: '💻' },
@@ -47,6 +50,13 @@ export default function CreatePitchPage() {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState('');
+  const [clientSecret, setClientSecret] = useState('');
+  const [payError, setPayError] = useState('');
+  const [createdPitchId, setCreatedPitchId] = useState('');
+
+  // Real listing-fee payments need Stripe keys AND real Firestore (the webhook
+  // flips the pitch live server-side). Otherwise the demo flow stays in place.
+  const realPayments = isStripeEnabled() && !devBypass;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -129,76 +139,7 @@ export default function CreatePitchPage() {
     }
 
     try {
-      const { collection, doc } = await import('firebase/firestore');
-      const { db } = await import('@/lib/firebase/config');
-      if (!db) throw new Error('Firebase is not configured.');
-      const { createPitch } = await import('@/lib/firebase/firestore');
-      const {
-        uploadPitchVideo,
-        uploadPitchDocument,
-        waitForUpload,
-      } = await import('@/lib/firebase/storage');
-
-      const pitchId = doc(collection(db, 'pitches')).id;
-      let videoURL = '';
-      const pitchDocuments: { name: string; url: string; type: string; uploadedAt: number }[] = [];
-
-      // Upload video
-      if (videoFile) {
-        setUploadStatus('Uploading video...');
-        const videoTask = uploadPitchVideo(pitchId, videoFile, ({ progress }) => {
-          setUploadProgress(Math.round(progress * 0.7)); // 0-70% for video
-        });
-        videoURL = await waitForUpload(videoTask);
-      }
-
-      // Upload documents
-      if (documents.length > 0) {
-        setUploadStatus('Uploading documents...');
-        for (let i = 0; i < documents.length; i++) {
-          const docTask = uploadPitchDocument(pitchId, documents[i]);
-          const url = await waitForUpload(docTask);
-          pitchDocuments.push({
-            name: documents[i].name,
-            url,
-            type: documents[i].type,
-            uploadedAt: Date.now(),
-          });
-          setUploadProgress(70 + Math.round(((i + 1) / documents.length) * 20));
-        }
-      }
-
-      // Save pitch to Firestore
-      setUploadStatus('Saving pitch...');
-      setUploadProgress(95);
-
-      const now = Date.now();
-      await createPitch(pitchId, {
-        inventorId: firebaseUser.uid,
-        inventorName: user?.displayName || firebaseUser.displayName || 'Unknown',
-        title: formData.title,
-        tagline: formData.tagline,
-        description: formData.description,
-        category: formData.category,
-        tags: formData.tags,
-        videoURL,
-        documents: pitchDocuments,
-        fundingGoal: parseInt(formData.fundingGoal) * 100,
-        minimumInvestment: parseInt(formData.minimumInvestment) * 100,
-        equityOffered: parseFloat(formData.equityOffered),
-        amountRaised: 0,
-        status: 'pending_review',
-        isVerified: false,
-        viewCount: 0,
-        watchlistCount: 0,
-        investorCount: 0,
-        listingFeePaid: true,
-        verifiedBadgePaid: false,
-        createdAt: now,
-        updatedAt: now,
-        publishedAt: now,
-      });
-
+      await uploadAndCreatePitch({ status: 'pending_review', listingFeePaid: true });
       setUploadProgress(100);
       setStep('confirmation');
     } catch (error) {
@@ -207,6 +148,132 @@ export default function CreatePitchPage() {
     } finally {
       setLoading(false);
       setUploadStatus('');
+    }
+  };
+
+  /** Upload media + create the Firestore pitch doc; returns the new pitch id. */
+  const uploadAndCreatePitch = async (opts: {
+    status: PitchStatus;
+    listingFeePaid: boolean;
+  }): Promise<string> => {
+    if (!firebaseUser) throw new Error('Not signed in.');
+    const { collection, doc } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase/config');
+    if (!db) throw new Error('Firebase is not configured.');
+    const { createPitch } = await import('@/lib/firebase/firestore');
+    const {
+      uploadPitchVideo,
+      uploadPitchDocument,
+      waitForUpload,
+    } = await import('@/lib/firebase/storage');
+
+    const pitchId = doc(collection(db, 'pitches')).id;
+    let videoURL = '';
+    const pitchDocuments: { name: string; url: string; type: string; uploadedAt: number }[] = [];
+
+    // Upload video
+    if (videoFile) {
+      setUploadStatus('Uploading video...');
+      const videoTask = uploadPitchVideo(pitchId, videoFile, ({ progress }) => {
+        setUploadProgress(Math.round(progress * 0.7)); // 0-70% for video
+      });
+      videoURL = await waitForUpload(videoTask);
+    }
+
+    // Upload documents
+    if (documents.length > 0) {
+      setUploadStatus('Uploading documents...');
+      for (let i = 0; i < documents.length; i++) {
+        const docTask = uploadPitchDocument(pitchId, documents[i]);
+        const url = await waitForUpload(docTask);
+        pitchDocuments.push({
+          name: documents[i].name,
+          url,
+          type: documents[i].type,
+          uploadedAt: Date.now(),
+        });
+        setUploadProgress(70 + Math.round(((i + 1) / documents.length) * 20));
+      }
+    }
+
+    // Save pitch to Firestore
+    setUploadStatus('Saving pitch...');
+    setUploadProgress(95);
+
+    const now = Date.now();
+    await createPitch(pitchId, {
+      inventorId: firebaseUser.uid,
+      inventorName: user?.displayName || firebaseUser.displayName || 'Unknown',
+      title: formData.title,
+      tagline: formData.tagline,
+      description: formData.description,
+      category: formData.category,
+      tags: formData.tags,
+      videoURL,
+      documents: pitchDocuments,
+      fundingGoal: parseInt(formData.fundingGoal) * 100,
+      minimumInvestment: parseInt(formData.minimumInvestment) * 100,
+      equityOffered: parseFloat(formData.equityOffered),
+      amountRaised: 0,
+      status: opts.status,
+      isVerified: false,
+      viewCount: 0,
+      watchlistCount: 0,
+      investorCount: 0,
+      listingFeePaid: opts.listingFeePaid,
+      verifiedBadgePaid: false,
+      createdAt: now,
+      updatedAt: now,
+      // publishedAt is set by the webhook when the listing fee clears (real
+      // payments) or here when we publish directly (demo / no-Stripe flow).
+      ...(opts.status === 'pending_payment' ? {} : { publishedAt: now }),
+    });
+
+    return pitchId;
+  };
+
+  /**
+   * Real listing-fee flow: create the pitch as `pending_payment` (invisible to
+   * discovery, which only lists `live`), then open a Stripe PaymentIntent.
+   * The webhook flips the pitch to `live` when the payment succeeds, so a
+   * failed/abandoned payment leaves no visible pitch behind.
+   */
+  const startListingPayment = async () => {
+    if (!firebaseUser) return;
+    setLoading(true);
+    setPayError('');
+
+    try {
+      // Re-use the already-created pitch if the user retries after a failure,
+      // so we don't re-upload media or leave orphaned docs behind.
+      let pitchId = createdPitchId;
+      if (!pitchId) {
+        pitchId = await uploadAndCreatePitch({ status: 'pending_payment', listingFeePaid: false });
+        setCreatedPitchId(pitchId);
+      }
+
+      setUploadStatus('Preparing payment...');
+      const res = await fetch('/api/stripe/payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'listing_fee',
+          pitchId,
+          inventorId: firebaseUser.uid,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.clientSecret) {
+        throw new Error(data.error || 'Could not start payment.');
+      }
+      setClientSecret(data.clientSecret);
+    } catch (error: any) {
+      console.error('Failed to start listing payment:', error);
+      setPayError(error.message || 'Could not start payment. Please try again.');
+    } finally {
+      setLoading(false);
+      setUploadStatus('');
+      setUploadProgress(0);
     }
   };
 
@@ -630,8 +697,84 @@ export default function CreatePitchPage() {
         </div>
       )}
 
-      {/* Step 6: Payment */}
-      {step === 'payment' && (
+      {/* Step 6: Payment — real Stripe listing fee */}
+      {step === 'payment' && realPayments && (
+        <div className="bg-white rounded-xl border border-gray-200 p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment</h2>
+
+          <div className="space-y-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+              <h3 className="font-semibold text-green-900 mb-2">💳 Pitch Listing Fee</h3>
+              <p className="text-green-700 mb-4">
+                A one-time fee to publish your pitch to all investors on Bamboo.
+              </p>
+              <div className="flex justify-between py-3 border-t border-green-200">
+                <span className="font-semibold text-green-900">Total</span>
+                <span className="font-bold text-green-900 text-lg">
+                  ${(LISTING_FEE_CENTS / 100).toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            {clientSecret ? (
+              <PaymentStep
+                clientSecret={clientSecret}
+                amount={LISTING_FEE_CENTS / 100}
+                variant="light"
+                onSuccess={() => setStep('confirmation')}
+                onBack={() => setClientSecret('')}
+              />
+            ) : (
+              <>
+                {loading && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>{uploadStatus}</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-green-600 h-2 rounded-full transition-all"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {payError && (
+                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                    {payError}
+                  </p>
+                )}
+
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setStep('review')}
+                    disabled={loading}
+                    className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition disabled:opacity-50"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={startListingPayment}
+                    disabled={loading}
+                    className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading
+                      ? 'Preparing...'
+                      : `Continue to Payment — $${(LISTING_FEE_CENTS / 100).toFixed(0)}`}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Step 6: Payment — demo / Stripe-not-configured fallback */}
+      {step === 'payment' && !realPayments && (
         <div className="bg-white rounded-xl border border-gray-200 p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment</h2>
 
@@ -705,15 +848,22 @@ export default function CreatePitchPage() {
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Pitch Created Successfully!</h2>
           <p className="text-gray-600 mb-8">
-            Your pitch has been submitted and is now under review. You'll be notified once it's
-            approved and visible to investors.
+            {realPayments
+              ? 'Payment received — your pitch is going live to investors right now.'
+              : "Your pitch has been submitted and is now under review. You'll be notified once it's approved and visible to investors."}
           </p>
 
           <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8 text-left">
             <p className="text-sm text-gray-600 mb-2">Next Steps:</p>
             <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
-              <li>Your pitch is reviewed by our team (24–48 hours)</li>
-              <li>Once approved, it goes live to all investors</li>
+              {realPayments ? (
+                <li>Your pitch appears in Discover within a few moments</li>
+              ) : (
+                <>
+                  <li>Your pitch is reviewed by our team (24–48 hours)</li>
+                  <li>Once approved, it goes live to all investors</li>
+                </>
+              )}
               <li>Track investor interest from your dashboard</li>
               <li>
                 Optional: Upgrade to Verified Badge (
@@ -743,6 +893,9 @@ export default function CreatePitchPage() {
                 setVideoFile(null);
                 setVideoPreview('');
                 setDocuments([]);
+                setClientSecret('');
+                setPayError('');
+                setCreatedPitchId('');
               }}
               className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
             >
