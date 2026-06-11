@@ -61,9 +61,28 @@ Nothing ships to real users without this.
 
 ### 6.2 Investment payments (Investor → Escrow)
 - [ ] Stripe Elements in investment modal (replace stub)
-- [ ] Stripe Connect setup for marketplace payouts to inventors
+- [x] Stripe Connect payout rails **stubbed** — `STRIPE_CONNECT_ACCOUNT_ID`
+      env var; when set to a real `acct_...` id, investment PaymentIntents
+      route funds via `transfer_data.destination`. While it's the `acct_stub`
+      placeholder, funds settle on the platform account (escrow behaviour).
 - [ ] Store `stripePaymentIntentId` on investment record in Firestore
 - [ ] Webhook: update investment status on payment confirmation
+
+**Activating Connect payouts (when ready):**
+1. Enable Connect in the Stripe dashboard (Settings → Connect) and pick a
+   charge model — `transfer_data` as wired here is the *destination charges*
+   model, the simplest fit for a marketplace.
+2. Onboard the payout recipient: create an Express account via
+   `stripe.accounts.create({ type: 'express' })` (or the dashboard) and have
+   them complete Stripe's hosted onboarding (KYC, bank account).
+3. Put the resulting `acct_...` id in `STRIPE_CONNECT_ACCOUNT_ID`
+   (web/.env.local locally, Vercel env in prod) and redeploy.
+4. Optional: take a platform cut by adding `application_fee_amount` next to
+   `transfer_data` in `web/app/api/stripe/payment-intent/route.ts`.
+5. Per-inventor payouts (each founder their own connected account) is a
+   Phase 8+ follow-up — store each inventor's `acct_...` id on their user
+   record and resolve the destination per pitch instead of the single
+   env-level account.
 
 ### 6.3 Refunds & edge cases
 - [ ] Cancelled pitch → refund all investors

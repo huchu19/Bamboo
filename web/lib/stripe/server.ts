@@ -28,3 +28,16 @@ export function getStripe(): Stripe {
   }
   return stripe;
 }
+
+/**
+ * Stripe Connect destination account for investment payouts.
+ *
+ * Returns null while STRIPE_CONNECT_ACCOUNT_ID is unset or still the
+ * `acct_stub` placeholder — investment PaymentIntents are then created
+ * without transfer_data and funds stay on the platform account (current
+ * escrow behaviour). Activation steps live in MILESTONES.md §6.2.
+ */
+export function getConnectAccountId(): string | null {
+  const id = process.env.STRIPE_CONNECT_ACCOUNT_ID;
+  return id && id !== 'acct_stub' ? id : null;
+}

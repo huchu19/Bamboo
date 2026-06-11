@@ -11,7 +11,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getStripe, isStripeConfigured } from '@/lib/stripe/server';
+import { getConnectAccountId, getStripe, isStripeConfigured } from '@/lib/stripe/server';
 import { LISTING_FEE_CENTS, MIN_INVESTMENT_CENTS } from '@/lib/fees';
 
 export const runtime = 'nodejs';
@@ -54,10 +54,19 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Stripe Connect payouts (stubbed): when STRIPE_CONNECT_ACCOUNT_ID is a
+      // real acct_... id, investment funds are routed to that connected
+      // account on capture. While it's unset/stub, funds settle on the
+      // platform account. Activation steps: MILESTONES.md §6.2.
+      const connectAccountId = getConnectAccountId();
+
       const intent = await stripe.paymentIntents.create({
         amount,
         currency: 'usd',
         automatic_payment_methods: { enabled: true },
+        ...(connectAccountId
+          ? { transfer_data: { destination: connectAccountId } }
+          : {}),
         metadata: {
           type: 'investment',
           pitchId,
