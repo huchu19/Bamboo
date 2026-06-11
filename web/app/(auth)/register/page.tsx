@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { isInviteRequired } from '@/lib/invites';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -20,8 +21,13 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Invite-only beta: gate registrations behind a code when
+  // NEXT_PUBLIC_INVITE_REQUIRED=true (Phase 7 launch posture).
+  const inviteRequired = isInviteRequired();
 
   const handleRoleSelect = (selectedRole: 'inventor' | 'investor') => {
     setRole(selectedRole);
@@ -45,8 +51,48 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      // Pre-check the invite before creating the auth account, so a bad code
+      // never leaves an orphaned account behind.
+      if (inviteRequired) {
+        const res = await fetch('/api/invites/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: inviteCode }),
+        });
+        const data = await res.json();
+        if (!data.valid) {
+          setError(data.reason || 'That invite code is not valid.');
+          setLoading(false);
+          return;
+        }
+      }
+
       const { registerUser } = await import('@/lib/firebase/auth');
-      await registerUser(email, password, displayName, role);
+      const user = await registerUser(email, password, displayName, role);
+
+      // Consume the invite (transactional + idempotent server-side). A race
+      // where the last seat was taken between validate and redeem surfaces
+      // here; the account exists but the seat is gone — tell them to reach out.
+      if (inviteRequired) {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/invites/redeem', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ code: inviteCode }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          setError(
+            `${data.error || 'Could not redeem the invite.'} Your account was created — contact us and we'll activate it.`,
+          );
+          setLoading(false);
+          return;
+        }
+      }
+
       router.push(role === 'inventor' ? '/pitch/new' : '/discover');
     } catch (err: any) {
       setError(err.message || 'Failed to create account');
@@ -121,6 +167,29 @@ export default function RegisterPage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {inviteRequired && (
+          <div>
+            <label htmlFor="invite" className="block text-sm font-medium text-gray-900 mb-1.5">
+              Invite Code
+            </label>
+            <input
+              id="invite"
+              type="text"
+              required
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+              placeholder="BAMBOO-XXXX-XXXX"
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg font-mono tracking-wider focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Bamboo is in invite-only beta. No code? Ask the person who invited you.
+            </p>
+          </div>
+        )}
+
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-900 mb-1.5">
             Full Name

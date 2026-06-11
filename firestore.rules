@@ -46,6 +46,12 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if true;
 
+      // Invite-only hard enforcement (Phase 7): when the launch gate is on
+      // (NEXT_PUBLIC_INVITE_REQUIRED=true in the web env), ALSO require the
+      // server-written redemption marker by adding this clause to `create`:
+      //   && exists(/databases/$(database)/documents/inviteRedemptions/$(userId))
+      // Deploy together (`firebase deploy --only firestore`) or registration
+      // breaks: the marker is only written when the register flow redeems.
       allow create: if isSelf(userId)
         && incomingDoc().uid == userId
         && incomingDoc().role in ['inventor', 'investor'];
@@ -151,6 +157,21 @@ service cloud.firestore {
     match /payments/{paymentId} {
       allow read: if isSignedIn()
         && existingDoc().userId == request.auth.uid;
+      allow write: if false;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // invites + inviteRedemptions — server-side only (Admin SDK bypasses
+    // rules). Clients validate/redeem through /api/invites/*, never directly:
+    // a readable invites collection would leak unused codes.
+    // ────────────────────────────────────────────────────────────────────────
+
+    match /invites/{code} {
+      allow read, write: if false;
+    }
+
+    match /inviteRedemptions/{userId} {
+      allow read: if isSelf(userId);
       allow write: if false;
     }
 
