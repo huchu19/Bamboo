@@ -2,168 +2,187 @@
 
 **Plant Your Seed. Build Your Portfolio.**
 
-> **MVP-first pivot (2026-06-02):** Auth and Firestore are temporarily bypassed
-> in dev so we can iterate on the investor-facing demo experience at zero
-> latency. See [CLAUDE.md](./CLAUDE.md) → _Dev Bypass_ for the toggle. Auth +
-> persistence return in Phase 5, after the demo is locked.
+> **Goal**: A live, hosted product used by ~100 selected participants.
+> Phases 1–4 are done. The remainder takes us from polished demo to a real
+> hosted application that real users can sign up for, pitch, and invest through.
 
 ---
 
-## 🚀 Phase 1: Foundation ✅ COMPLETED
-
-Monorepo, types, landing page, theme system, Firebase scaffolding. Locked
-2026-05-24.
+## ✅ Phase 1: Foundation — DONE
+Monorepo, types, landing page, theme system, Firebase scaffolding. Locked 2026-05-24.
 
 ---
 
-## ✅ Phase 2: Auth & Inventor Flow — SHIPPED (now bypassed for MVP demo)
-
+## ✅ Phase 2: Auth & Inventor Flow — DONE
 Login, register, password reset, pitch creation wizard, inventor dashboard,
-file uploads, Firestore writes — all built and working. **Temporarily bypassed
-in dev** via `NEXT_PUBLIC_DEV_BYPASS_AUTH` so we can demo without standing up
-Firebase. Code is intact and re-enables in Phase 5.
+file uploads, Firestore writes — built and verified against Firebase.
 
 ---
 
-## ✅ Phase 3: Discovery & Investor Flow — SHIPPED (now mock-driven for MVP demo)
-
-Discovery feed, filters, pitch detail, watchlist, investment flow built end-
-to-end against Firestore. Now reading from `web/lib/mock-pitches.ts` for the
-demo. Three "real" pitches (Oxo, Ledgr, Northbound) have slots for actual
-video + documents under `web/public/demo/{id}/`.
+## ✅ Phase 3: Discovery & Investor Flow — DONE
+Discovery feed, filters, pitch detail, watchlist, investment flow built end-to-end.
 
 ---
 
-## 🔥 Phase 4: MVP Demo Polish — IN PROGRESS
-
-**Timeline**: 2026-06-02 → 2026-06-16 (target)
-**Status**: ~60% — detail page, discovery, and landing path are strong; the
-investment flow and real demo assets are the remaining gaps.
-**Goal**: Make the investor-side demo feel like a finished product. Discovery,
-pitch detail, and the investment flow are the entire surface a reviewer
-touches. Nothing else matters until these are pristine.
-
-> Note: the showcase pitch formerly named "Oxo" is now **EduNexus** (AI-powered
-> adaptive learning). It has a real hosted video + poster via
-> `web/lib/demo-assets.json` (Vercel Blob). Ledgr and Northbound still fall
-> back to gradient placeholders.
-
-### 4.1 Three real demo pitches (HIGHEST PRIORITY)
-- [x] EduNexus 60s pitch video + poster wired via `demo-assets.json`
-- [ ] Source video + poster for Ledgr and Northbound (still empty strings)
-- [ ] Author proper PDFs: deck, financials, supporting docs (3 each) — **all
-      `documents[].url` currently 404 (no files in `web/public/demo/{id}/`)**
-- [ ] Verify each opens correctly from `/discover/{id}`
-
-### 4.2 Discovery feed polish
-- [x] Hover/focus states on `DiscoverPitchCard`
-- [x] `posterUrl` thumbnails on grid cards
-- [x] Ticker animation
-- [ ] Empty-state illustration tightened
-- [ ] Skeleton loading states (`PitchCardSkeleton` exists — **not yet wired**)
-- [ ] Mobile breakpoints: cards stack cleanly, filters collapse to drawer
-
-### 4.3 Pitch detail page polish
-- [x] HTML5 video player styling (custom `PitchVideoPlayer`)
-- [x] Funding progress / `EquityChart` integration on traction section
-- [x] Sticky "Invest" CTA (desktop side rail + mobile bottom bar)
-- [x] Founder block links to `/founder/{id}`
-- [ ] Document list cards: file-type icons + hover, hide/disable when file absent
-
-### 4.4 Investment flow polish — ⬅ NEXT UP (weakest area)
-- [ ] 4-step modal: amount → review → confirm → success
-      (currently a single input whose submit does nothing)
-- [ ] Equity preview updates live as user types
-- [ ] Confetti / success animation on confirm (subtle, branded)
-- [ ] Mock investment writes to localStorage so it persists for the demo
-- [ ] Toast confirming "investment recorded"
-
-### 4.5 Landing page demo path
-- [x] "Walk the Grove" CTA goes straight to `/discover` (no login wall)
-- [x] Auth-gated copy audited
-- [ ] Featured pitch hero polish (`featured-pitch.jpg`)
-
-### Success Criteria
-- A reviewer can click from landing → discover → pitch detail → invest → success
-  without ever seeing a login screen or a loading spinner that lasts >300ms
-- All three demo pitches play their real videos and serve real PDFs
-- Zero console errors in the demo path
-- LCP <2s on `/discover`
+## ✅ Phase 4: Demo Polish — DONE
+Investor-facing demo path locked: landing → discover → pitch detail → invest → success.
+EduNexus pitch has real hosted video. Investment flow is 4-step with localStorage persistence.
 
 ---
 
-## 🎨 Phase 5: Inventor Demo Polish — NEXT
+## ✅ Phase 5: Auth Hardening & Real Persistence — DONE (2026-06-11)
 
-**Timeline**: After Phase 4 → ~1 week
-**Goal**: Inventor-side equivalent. Lower priority because the demo story is
-"investor browses pitches," not "founder uploads a pitch live." We still want
-the inventor dashboard to look real if a reviewer clicks the dev role switch.
+Real Firebase auth is live: `NEXT_PUBLIC_DEV_BYPASS_AUTH=false`, Email/Password
+provider enabled, login/register/forgot-password all wired and verified.
+Firestore security rules + composite indexes deployed. Cloud Storage rules
+deployed (Blaze plan, us-east1). Demo pitches + founders seeded via
+`scripts/seed-firestore.mjs`. Discover feed reads Firestore through
+`usePitches` with mock fallback. Auth-aware nav with account menu + logout.
 
-- [ ] Inventor dashboard reads from `getPitchesByFounder('maya-chen')` mock
-- [ ] Funding progress bars use real demo pitch numbers
-- [ ] Pitch creation wizard accessible (already built) but writes to localStorage
-- [ ] "Verified" badge upsell card styled to match grove aesthetic
-- [ ] Stats: total raised, views, investors — driven by mock data
-
----
-
-## 🔐 Phase 6: Re-enable Auth + Persistence — POST-DEMO
-
-**Timeline**: After demo lockdown
-**Goal**: Flip `NEXT_PUBLIC_DEV_BYPASS_AUTH=false` and harden for real users.
-
-- [ ] Verify all `ProtectedRoute` gates still work
-- [ ] Re-test pitch creation → Firestore round-trip
-- [ ] Re-test investment transaction (atomic update)
-- [ ] Firestore security rules (currently permissive test-mode)
-- [ ] Cloud Storage rules
-- [ ] Migrate the 3 demo pitches into Firestore as seed data
-- [ ] Decide: keep mock fallback as an env flag, or remove?
+Carried forward:
+- Email-verification gating for pitch creation → folded into Phase 7 onboarding
+- Full round-trip smoke tests (pitch creation, investment transaction,
+  watchlist persistence) → verify during Phase 6 payment work, which touches
+  the same flows
 
 ---
 
-## 📱 Phase 7: Mobile (Expo) — DEFERRED
+## 💳 Phase 6: Real Payments (Stripe) — IN PROGRESS
 
-Was Phase 4. Pushed back — web demo is the MVP. Mobile inherits whatever the
-web demo lands on. Same scope as before:
-- Create pitch, discover feed, pitch detail with `expo-av`, investment flow,
-  inventor/investor dashboards, watchlist, portfolio, settings.
+**Goal**: Real money can move. Inventors pay a listing fee. Investors commit funds.
+Nothing ships to real users without this.
+
+**Target**: 2026-06-24
+
+### 6.1 Listing fee (Inventor → Bamboo)
+- [ ] Integrate Stripe Elements for listing fee payment on pitch submission
+- [ ] Webhook: confirm payment before pitch goes live
+- [ ] Handle failed/cancelled payments gracefully
+
+### 6.2 Investment payments (Investor → Escrow)
+- [ ] Stripe Elements in investment modal (replace stub)
+- [ ] Stripe Connect setup for marketplace payouts to inventors
+- [ ] Store `stripePaymentIntentId` on investment record in Firestore
+- [ ] Webhook: update investment status on payment confirmation
+
+### 6.3 Refunds & edge cases
+- [ ] Cancelled pitch → refund all investors
+- [ ] Failed payment → clear investment record
+- [ ] Basic receipt email via Stripe (use built-in Stripe email receipts)
 
 ---
 
-## 💳 Phase 8: Real Stripe + Differentiators — POST-MVP
+## 🚀 Phase 7: Hosting & Launch Infrastructure — REQUIRED FOR LAUNCH
 
-Was Phase 5. Unchanged scope: real Stripe Elements, webhooks, refunds, Stripe
-Connect; match-score algorithm, community Q&A, due-diligence checklist,
-analytics, "Bamboo score", push notifications, milestone-based tranches,
-secondary market, tax reporting.
+**Goal**: The app is publicly accessible via a real domain, stable, and observable.
+Must be done before inviting any real participant.
+
+**Target**: 2026-06-28
+
+### 7.1 Production deployment
+- [ ] Deploy web app to Vercel under custom domain (e.g. `bamboo.app` or similar)
+- [ ] Configure Vercel environment variables for production Firebase + Stripe live keys
+- [ ] Set `NEXT_PUBLIC_DEV_BYPASS_AUTH=false` in Vercel production env
+- [ ] Verify DevRoleSwitcher does not render in production
+- [ ] Run Lighthouse audit: 90+ on `/` and `/discover`
+
+### 7.2 Firebase production project
+- [ ] Separate Firebase project for production (not the dev/test project)
+- [ ] Production Firestore indexes for discovery feed queries (category, fundingGoal, createdAt)
+- [ ] Production Cloud Storage with CORS configured for Vercel domain
+- [ ] Enable Firebase App Check to prevent abuse
+
+### 7.3 Error monitoring
+- [ ] Integrate Sentry (or equivalent) for JS error tracking
+- [ ] Set up uptime monitoring (e.g. Better Uptime or Vercel Analytics)
+- [ ] Global error boundary already in place (`app/error.tsx`) — verify it reports to Sentry
+
+### 7.4 Onboarding for selected participants
+- [ ] Invite-only access: whitelist of 100 emails, or invite code system
+- [ ] Welcome email template (send via Firebase Extensions or Resend)
+- [ ] Brief onboarding modal on first login explaining the beta
+
+---
+
+## 🔍 Phase 8: Admin & Moderation — PRE-LAUNCH REQUIREMENT
+
+**Goal**: You need to be able to review pitches before they go live and handle
+the verified badge process without touching the database directly.
+
+**Target**: 2026-07-05
+
+### 8.1 Admin dashboard (internal, password-protected route)
+- [ ] `/admin` route, only accessible to `role === 'admin'` accounts
+- [ ] Pitch review queue: approve / reject / request changes
+- [ ] Verified badge approval: view application, approve, charge $199
+
+### 8.2 Pitch moderation
+- [ ] New pitches start in `status: 'pending'` — not visible on discovery until approved
+- [ ] Rejected pitches: notify inventor with reason, refund listing fee
+- [ ] Reported pitches: flag for review, temporarily hide
+
+---
+
+## 📱 Phase 9: Mobile (Expo) — POST-LAUNCH
+
+**Timeline**: After first 100-user cohort feedback
+**Goal**: iOS/Android app for the same feature set as web.
+
+- [ ] Discover feed + pitch detail with `expo-av`
+- [ ] Investment bottom sheet
+- [ ] Inventor pitch creation
+- [ ] Inventor + investor dashboards
+- [ ] Watchlist, portfolio, settings
+- [ ] App Store + Google Play submission
+
+---
+
+## 📈 Phase 10: Growth & Differentiators — POST-LAUNCH
+
+After the first cohort has used the product for a few weeks:
+
+- [ ] Match-score algorithm (investor ↔ pitch affinity)
+- [ ] Community Q&A on pitch pages
+- [ ] Due-diligence checklist for verified pitches
+- [ ] Pitch analytics dashboard for inventors (views, watch time, conversion)
+- [ ] "Bamboo Score" — founder credibility signal
+- [ ] Milestone-based investment tranches
+- [ ] Push notifications (Expo + FCM)
+- [ ] Secondary market (investor → investor transfers)
+- [ ] Tax reporting export (PDF / CSV)
+- [ ] Scalability pass: Firestore pagination, CDN for video, rate limiting
 
 ---
 
 ## 📊 Overall Timeline
 
 ```
-Phase 1 (Foundation)             │████████████████████████│ ✅ DONE
-Phase 2 (Auth & Inventor build)  │████████████████████████│ ✅ DONE (bypassed)
-Phase 3 (Investor build)         │████████████████████████│ ✅ DONE (mocked)
-Phase 4 (MVP Demo Polish)        │██████████████░░░░░░░░░░│ 🔥 NOW (~60%)
-Phase 5 (Inventor Demo Polish)   │░░░░░░░░░░░░░░░░░░░░░░░░│ ⏭  NEXT
-Phase 6 (Re-enable Auth)         │░░░░░░░░░░░░░░░░░░░░░░░░│ 🔐 POST-DEMO
-Phase 7 (Mobile)                 │░░░░░░░░░░░░░░░░░░░░░░░░│ 📱 DEFERRED
-Phase 8 (Stripe + extras)        │░░░░░░░░░░░░░░░░░░░░░░░░│ 💳 POST-MVP
+Phase 1 (Foundation)           │████████████████████████│ ✅ DONE
+Phase 2 (Auth & Inventor)      │████████████████████████│ ✅ DONE
+Phase 3 (Investor build)       │████████████████████████│ ✅ DONE
+Phase 4 (Demo Polish)          │████████████████████████│ ✅ DONE
+Phase 5 (Auth + Persistence)   │████████████████████████│ ✅ DONE (Jun 11)
+Phase 6 (Stripe Payments)      │░░░░░░░░░░░░░░░░░░░░░░░░│ 💳 NOW  → Jun 24
+Phase 7 (Hosting + Launch)     │░░░░░░░░░░░░░░░░░░░░░░░░│ 🚀 NEXT → Jun 28
+Phase 8 (Admin + Moderation)   │░░░░░░░░░░░░░░░░░░░░░░░░│ 🔍 SOON → Jul 5
+Phase 9 (Mobile)               │░░░░░░░░░░░░░░░░░░░░░░░░│ 📱 POST-LAUNCH
+Phase 10 (Growth)              │░░░░░░░░░░░░░░░░░░░░░░░░│ 📈 POST-LAUNCH
 ```
 
 ---
 
-## 🎯 Demo Day Success Metrics
+## 🎯 Launch Readiness Checklist
 
-- A reviewer goes from landing → invested in a pitch in <90 seconds
-- All three demo pitches: real video plays, real PDFs open
-- Dev role switcher lets reviewer flip to inventor view in one click
-- Zero console errors, zero broken images, zero placeholder Lorem Ipsum
-- Lighthouse: 90+ on landing and `/discover`
+Before inviting the first real participant:
+- [x] Phase 5 complete: real auth + Firestore persistence
+- [ ] Phase 6 complete: real payments flowing
+- [ ] Phase 7 complete: live domain, production Firebase, error monitoring
+- [ ] Phase 8 complete: admin can moderate pitches before they go live
+- [ ] Zero known P0 bugs
+- [ ] Privacy policy + terms of service page live
+- [ ] `NEXT_PUBLIC_DEV_BYPASS_AUTH=false` confirmed in Vercel production env
 
 ---
 
-**Last Updated**: 2026-06-09
+**Last Updated**: 2026-06-11
 **Owned By**: Hussain Naqvi

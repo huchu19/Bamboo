@@ -40,5 +40,6 @@ INVESTOR_QUESTIONNAIRE.md
 
 # Firebase secrets
 scripts/service-account.json
+*firebase-adminsdk*.json
 .firebase/
 

@@ -92,7 +92,8 @@ const PITCHES = [
     investorCount: 47,
     listingFeePaid: true,
     verifiedBadgePaid: true,
-    videoURL: '', // wire to the hosted Vercel Blob URL from demo-assets.json
+    videoURL: 'https://zlneg7j2mvphxpqd.public.blob.vercel-storage.com/Edunexus-pitch-vertical.mp4',
+    videoThumbnailURL: 'https://zlneg7j2mvphxpqd.public.blob.vercel-storage.com/home.jpeg',
     documents: [],
     viewCount: 4218,
     watchlistCount: 312,

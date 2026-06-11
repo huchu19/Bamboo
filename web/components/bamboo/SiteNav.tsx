@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BambooLeaf } from "./BambooIcons";
-import { RoleSwitcherChip } from "./RoleSwitcherChip";
 import { TendTheGroveLink } from "./TendTheGroveLink";
+import { SiteNavActions } from "./SiteNavActions";
 
 export function SiteNav({ variant = "light" }: { variant?: "light" | "ink" }) {
   const isInk = variant === "ink";
@@ -35,24 +35,7 @@ export function SiteNav({ variant = "light" }: { variant?: "light" | "ink" }) {
             </Link>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <RoleSwitcherChip />
-          <Link
-            href="/login"
-            className={`text-xs font-semibold px-4 py-2 rounded-full transition-all ${
-              isInk ? "hover:bg-white/5" : "hover:bg-foreground/5"
-            }`}
-          >
-            Login
-          </Link>
-          <Link
-            href="/login?mode=signup"
-            className="text-xs font-semibold bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground px-5 py-2 rounded-full shadow-sm hover:opacity-90 transition-all flex items-center gap-1.5"
-          >
-            <BambooLeaf size={11} className="text-[color:var(--gold)]" />
-            Plant Your Seed
-          </Link>
-        </div>
+        <SiteNavActions variant={variant} />
       </div>
     </nav>
   );

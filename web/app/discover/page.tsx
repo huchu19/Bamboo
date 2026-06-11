@@ -5,12 +5,13 @@ import { SiteNav } from "@/components/bamboo/SiteNav";
 import { BambooLeaf, RootGlyph } from "@/components/bamboo/BambooIcons";
 import { DiscoverPitchCard } from "@/components/bamboo/DiscoverPitchCard";
 import { Reveal } from "@/components/bamboo/Reveal";
-import { PITCHES } from "@/lib/mock-pitches";
+import { usePitches } from "@/lib/use-pitches";
 
 const SECTORS = ["All", "EdTech", "Hardware", "Fintech", "ClimateTech", "Healthcare", "Media"];
 const STAGES = ["All Stages", "Pre-Seed", "Seed", "Series A"];
 
 export default function DiscoverPage() {
+  const { pitches: allPitches, loading } = usePitches();
   const [sector, setSector] = useState("All");
   const [stage, setStage] = useState("All Stages");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
@@ -18,13 +19,13 @@ export default function DiscoverPage() {
 
   const filtered = useMemo(
     () =>
-      PITCHES.filter(
+      allPitches.filter(
         (p) =>
           (sector === "All" || p.sector === sector) &&
           (stage === "All Stages" || p.stage === stage) &&
           (!verifiedOnly || p.verified),
       ),
-    [sector, stage, verifiedOnly],
+    [allPitches, sector, stage, verifiedOnly],
   );
 
   const activeFilterCount =
@@ -58,7 +59,7 @@ export default function DiscoverPage() {
       {/* Ticker */}
       <div className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] overflow-hidden border-b border-white/5">
         <div className="flex gap-12 py-2 animate-ticker whitespace-nowrap font-mono text-[10px] uppercase tracking-widest">
-          {[...PITCHES, ...PITCHES].map((p, i) => (
+          {[...allPitches, ...allPitches].map((p, i) => (
             <span key={i} className="flex items-center gap-2">
               <span className={p.raised > 50 ? "text-[color:var(--gold)]" : "text-white/50"}>●</span>
               <span className="text-white/80">{p.company}</span>
@@ -73,7 +74,7 @@ export default function DiscoverPage() {
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div>
             <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              The Grove · {filtered.length} seeds in bloom
+              The Grove · {loading ? "…" : filtered.length} seeds in bloom
             </span>
             <h1 className="font-display text-6xl md:text-7xl uppercase tracking-tighter mt-3">
               Watch It Grow.
@@ -161,7 +162,17 @@ export default function DiscoverPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 pb-32">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-72 rounded-2xl bg-secondary animate-pulse"
+                style={{ animationDelay: `${i * 60}ms` }}
+              />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-24 max-w-md mx-auto">
             <div className="flex justify-center mb-6">
               <RootGlyph size={120} className="text-[color:var(--primary)]/50" />

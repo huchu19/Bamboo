@@ -6,27 +6,27 @@ A two-sided investing marketplace connecting innovative entrepreneurs with impac
 
 ---
 
-## 🚧 MVP Demo Mode (current)
+## 🚀 Launch Mode (current)
 
-The project is in **MVP demo mode**. Auth and Firestore reads/writes are
-bypassed in dev so we can iterate on the investor-facing demo at zero latency.
+The project is heading to a **real launch** for ~100 selected participants.
+Real Firebase auth + Firestore persistence are now active.
 
-- **Toggle**: `NEXT_PUBLIC_DEV_BYPASS_AUTH` in `web/.env.local` (default ON;
-  set to `false` to re-enable real auth).
-- **What's bypassed**: `AuthContext` returns a mock user; `ProtectedRoute`
-  short-circuits; pages read from `web/lib/mock-pitches.ts` instead of Firestore.
-- **Dev role switcher**: floating pill (bottom-right) toggles inventor ↔
-  investor and links to the relevant dashboard. Rendered by
-  `web/components/DevRoleSwitcher.tsx` from the root layout. Auto-hides when
-  bypass is off.
-- **Three demo pitches**: Oxo / Ledgr / Northbound have `isDemo: true` with
-  slots for real `videoUrl`, `posterUrl`, and `documents`. Drop assets into
-  `web/public/demo/{oxo,ledgr,northbound}/`. Other pitches are filler.
-- **Re-enabling**: see Phase 6 in [MILESTONES.md](./MILESTONES.md).
-
-Do not delete the bypass plumbing — it's the single switch we flip at demo
-end. The Firebase-backed code paths under `web/lib/firebase/` are untouched
-and load again the moment the env flag flips.
+- **Auth**: `NEXT_PUBLIC_DEV_BYPASS_AUTH=false` in `web/.env.local` — real
+  Firebase Email/Password auth, real Firestore reads/writes. Set it back to
+  `true` only for offline UI iteration against mock data.
+- **Firebase project**: `bambooo-5d4d2` (Blaze plan). Firestore rules,
+  composite indexes, and Cloud Storage rules are deployed
+  (`firebase deploy --only firestore,storage`).
+- **Seed data**: 3 demo pitches (EduNexus / Ledgr / Northbound) + founder
+  profiles live in Firestore. Re-seed with `node scripts/seed-firestore.mjs`
+  (needs `scripts/service-account.json` — gitignored, never commit it).
+- **Data source switch**: `web/lib/use-pitches.ts` reads Firestore when bypass
+  is off, falls back to `web/lib/mock-pitches.ts` when bypass is on or
+  Firestore errors.
+- **Dev role switcher**: `web/components/DevRoleSwitcher.tsx` floating pill —
+  only renders when bypass is on.
+- **Roadmap**: see [MILESTONES.md](./MILESTONES.md). Phase 5 (auth +
+  persistence) is done; Phase 6 (real Stripe payments) is active.
 
 ---
 
@@ -197,31 +197,24 @@ npx tsc --noEmit  # Type check
 
 ### Completed ✅
 - Monorepo structure with `/shared`, `/web`, `/mobile`
-- TypeScript configuration across all packages
-- Next.js 14 setup with App Router
-- Expo project initialization
-- Firebase configuration and auth helpers
-- Firestore and Cloud Storage helpers
-- All shared types and constants
-- Landing page with hero, how-it-works, and CTA sections
-- Navigation header and footer
-- Tailwind CSS with theme variables
-- Theme toggle component
-- Card component with theme variants
+- Landing page, theme system, nav/footer, Card components
+- Auth pages (login, register, forgot-password) wired to Firebase
+- Pitch creation wizard, inventor dashboard
+- Discovery feed, pitch detail, watchlist, investment flow (investor side)
+- Firestore security rules + composite indexes — **deployed**
+- Cloud Storage rules — **deployed**
+- Demo pitches + founders seeded into Firestore (`scripts/seed-firestore.mjs`)
+- Auth-aware nav (`SiteNavActions`: account menu, dashboard link, logout)
 
-### In Progress ⏳
-- Minor theme and component refinements
+### In Progress ⏳ (Phase 6)
+- Real Stripe payments: listing fee + investment payments, webhooks
 
 ### Not Started 🔴
-- Auth pages (login, register, role selection)
-- Pitch creation wizard (7-step form)
-- Dashboard screens (inventor & investor)
-- Discovery feed and pitch detail pages
-- Investment flow UI
-- Mobile screens
-- Verified badge system
-- Real Stripe integration
-- Firebase security rules
+- Production Vercel deployment under custom domain (Phase 7)
+- Sentry / uptime monitoring (Phase 7)
+- Invite-only access for the 100-participant cohort (Phase 7)
+- Admin moderation panel (Phase 8)
+- Mobile screens (Phase 9)
 
 See [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) for detailed task breakdown.
 
@@ -322,10 +315,14 @@ const variants = {
 ## 🔐 Security Notes
 
 - **Auth Context**: Only call Firebase auth from client-side (not server)
-- **Firestore Rules**: Rules are currently permissive (test mode); harden before production
+- **Firestore Rules**: Hardened and deployed (`firestore.rules`) — owner-only writes,
+  public reads for live pitches, immutable investments
+- **Storage Rules**: Deployed (`storage.rules`) — pitch-owner-only uploads with
+  size/MIME limits
 - **Payment Data**: Never handle raw payment data; use Stripe Elements for PCI compliance
-- **File Uploads**: Validate file type and size on client and server
-- **API Keys**: All keys are `NEXT_PUBLIC_*` (safe to expose); no secret keys needed for MVP
+- **Secrets**: `scripts/service-account.json` and `web/.env.local` are gitignored —
+  never commit them. `NEXT_PUBLIC_*` keys are safe to expose; `STRIPE_SECRET_KEY`
+  and service-account keys are not.
 
 ---
 
@@ -361,5 +358,5 @@ const variants = {
 
 ---
 
-**Last Updated**: 2026-05-24  
+**Last Updated**: 2026-06-11  
 **Maintained By**: Hussain Naqvi

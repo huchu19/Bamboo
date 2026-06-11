@@ -2,7 +2,8 @@
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   return (
@@ -14,8 +15,61 @@ export default function LoginPage() {
 
 function LoginInner() {
   const search = useSearchParams();
+  const router = useRouter();
+  const { role } = useAuth();
   const isSignup = search.get("mode") === "signup";
-  const [role, setRole] = useState<"investor" | "founder">("investor");
+  const [selectedRole, setSelectedRole] = useState<"investor" | "founder">("investor");
+
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+
+    if (isSignup) {
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters");
+        return;
+      }
+    }
+
+    setLoading(true);
+    try {
+      if (isSignup) {
+        const firebaseRole = selectedRole === "founder" ? "inventor" : "investor";
+        const { registerUser } = await import("@/lib/firebase/auth");
+        await registerUser(email, password, displayName, firebaseRole);
+        router.push(firebaseRole === "inventor" ? "/pitch/new" : "/discover");
+      } else {
+        const { loginUser } = await import("@/lib/firebase/auth");
+        const fbUser = await loginUser(email, password);
+        const { getUser } = await import("@/lib/firebase/firestore");
+        const userDoc = await getUser(fbUser.uid);
+        const dest = userDoc?.role === "inventor" ? "/dashboard" : "/investor/dashboard";
+        router.push(dest);
+      }
+    } catch (err: any) {
+      const msg: Record<string, string> = {
+        "auth/user-not-found": "No account found with this email.",
+        "auth/wrong-password": "Incorrect password.",
+        "auth/invalid-credential": "Incorrect email or password.",
+        "auth/too-many-requests": "Too many attempts. Try again later.",
+        "auth/email-already-in-use": "An account with this email already exists.",
+      };
+      setError(msg[err.code] || err.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
@@ -81,14 +135,21 @@ function LoginInner() {
             {isSignup ? "Plant your seed." : "Sign in."}
           </h2>
 
+          {error && (
+            <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
           {isSignup && (
             <div className="grid grid-cols-2 gap-2 p-1 bg-secondary rounded-xl mb-6">
               {(["investor", "founder"] as const).map((r) => (
                 <button
                   key={r}
-                  onClick={() => setRole(r)}
+                  type="button"
+                  onClick={() => setSelectedRole(r)}
                   className={`py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${
-                    role === r
+                    selectedRole === r
                       ? "bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground shadow"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -99,7 +160,7 @@ function LoginInner() {
             </div>
           )}
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {isSignup && (
               <div>
                 <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
@@ -108,6 +169,8 @@ function LoginInner() {
                 <input
                   type="text"
                   required
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
                   className="mt-1 w-full px-4 py-3 bg-card border border-[color:var(--input)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Jane Doe"
                 />
@@ -115,11 +178,13 @@ function LoginInner() {
             )}
             <div>
               <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                Work Email
+                {isSignup ? "Work Email" : "Email"}
               </label>
               <input
                 type="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 w-full px-4 py-3 bg-card border border-[color:var(--input)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="you@company.com"
               />
@@ -131,35 +196,60 @@ function LoginInner() {
               <input
                 type="password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 w-full px-4 py-3 bg-card border border-[color:var(--input)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="••••••••"
               />
             </div>
 
+            {isSignup && (
+              <div>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="mt-1 w-full px-4 py-3 bg-card border border-[color:var(--input)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="••••••••"
+                />
+              </div>
+            )}
+
+            {!isSignup && (
+              <div className="flex justify-end">
+                <Link
+                  href="/forgot-password"
+                  className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full py-4 bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 group"
+              disabled={loading}
+              className="w-full py-4 bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSignup ? "Plant Your Seed" : "Sign In"}
-              <span className="text-[color:var(--gold)] group-hover:translate-x-1 transition-transform">→</span>
+              {loading ? (
+                <span className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  {isSignup ? "Plant Your Seed" : "Sign In"}
+                  <span className="text-[color:var(--gold)] group-hover:translate-x-1 transition-transform">→</span>
+                </>
+              )}
             </button>
           </form>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[color:var(--border)]" /></div>
-            <div className="relative flex justify-center text-[10px] font-mono uppercase tracking-widest">
-              <span className="bg-background px-3 text-muted-foreground">or</span>
-            </div>
-          </div>
-
-          <button className="w-full py-3 border border-[color:var(--input)] rounded-lg text-sm font-semibold hover:bg-secondary transition-all">
-            Continue with Google
-          </button>
 
           <p className="mt-8 text-xs text-muted-foreground text-center">
             {isSignup ? "Already in the grove?" : "New to the grove?"}{" "}
             <Link
-              href={isSignup ? "/login?mode=signin" : "/login?mode=signup"}
+              href={isSignup ? "/login" : "/login?mode=signup"}
               className="text-foreground font-semibold underline-offset-4 hover:underline"
             >
               {isSignup ? "Sign in" : "Plant your seed"}
