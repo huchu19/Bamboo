@@ -7,6 +7,8 @@ import { BambooLeaf } from "@/components/bamboo/BambooIcons";
 import { BambooProgress } from "@/components/bamboo/BambooProgress";
 import { getPitchesByFounder, PITCHES, type Pitch } from "@/lib/mock-pitches";
 import { useInvestments } from "@/lib/investment-store";
+import { useAuth } from "@/context/AuthContext";
+import { MyPitchesPanel } from "@/components/bamboo/MyPitchesPanel";
 
 const FOUNDER_ID = "hussain-naqvi"; // demo inventor — owns EduNexus
 
@@ -31,6 +33,7 @@ function formatMoneyCompact(n: number): string {
 
 export default function DashboardPage() {
   const [tab, setTab] = useState<"overview" | "upload" | "billing">("overview");
+  const { devBypass } = useAuth();
 
   const pitches = useMemo(() => {
     const owned = getPitchesByFounder(FOUNDER_ID);
@@ -83,6 +86,11 @@ export default function DashboardPage() {
             </button>
           ))}
         </div>
+
+        {/* Real mode: the inventor's actual Firestore pitches (status, raise
+            progress, cancel & refund). The mock console below stays as the
+            demo surface until the founder analytics migrate in Phase 8. */}
+        {!devBypass && tab === "overview" && <MyPitchesPanel />}
 
         {tab === "overview" && (
           <Overview pitch={pitch} raisedAmount={raisedAmount} />

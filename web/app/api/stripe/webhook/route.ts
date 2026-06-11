@@ -12,6 +12,12 @@
  *     type=listing_fee → set pitch.listingFeePaid=true + status 'live'
  *                        (Phase 8 will switch this to 'pending_review')
  *   payment_intent.payment_failed → payments/{pi_id} audit record only
+ *   charge.refunded
+ *     type=investment  → investment status 'refunded', pitch counters rolled
+ *                        back in a transaction (idempotent)
+ *     type=listing_fee → pitch delisted (listingFeePaid=false, status 'closed')
+ *
+ * The production webhook endpoint must subscribe to all three event types.
  *
  * Local dev: `stripe listen --forward-to localhost:3000/api/stripe/webhook`
  * and copy the printed whsec_... into STRIPE_WEBHOOK_SECRET.
@@ -56,6 +62,9 @@ export async function POST(request: NextRequest) {
         break;
       case 'payment_intent.payment_failed':
         await recordPayment(event.data.object as Stripe.PaymentIntent, 'failed');
+        break;
+      case 'charge.refunded':
+        await handleRefunded(event.data.object as Stripe.Charge);
         break;
       default:
         // Acknowledge everything else so Stripe stops retrying.
@@ -140,6 +149,64 @@ async function fulfilListingFee(pi: Stripe.PaymentIntent) {
       publishedAt: now,
       updatedAt: now,
     },
+    { merge: true },
+  );
+}
+
+/**
+ * Refund fulfilment — runs for refunds created by /api/pitch/cancel AND for
+ * refunds issued manually from the Stripe dashboard (same single path).
+ * Idempotent: an already-refunded investment is left untouched, so Stripe
+ * retries and partial-refund events can't double-roll-back pitch counters.
+ */
+async function handleRefunded(charge: Stripe.Charge) {
+  const piId =
+    typeof charge.payment_intent === 'string'
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+  if (!piId) return;
+
+  const db = getAdminDb();
+
+  // Charge objects don't carry PaymentIntent metadata; recover type/pitchId
+  // from our payments audit record, falling back to the PI itself.
+  let meta = (await db.collection('payments').doc(piId).get()).data()?.metadata;
+  if (!meta?.type) {
+    meta = (await getStripe().paymentIntents.retrieve(piId)).metadata;
+  }
+  const now = Date.now();
+
+  if (meta?.type === 'investment') {
+    const invRef = db.collection('investments').doc(`inv_${piId}`);
+    await db.runTransaction(async (tx) => {
+      const invSnap = await tx.get(invRef);
+      if (!invSnap.exists) return;
+      const inv = invSnap.data()!;
+      if (inv.status === 'refunded') return; // already fulfilled
+
+      const pitchRef = db.collection('pitches').doc(inv.pitchId);
+      const pitchSnap = await tx.get(pitchRef);
+
+      tx.update(invRef, { status: 'refunded', refundedAt: now, updatedAt: now });
+      if (pitchSnap.exists) {
+        const pitch = pitchSnap.data()!;
+        tx.update(pitchRef, {
+          amountRaised: Math.max(0, (pitch.amountRaised || 0) - inv.amount),
+          investorCount: Math.max(0, (pitch.investorCount || 0) - 1),
+          updatedAt: now,
+        });
+      }
+    });
+  } else if (meta?.type === 'listing_fee' && meta.pitchId) {
+    // Refunding a listing fee means delisting the pitch.
+    await db.collection('pitches').doc(meta.pitchId).set(
+      { listingFeePaid: false, status: 'closed', updatedAt: now },
+      { merge: true },
+    );
+  }
+
+  await db.collection('payments').doc(piId).set(
+    { status: 'refunded', updatedAt: now },
     { merge: true },
   );
 }

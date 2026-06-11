@@ -12,6 +12,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { initializeApp, cert, getApps, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
+import { getAuth, type Auth } from 'firebase-admin/auth';
 
 let app: App | null = null;
 
@@ -30,9 +31,32 @@ function loadServiceAccount(): Record<string, string> {
   }
 }
 
-export function getAdminDb(): Firestore {
+function getApp(): App {
   if (!app) {
     app = getApps()[0] ?? initializeApp({ credential: cert(loadServiceAccount()) });
   }
-  return getFirestore(app);
+  return app;
+}
+
+export function getAdminDb(): Firestore {
+  return getFirestore(getApp());
+}
+
+export function getAdminAuth(): Auth {
+  return getAuth(getApp());
+}
+
+/**
+ * Verify a `Authorization: Bearer <firebase-id-token>` header and return the
+ * caller's uid, or null when the header is missing/invalid. API routes that
+ * act on a user's behalf must call this — never trust uids in request bodies.
+ */
+export async function verifyBearerToken(authorization: string | null): Promise<string | null> {
+  if (!authorization?.startsWith('Bearer ')) return null;
+  try {
+    const decoded = await getAdminAuth().verifyIdToken(authorization.slice('Bearer '.length));
+    return decoded.uid;
+  } catch {
+    return null;
+  }
 }
