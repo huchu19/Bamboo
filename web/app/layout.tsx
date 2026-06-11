@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { DevRoleSwitcher } from "@/components/DevRoleSwitcher";
+import { OnboardingModal } from "@/components/bamboo/OnboardingModal";
 
 const anton = Anton({
   subsets: ["latin"],
@@ -58,6 +59,7 @@ export default function RootLayout({
           <AuthProvider>
             {children}
             <DevRoleSwitcher />
+            <OnboardingModal />
           </AuthProvider>
         </ThemeProvider>
       </body>
