@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useInvestments } from '@/lib/investment-store';
+import { useAuth } from '@/context/AuthContext';
+import { isStripeEnabled } from '@/lib/stripe/client';
+import { PaymentStep } from './PaymentStep';
 import type { Pitch } from '@/lib/mock-pitches';
 
 /** Parse a display ask like "$2.3M" / "$750K" into dollars. */
@@ -17,7 +20,7 @@ function parseAmount(display: string): number {
 const MIN = 100;
 const PRESETS = [5000, 10000, 25000, 50000];
 
-type Step = 'amount' | 'review' | 'success';
+type Step = 'amount' | 'review' | 'payment' | 'success';
 
 function fmt(n: number): string {
   return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
@@ -35,10 +38,14 @@ export function InvestModal({
   onRecorded?: (amount: number) => void;
 }) {
   const { record } = useInvestments();
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>('amount');
   const [amount, setAmount] = useState(10000);
   const [anonymous, setAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [clientSecret, setClientSecret] = useState('');
+  const [payError, setPayError] = useState('');
+  const realPayments = isStripeEnabled();
 
   const goalDollars = useMemo(() => parseAmount(pitch.asking), [pitch.asking]);
   const equityPct = useMemo(() => {
@@ -53,6 +60,8 @@ export function InvestModal({
       setAmount(10000);
       setAnonymous(false);
       setSubmitting(false);
+      setClientSecret('');
+      setPayError('');
     }
   }, [open]);
 
@@ -75,21 +84,54 @@ export function InvestModal({
 
   const valid = amount >= MIN;
 
-  function confirm() {
+  function recordAndSucceed() {
+    record({
+      pitchId: pitch.id,
+      company: pitch.company,
+      amount,
+      equityPct,
+      anonymous,
+    });
+    setStep('success');
+    onRecorded?.(amount);
+  }
+
+  async function confirm() {
     setSubmitting(true);
-    // Simulate a short processing delay for realism (stubbed payment).
-    setTimeout(() => {
-      record({
-        pitchId: pitch.id,
-        company: pitch.company,
-        amount,
-        equityPct,
-        anonymous,
+    setPayError('');
+
+    if (!realPayments) {
+      // No Stripe keys configured — keep the demo simulation.
+      setTimeout(() => {
+        setSubmitting(false);
+        recordAndSucceed();
+      }, 850);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/stripe/payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'investment',
+          pitchId: pitch.id,
+          investorId: user?.uid ?? 'unknown',
+          amountCents: Math.round(amount * 100),
+          anonymous,
+        }),
       });
+      const data = await res.json();
+      if (!res.ok || !data.clientSecret) {
+        throw new Error(data.error || 'Could not start payment.');
+      }
+      setClientSecret(data.clientSecret);
+      setStep('payment');
+    } catch (err: any) {
+      setPayError(err.message || 'Could not start payment.');
+    } finally {
       setSubmitting(false);
-      setStep('success');
-      onRecorded?.(amount);
-    }, 850);
+    }
   }
 
   return (
@@ -125,13 +167,14 @@ export function InvestModal({
         {/* Step indicator */}
         {step !== 'success' && (
           <div className="flex gap-1.5 mb-5">
-            {(['amount', 'review'] as Step[]).map((s) => (
+            {(realPayments
+              ? (['amount', 'review', 'payment'] as Step[])
+              : (['amount', 'review'] as Step[])
+            ).map((s, i, steps) => (
               <div
                 key={s}
                 className={`h-1 flex-1 rounded-full transition-colors ${
-                  step === s || (s === 'amount' && step === 'review')
-                    ? 'bg-[color:var(--gold)]'
-                    : 'bg-white/10'
+                  steps.indexOf(step as Step) >= i ? 'bg-[color:var(--gold)]' : 'bg-white/10'
                 }`}
               />
             ))}
@@ -286,8 +329,16 @@ export function InvestModal({
               </span>
             </button>
 
+            {payError && (
+              <p className="text-[10px] font-mono text-red-300/90 bg-red-500/10 ring-1 ring-red-500/30 rounded-lg px-3 py-2">
+                {payError}
+              </p>
+            )}
+
             <p className="text-[10px] font-mono text-white/40 text-center leading-relaxed">
-              Demo only — no real funds move. Powered by Stripe · escrow until close.
+              {realPayments
+                ? 'Payment on the next step · Powered by Stripe · escrow until close.'
+                : 'Demo only — no real funds move. Powered by Stripe · escrow until close.'}
             </p>
             <div className="flex gap-2">
               <button
@@ -303,10 +354,23 @@ export function InvestModal({
                 onClick={confirm}
                 className="flex-1 py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
               >
-                {submitting ? 'Planting…' : 'Confirm & Plant Capital'}
+                {submitting
+                  ? 'Preparing…'
+                  : realPayments
+                    ? 'Continue to Payment'
+                    : 'Confirm & Plant Capital'}
               </button>
             </div>
           </div>
+        )}
+
+        {step === 'payment' && clientSecret && (
+          <PaymentStep
+            clientSecret={clientSecret}
+            amount={amount}
+            onSuccess={recordAndSucceed}
+            onBack={() => setStep('review')}
+          />
         )}
 
         {step === 'success' && (

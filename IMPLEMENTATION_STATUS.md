@@ -56,20 +56,38 @@ persistence. Sticky invest CTA. EquityChart on traction section. Confetti on suc
 
 ## 💳 Phase 6: Real Payments (Stripe) — IN PROGRESS
 
+> Architecture: client confirms via Stripe Elements; the webhook
+> (`/api/stripe/webhook`) is the single source of truth for fulfilment and
+> writes to Firestore via the Admin SDK. While Stripe keys are `*_stub`, the
+> invest flow falls back to the demo simulation, so dev keeps working.
+
+### 6.0 Infrastructure
+- [x] `stripe`, `@stripe/stripe-js`, `@stripe/react-stripe-js`, `firebase-admin` installed
+- [x] `lib/stripe/server.ts` — server Stripe client (stub-aware)
+- [x] `lib/stripe/client.ts` — browser loader + `isStripeEnabled()`
+- [x] `lib/firebase/admin.ts` — Admin SDK (env var on Vercel, local key fallback)
+- [x] `POST /api/stripe/payment-intent` — investment + listing fee intents
+- [x] `POST /api/stripe/webhook` — signature-verified, idempotent fulfilment
+- [ ] Paste real Stripe test keys into `web/.env.local` + set `STRIPE_WEBHOOK_SECRET`
+- [ ] End-to-end test with `stripe listen` + 4242 test card
+
 ### 6.1 Listing fee
-- [ ] Stripe Elements on pitch submission final step
-- [ ] Webhook: confirm payment → set `listingFeePaid: true` → queue for admin review
-- [ ] Handle failed/cancelled payments (clear draft pitch or retry)
+- [x] Webhook: payment confirmed → `listingFeePaid: true` + pitch goes live
+      (Phase 8 will switch to `pending_review`)
+- [ ] Stripe Elements step on pitch submission wizard (route exists, UI not wired)
+- [ ] Handle failed/cancelled listing payments (clear draft / retry)
 
 ### 6.2 Investment payments
-- [ ] Replace stub in investment modal with Stripe Elements
-- [ ] Stripe Connect marketplace setup
-- [ ] Store `stripePaymentIntentId` on investment record
-- [ ] Webhook: mark investment `completed` on payment confirmation
+- [x] Investment modal: amount → review → **Stripe payment step** → success
+- [x] `stripePaymentIntentId` stored on investment record (webhook)
+- [x] Webhook: investment `completed` + pitch counters bumped in one transaction
+- [x] `payments/{pi_id}` audit record on success/failure
+- [ ] Investor dashboard reads investments from Firestore (still localStorage)
+- [ ] Stripe Connect marketplace payouts to inventors
 
 ### 6.3 Refunds & edge cases
 - [ ] Cancelled pitch → trigger refund for all investments
-- [ ] Failed payment → clear pending investment record
+- [ ] Failed payment → surfaced in payments collection (recorded); UI retry flow
 - [ ] Stripe built-in receipt emails
 
 ---
