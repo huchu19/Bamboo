@@ -22,15 +22,17 @@ export function SiteNav({ variant = "light" }: { variant?: "light" | "ink" }) {
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center" aria-label="Bamboo home">
-            <Image
-              src="/logo.png"
-              alt="Bamboo"
-              width={32}
-              height={32}
-              priority
-              className="size-8 rounded-md object-contain"
-            />
+          <Link href="/" aria-label="Bamboo home" className="shrink-0">
+            <span className="flex items-center justify-center size-10 rounded-xl bg-white ring-1 ring-black/5 shadow-sm overflow-hidden">
+              <Image
+                src="/logo.png"
+                alt="Bamboo"
+                width={40}
+                height={40}
+                priority
+                className="size-9 object-contain"
+              />
+            </span>
           </Link>
           <div className="hidden md:flex gap-6 text-[10px] font-mono uppercase tracking-widest opacity-80">
             <NavLinks />
