@@ -42,7 +42,7 @@ export function DevRoleSwitcher() {
       <Btn value="investor" label="Investor" />
       <div className="mx-1 h-4 w-px bg-white/10" />
       <Link
-        href={role === 'inventor' ? '/dashboard' : '/investor/dashboard'}
+        href="/dashboard"
         className="px-2.5 py-1 rounded-md text-[10px] font-mono uppercase tracking-widest text-white/70 hover:text-white"
       >
         Dash
@@ -53,7 +53,7 @@ export function DevRoleSwitcher() {
           pathname?.startsWith('/discover') ? 'text-[color:var(--gold)]' : 'text-white/70 hover:text-white'
         }`}
       >
-        Grove
+        Discover
       </Link>
     </div>
   );

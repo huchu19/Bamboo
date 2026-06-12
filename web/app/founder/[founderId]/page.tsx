@@ -31,7 +31,7 @@ export default function FounderProfile({
           Discover
         </Link>
         <span className="mx-2">/</span>
-        <span>Founders</span>
+        <span>Inventors</span>
         <span className="mx-2">/</span>
         <span className="text-foreground">{founder.name}</span>
       </div>
@@ -50,7 +50,7 @@ export default function FounderProfile({
 
           <div className="min-w-0">
             <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              Founder · {founder.location}
+              Inventor · {founder.location}
             </p>
             <h1 className="font-display text-6xl md:text-7xl uppercase tracking-tighter leading-[0.9] mt-2">
               {founder.name}
@@ -94,7 +94,7 @@ export default function FounderProfile({
 
         {pitches.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground font-mono text-sm">
-            This founder hasn’t listed any pitches yet.
+            This inventor hasn’t listed any pitches yet.
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

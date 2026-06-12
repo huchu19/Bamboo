@@ -307,12 +307,12 @@ export function InvestModal({
                 </svg>
                 <span className="flex flex-col min-w-0">
                   <span className="text-[11px] font-bold text-white/90">
-                    {anonymous ? 'Investing as Anonymous backer' : 'Show my name to the founder'}
+                    {anonymous ? 'Investing as Anonymous backer' : 'Show my name to the inventor'}
                   </span>
                   <span className="text-[10px] font-mono text-white/45 leading-tight mt-0.5">
                     {anonymous
-                      ? 'Founder sees "Anonymous backer" only. Your portfolio is unchanged.'
-                      : 'Tap to hide your identity from the founder & public lists.'}
+                      ? 'Inventor sees "Anonymous backer" only. Your portfolio is unchanged.'
+                      : 'Tap to hide your identity from the inventor & public lists.'}
                   </span>
                 </span>
               </span>
@@ -404,7 +404,7 @@ export function InvestModal({
                   <path d="M10.6 5.1A10.5 10.5 0 0112 5c5 0 9.3 3.3 11 8a17 17 0 01-2.8 4.2" />
                   <path d="M6.6 6.6A17 17 0 001 13c1.7 4.7 6 8 11 8 1.6 0 3.1-.3 4.5-.9" />
                 </svg>
-                Visible to the founder as Anonymous
+                Visible to the inventor as Anonymous
               </p>
             )}
             <button

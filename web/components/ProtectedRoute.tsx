@@ -21,7 +21,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
       return;
     }
     if (requiredRole && role !== requiredRole) {
-      router.replace(role === 'inventor' ? '/dashboard' : '/investor/dashboard');
+      router.replace('/dashboard');
     }
   }, [devBypass, isAuthenticated, isLoading, role, requiredRole, router]);
 

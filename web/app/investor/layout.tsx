@@ -7,7 +7,7 @@ import { SiteNav } from '@/components/bamboo/SiteNav';
 export default function InvestorLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const tabs = [
-    { href: '/investor/dashboard', label: 'Portfolio' },
+    { href: '/dashboard', label: 'Dashboard' },
     { href: '/investor/watchlist', label: 'Watchlist' },
   ];
 

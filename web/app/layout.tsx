@@ -33,12 +33,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "Bamboo",
   description:
-    "The capital grove where Root-Verified founders plant 60-second pitches and accredited investors grow connected portfolios.",
-  keywords: ["investing", "founders", "venture", "capital", "bamboo", "grove"],
+    "The capital grove where Root-Verified inventors plant 60-second pitches and accredited investors grow connected portfolios.",
+  keywords: ["investing", "inventors", "venture", "capital", "bamboo", "grove"],
   openGraph: {
     title: "Bamboo",
     description:
-      "Bamboo is the fastest-growing organism on earth — and the grove where founders plant their pitch and investors grow connected portfolios.",
+      "Bamboo is the fastest-growing organism on earth — and the grove where inventors plant their pitch and investors grow connected portfolios.",
     type: "website",
     url: siteUrl,
   },

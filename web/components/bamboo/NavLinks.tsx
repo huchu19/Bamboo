@@ -4,12 +4,12 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 
 /**
- * Auth-aware primary nav links. Inventors get a direct "My Pitches" +
- * "Plant a Pitch" entry; investors get "Your Grove". Signed-out visitors see
- * only the public links.
+ * Primary nav links. Roles are unified — every signed-in user gets the same
+ * links (one dashboard for pitches + portfolio). Signed-out visitors see only
+ * the public links.
  */
 export function NavLinks() {
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const linkCls =
     'hover:text-[color:var(--gold)] transition-colors cursor-pointer';
@@ -17,28 +17,17 @@ export function NavLinks() {
   return (
     <>
       <Link href="/discover" className={linkCls}>
-        Walk the Grove
+        Discover
       </Link>
 
-      {isAuthenticated && role === 'inventor' && (
-        <>
-          <Link href="/dashboard" className={linkCls}>
-            Command Deck
-          </Link>
-          <Link href="/pitch/new" className={linkCls}>
-            Plant a Pitch
-          </Link>
-        </>
-      )}
-
-      {isAuthenticated && role === 'investor' && (
-        <Link href="/investor/dashboard" className={linkCls}>
-          Command Deck
+      {isAuthenticated && (
+        <Link href="/dashboard" className={linkCls}>
+          Dashboard
         </Link>
       )}
 
       <Link href="/#pricing" className={linkCls}>
-        Harvest
+        Pricing
       </Link>
     </>
   );

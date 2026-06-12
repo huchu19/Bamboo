@@ -19,7 +19,7 @@ function LoginInner() {
   const router = useRouter();
   useAuth();
   const isSignup = search.get("mode") === "signup";
-  const [selectedRole, setSelectedRole] = useState<"investor" | "founder">("investor");
+  const [selectedRole, setSelectedRole] = useState<"investor" | "inventor">("investor");
 
   const inviteRequired = isInviteRequired();
   const [displayName, setDisplayName] = useState("");
@@ -48,7 +48,7 @@ function LoginInner() {
     setLoading(true);
     try {
       if (isSignup) {
-        const firebaseRole = selectedRole === "founder" ? "inventor" : "investor";
+        const firebaseRole = selectedRole === "inventor" ? "inventor" : "investor";
 
         if (inviteRequired) {
           const res = await fetch("/api/invites/validate", {
@@ -85,14 +85,11 @@ function LoginInner() {
           }
         }
 
-        router.push(firebaseRole === "inventor" ? "/pitch/new" : "/discover");
+        router.push("/dashboard");
       } else {
         const { loginUser } = await import("@/lib/firebase/auth");
-        const fbUser = await loginUser(email, password);
-        const { getUser } = await import("@/lib/firebase/firestore");
-        const userDoc = await getUser(fbUser.uid);
-        const dest = userDoc?.role === "inventor" ? "/dashboard" : "/investor/dashboard";
-        router.push(dest);
+        await loginUser(email, password);
+        router.push("/dashboard");
       }
     } catch (err: any) {
       const msg: Record<string, string> = {
@@ -132,7 +129,7 @@ function LoginInner() {
             Plant your <span className="text-[color:var(--gold)]">seed</span>.
           </h1>
           <p className="text-white/60 max-w-md text-sm leading-relaxed">
-            Bamboo is the grove where Root-Verified founders plant 60-second pitches and
+            Bamboo is the grove where Root-Verified inventors plant 60-second pitches and
             accredited investors grow portfolios. Connected roots, exponential bloom.
           </p>
         </div>
@@ -166,7 +163,7 @@ function LoginInner() {
 
           {isSignup && (
             <div className="grid grid-cols-2 gap-2 p-1 bg-secondary rounded-xl mb-6">
-              {(["investor", "founder"] as const).map((r) => (
+              {(["investor", "inventor"] as const).map((r) => (
                 <button
                   key={r}
                   type="button"
@@ -177,7 +174,7 @@ function LoginInner() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  I&apos;m {r === "investor" ? "an" : "a"} {r}
+                  I&apos;m {r === "investor" ? "an" : "an"} {r}
                 </button>
               ))}
             </div>

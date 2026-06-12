@@ -22,7 +22,7 @@ export function SiteNavActions({ variant = "light" }: { variant?: "light" | "ink
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const dashboardHref = role === "inventor" ? "/dashboard" : "/investor/dashboard";
+  const dashboardHref = "/dashboard";
   const initials = user?.displayName
     ? user.displayName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : user?.email?.[0]?.toUpperCase() ?? "U";

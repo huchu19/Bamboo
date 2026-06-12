@@ -27,7 +27,7 @@ export function RoleSwitcherChip() {
     );
     if (!confirmed) return;
     setDevRole(next);
-    router.push(next === "investor" ? "/investor/dashboard" : "/dashboard");
+    router.push("/dashboard");
   };
 
   return (

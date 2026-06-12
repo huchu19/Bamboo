@@ -28,7 +28,7 @@ export default function Home() {
               Grow Your Portfolio.
             </p>
             <p className="max-w-lg text-lg text-pretty leading-relaxed text-foreground/70 animate-reveal [animation-delay:200ms]">
-              Bamboo is the fastest-growing organism on earth — and the grove where founders
+              Bamboo is the fastest-growing organism on earth — and the grove where inventors
               plant their pitch and investors grow connected portfolios. Seed becomes
               business. Roots become network. Everyone grows together.
             </p>
@@ -47,7 +47,7 @@ export default function Home() {
                 href="/dashboard"
                 className="border-2 border-foreground/15 hover:border-primary px-8 py-4 rounded-xl font-bold flex flex-col items-start gap-1 transition-all"
               >
-                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Founders</span>
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Inventors</span>
                 <span className="text-lg">Plant Your Pitch</span>
               </Link>
             </div>
@@ -74,7 +74,7 @@ export default function Home() {
               </h2>
               <p className="text-white/60 mt-3 max-w-lg">
                 Bamboo grows in connected groves through shared root systems. Every investor
-                and every founder feeds the same network. From seed to bloom in 12 days.
+                and every inventor feeds the same network. From seed to bloom in 12 days.
               </p>
             </div>
             <RootGlyph size={120} className="text-[color:var(--gold)]/60 shrink-0" />
@@ -84,7 +84,7 @@ export default function Home() {
               {
                 step: "01 / PLANT",
                 title: "The 60s Seed",
-                copy: "Founders plant a 60-second pitch. Zero decks, zero fluff. Just the idea, ready to germinate.",
+                copy: "Inventors plant a 60-second pitch. Zero decks, zero fluff. Just the idea, ready to germinate.",
               },
               {
                 step: "02 / ROOT",
@@ -116,7 +116,7 @@ export default function Home() {
       <section className="py-32 px-6">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-px bg-[color:var(--border)]">
           <div className="bg-background p-12">
-            <span className="font-mono text-xs uppercase tracking-widest text-[color:var(--gold)]">For Founders</span>
+            <span className="font-mono text-xs uppercase tracking-widest text-[color:var(--gold)]">For Inventors</span>
             <h3 className="font-display text-5xl uppercase tracking-tighter mt-4 mb-6">
               Skip the warm intro.
             </h3>
@@ -146,7 +146,7 @@ export default function Home() {
             </h3>
             <ul className="space-y-3 text-sm text-foreground/80 mb-10">
               {[
-                "Curated grove of Root-Verified founders",
+                "Curated grove of Root-Verified inventors",
                 "Watch the pitch before opening the vault",
                 "Financials, cap tables, term sheets — one click",
                 "Wire through Stripe escrow with audit trail",
@@ -178,7 +178,7 @@ export default function Home() {
             </h3>
             <p className="text-sm text-foreground/70 leading-relaxed">
               Every investor in the grove is gated through accreditation before they can
-              commit capital. ID, income, and KYC verified — so founders only meet serious
+              commit capital. ID, income, and KYC verified — so inventors only meet serious
               backers and capital only meets compliant deals.
             </p>
           </div>
@@ -281,7 +281,7 @@ export default function Home() {
                 Bamboo
               </span>
               <p className="mt-4 text-white/60 text-sm leading-relaxed">
-                The capital grove for serious founders and investors. Plant your seed.
+                The capital grove for serious inventors and investors. Plant your seed.
                 Grow your portfolio.
               </p>
             </div>

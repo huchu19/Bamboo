@@ -125,7 +125,7 @@ export default function PitchDetail({
                   </span>
                 </p>
                 <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  Founder & CEO · View profile
+                  Inventor & CEO · View profile
                 </p>
               </div>
             </Link>

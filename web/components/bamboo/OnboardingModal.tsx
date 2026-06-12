@@ -45,7 +45,7 @@ export function OnboardingModal() {
           ['🌱', 'Watch it grow', 'Track backers, raised capital, and inbound interest from your dashboard.'],
         ]
       : [
-          ['🔍', 'Walk the grove', 'Browse 60-second founder pitches in Discover — filter by sector and stage.'],
+          ['🔍', 'Walk the grove', 'Browse 60-second inventor pitches in Discover — filter by sector and stage.'],
           ['💰', 'Plant capital', 'Invest from $100. Funds are held in escrow via Stripe until the round closes.'],
           ['📊', 'Track your sprouts', 'Your portfolio, equity, and watchlist live in the investor dashboard.'],
         ];
@@ -67,7 +67,7 @@ export function OnboardingModal() {
         </h2>
         <p className="text-sm text-white/60 mt-2 leading-relaxed">
           You&apos;re one of ~100 invited members of the Bamboo beta. Here&apos;s the lay of
-          the land{role === 'inventor' ? ', founder' : ''}:
+          the land{role === 'inventor' ? ', inventor' : ''}:
         </p>
 
         <ul className="mt-5 space-y-4">

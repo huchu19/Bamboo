@@ -97,7 +97,7 @@ export function DocumentCard({ doc }: { doc: PitchDocument }) {
           // access requests through Firestore.
           if (typeof window !== "undefined") {
             window.alert(
-              "Request submitted. The founder will review your access request to " +
+              "Request submitted. The inventor will review your access request to " +
                 doc.label +
                 ".",
             );
