@@ -6,7 +6,7 @@ import type { Pitch as FirestorePitch } from '../types';
 
 const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH !== 'false';
 
-function adaptFirestorePitch(fp: FirestorePitch): Pitch {
+export function adaptFirestorePitch(fp: FirestorePitch): Pitch {
   const raised =
     fp.fundingGoal > 0
       ? Math.round((fp.amountRaised / fp.fundingGoal) * 100)

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, use } from "react";
+import { useRef, useState, use, useEffect } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteNav } from "@/components/bamboo/SiteNav";
@@ -9,9 +9,12 @@ import { FounderAvatar } from "@/components/bamboo/FounderAvatar";
 import { EquityChart, TractionSpark } from "@/components/bamboo/EquityChart";
 import { BambooDivider } from "@/components/bamboo/BambooDivider";
 import { getPitch, PITCHES, type Pitch } from "@/lib/mock-pitches";
+import { adaptFirestorePitch } from "@/lib/use-pitches";
 import { useWatchlist } from "@/lib/watchlist-store";
 import { InvestModal } from "@/components/bamboo/InvestModal";
 import { DocumentCard } from "@/components/bamboo/DocumentCard";
+
+const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH !== "false";
 
 export default function PitchDetail({
   params,
@@ -19,9 +22,45 @@ export default function PitchDetail({
   params: Promise<{ pitchId: string }>;
 }) {
   const { pitchId } = use(params);
-  const pitch = getPitch(pitchId);
+  // Mock catalogue first (seeded demo pitches), then fall back to a live
+  // Firestore lookup by id for pitches created through the wizard.
+  const mockPitch = getPitch(pitchId);
+  const [pitch, setPitch] = useState<Pitch | null | undefined>(
+    mockPitch ?? (DEV_BYPASS ? null : undefined),
+  );
   const [investOpen, setInvestOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (mockPitch || DEV_BYPASS) return;
+    let cancelled = false;
+    import("@/lib/firebase/firestore")
+      .then(({ getPitch: getFirestorePitch }) => getFirestorePitch(pitchId))
+      .then((fp) => {
+        if (cancelled) return;
+        setPitch(fp ? adaptFirestorePitch(fp) : null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error("[PitchDetail] Firestore lookup failed:", err);
+        setPitch(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pitchId, mockPitch]);
+
+  // undefined = still loading the Firestore fallback; null = confirmed missing.
+  if (pitch === undefined) {
+    return (
+      <div className="min-h-screen bg-background">
+        <SiteNav />
+        <div className="max-w-7xl mx-auto px-6 py-32 text-center text-sm text-muted-foreground">
+          Loading pitch…
+        </div>
+      </div>
+    );
+  }
   if (!pitch) return notFound();
 
   function handleRecorded(amount: number) {
