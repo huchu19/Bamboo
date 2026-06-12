@@ -37,14 +37,17 @@ export const registerUser = async (
   // Update profile
   await updateProfile(user, { displayName });
 
-  // Create user document in Firestore
+  // Create user document in Firestore. Registration is gated behind the
+  // Terms/Privacy checkbox in the UI, so record acceptance at signup time.
+  const now = Date.now();
   const userDoc: User = {
     uid: user.uid,
     email: user.email || '',
     displayName,
     role,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
+    termsAcceptedAt: now,
+    createdAt: now,
+    updatedAt: now,
   };
 
   if (role === 'inventor') {

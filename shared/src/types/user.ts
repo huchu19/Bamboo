@@ -34,6 +34,9 @@ export interface User {
   /** True once the user has dismissed the first-login onboarding modal. */
   hasOnboarded?: boolean;
 
+  /** Timestamp when the user accepted the Terms of Service + Privacy Policy. */
+  termsAcceptedAt?: number;
+
   // Role-specific profiles
   inventorProfile?: InventorProfile;
   investorProfile?: InvestorProfile;

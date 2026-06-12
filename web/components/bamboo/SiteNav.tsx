@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BambooLeaf } from "./BambooIcons";
 import { NavLinks, useNavItems } from "./NavLinks";
 import { SiteNavActions } from "./SiteNavActions";
+import { ThemeToggleButton } from "./ThemeToggleButton";
 
 export function SiteNav({ variant = "light" }: { variant?: "light" | "ink" }) {
   const isInk = variant === "ink";
@@ -37,6 +38,7 @@ export function SiteNav({ variant = "light" }: { variant?: "light" | "ink" }) {
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggleButton variant={variant} />
           <SiteNavActions variant={variant} />
 
           {/* Hamburger — visible only below the md breakpoint. */}

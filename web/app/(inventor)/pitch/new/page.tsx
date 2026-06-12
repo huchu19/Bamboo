@@ -4,23 +4,104 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { SiteNav } from '@/components/bamboo/SiteNav';
 import { useDraftPitches } from '@/lib/draft-pitches-store';
 import { isStripeEnabled } from '@/lib/stripe/client';
 import { LISTING_FEE_CENTS } from '@/lib/fees';
 import { PaymentStep } from '@/components/bamboo/PaymentStep';
 import type { PitchCategory, PitchStatus } from '@/types';
 
-const PITCH_CATEGORIES: { value: PitchCategory; label: string; emoji: string }[] = [
-  { value: 'technology', label: 'Technology', emoji: '💻' },
-  { value: 'health', label: 'Health & Wellness', emoji: '🏥' },
-  { value: 'fintech', label: 'Fintech', emoji: '💳' },
-  { value: 'sustainability', label: 'Sustainability', emoji: '🌱' },
-  { value: 'food-beverage', label: 'Food & Beverage', emoji: '🍽️' },
-  { value: 'education', label: 'Education', emoji: '📚' },
-  { value: 'real-estate', label: 'Real Estate', emoji: '🏠' },
-  { value: 'entertainment', label: 'Entertainment', emoji: '🎬' },
-  { value: 'consumer-goods', label: 'Consumer Goods', emoji: '🛍️' },
-  { value: 'b2b-saas', label: 'B2B SaaS', emoji: '⚙️' },
+const PITCH_CATEGORIES: { value: PitchCategory; label: string; icon: React.ReactNode }[] = [
+  {
+    value: 'technology',
+    label: 'Technology',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" /><polyline points="8 21 12 17 16 21" /><line x1="12" y1="17" x2="12" y2="21" />
+      </svg>
+    ),
+  },
+  {
+    value: 'health',
+    label: 'Health & Wellness',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+      </svg>
+    ),
+  },
+  {
+    value: 'fintech',
+    label: 'Fintech',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" />
+      </svg>
+    ),
+  },
+  {
+    value: 'sustainability',
+    label: 'Sustainability',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 22c1.25-1.25 2.5-2.5 3.5-5 .5-1.5.5-3 .5-4.5C6 7 9 4 12 2c0 3-1 6-3 8 2-1 4.5-1.5 7-1 .5 2-1 5-3 6.5-1.5 1-3.5 1.5-5.5 1.5C5.5 17 4 18.5 2 22z" />
+      </svg>
+    ),
+  },
+  {
+    value: 'food-beverage',
+    label: 'Food & Beverage',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 8h1a4 4 0 010 8h-1" /><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" /><line x1="6" y1="1" x2="6" y2="4" /><line x1="10" y1="1" x2="10" y2="4" /><line x1="14" y1="1" x2="14" y2="4" />
+      </svg>
+    ),
+  },
+  {
+    value: 'education',
+    label: 'Education',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+      </svg>
+    ),
+  },
+  {
+    value: 'real-estate',
+    label: 'Real Estate',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+    ),
+  },
+  {
+    value: 'entertainment',
+    label: 'Entertainment',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" />
+      </svg>
+    ),
+  },
+  {
+    value: 'consumer-goods',
+    label: 'Consumer Goods',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
+      </svg>
+    ),
+  },
+  {
+    value: 'b2b-saas',
+    label: 'B2B SaaS',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="3" /><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14" /><path d="M15.54 8.46a5 5 0 010 7.07M8.46 8.46a5 5 0 000 7.07" />
+      </svg>
+    ),
+  },
 ];
 
 export default function CreatePitchPage() {
@@ -282,23 +363,25 @@ export default function CreatePitchPage() {
   const currentStepIndex = steps.indexOf(step);
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
-  // Shared class fragments
-  const inputCls = 'w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white/90 placeholder:text-white/25 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] transition-all';
-  const labelCls = 'block text-[10px] font-mono uppercase tracking-widest text-white/50 mb-2';
-  const hintCls = 'text-[10px] font-mono text-white/30 mt-1.5';
+  // Shared class fragments — theme-aware so the wizard matches the rest of the
+  // app in both light and dark mode.
+  const inputCls = 'w-full px-4 py-3 bg-secondary border border-[color:var(--input)] rounded-lg text-foreground placeholder:text-muted-foreground/60 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] transition-all';
+  const labelCls = 'block text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2';
+  const hintCls = 'text-[10px] font-mono text-muted-foreground/70 mt-1.5';
   const btnPrimary = 'flex-1 py-3.5 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all';
-  const btnSecondary = 'flex-1 py-3.5 bg-white/5 border border-white/10 text-white/60 rounded-lg font-mono text-xs uppercase tracking-widest hover:bg-white/10 transition-all disabled:opacity-40';
+  const btnSecondary = 'flex-1 py-3.5 bg-secondary border border-[color:var(--border)] text-muted-foreground rounded-lg font-mono text-xs uppercase tracking-widest hover:bg-muted transition-all disabled:opacity-40';
 
   return (
-    <div className="min-h-screen bg-[color:var(--ink)] px-4 py-10">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-background text-foreground">
+      <SiteNav />
+      <div className="max-w-2xl mx-auto px-4 py-10">
 
         {/* Header + progress */}
         {step !== 'confirmation' && (
           <div className="mb-8">
             <div className="flex items-baseline justify-between mb-4">
-              <h1 className="font-display text-3xl text-white tracking-tight">Plant Your Pitch</h1>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
+              <h1 className="font-display text-3xl tracking-tight">Plant Your Pitch</h1>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                 {currentStepIndex + 1} / {steps.length}
               </span>
             </div>
@@ -308,7 +391,7 @@ export default function CreatePitchPage() {
                 <div
                   key={s}
                   className={`h-1 flex-1 rounded-full transition-all duration-500 ${
-                    i <= currentStepIndex ? 'bg-[color:var(--gold)]' : 'bg-white/10'
+                    i <= currentStepIndex ? 'bg-[color:var(--gold)]' : 'bg-secondary'
                   }`}
                 />
               ))}
@@ -318,10 +401,10 @@ export default function CreatePitchPage() {
 
         {/* ── Step 1: Basic Info ── */}
         {step === 'basic' && (
-          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+          <div className="rounded-2xl bg-card ring-1 ring-[color:var(--border)] p-8 space-y-6">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 1</p>
-              <h2 className="text-xl font-bold text-white">Basic Information</h2>
+              <h2 className="text-xl font-bold text-foreground">Basic Information</h2>
             </div>
 
             <div>
@@ -363,7 +446,7 @@ export default function CreatePitchPage() {
                     className={`py-3 px-2 rounded-xl border transition-all text-center ${
                       formData.category === cat.value
                         ? 'border-[color:var(--gold)] bg-[color:var(--gold)]/10 text-[color:var(--gold)]'
-                        : 'border-white/10 bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80'
+                        : 'border-[color:var(--border)] bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground/80'
                     }`}
                   >
                     <div className="text-xl mb-1">{cat.emoji}</div>
@@ -435,29 +518,29 @@ export default function CreatePitchPage() {
 
         {/* ── Step 2: Video ── */}
         {step === 'video' && (
-          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+          <div className="rounded-2xl bg-card ring-1 ring-[color:var(--border)] p-8 space-y-6">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 2</p>
-              <h2 className="text-xl font-bold text-white">Pitch Video</h2>
-              <p className="text-[11px] font-mono text-white/40 mt-1">Max 60 seconds · up to 100 MB · optional</p>
+              <h2 className="text-xl font-bold text-foreground">Pitch Video</h2>
+              <p className="text-[11px] font-mono text-muted-foreground mt-1">Max 60 seconds · up to 100 MB · optional</p>
             </div>
 
             <label
               htmlFor="video-input"
-              className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-white/15 rounded-xl p-10 cursor-pointer hover:border-[color:var(--gold)]/50 hover:bg-white/5 transition-all group"
+              className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-[color:var(--input)] rounded-xl p-10 cursor-pointer hover:border-[color:var(--gold)]/50 hover:bg-muted transition-all group"
             >
               <input type="file" accept="video/*" onChange={handleVideoSelect} className="hidden" id="video-input" />
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-[color:var(--gold)] transition-colors">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/60 group-hover:text-[color:var(--gold)] transition-colors">
                 <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
               </svg>
-              <p className="text-sm font-semibold text-white/60 group-hover:text-white/80 transition-colors">Click to select your video</p>
-              <p className="text-[10px] font-mono text-white/30">Drag &amp; drop also works</p>
+              <p className="text-sm font-semibold text-muted-foreground group-hover:text-foreground/80 transition-colors">Click to select your video</p>
+              <p className="text-[10px] font-mono text-muted-foreground/60">Drag &amp; drop also works</p>
             </label>
 
             {videoPreview && (
               <div>
                 <p className={labelCls}>Preview</p>
-                <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden ring-1 ring-white/10">
+                <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden ring-1 ring-[color:var(--border)]">
                   <video src={videoPreview} controls className="w-full h-full" />
                 </div>
                 <button
@@ -486,31 +569,31 @@ export default function CreatePitchPage() {
 
         {/* ── Step 3: Documents ── */}
         {step === 'documents' && (
-          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+          <div className="rounded-2xl bg-card ring-1 ring-[color:var(--border)] p-8 space-y-6">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 3</p>
-              <h2 className="text-xl font-bold text-white">Supporting Documents</h2>
-              <p className="text-[11px] font-mono text-white/40 mt-1">PDFs only · up to 10 files · 25 MB each · optional</p>
+              <h2 className="text-xl font-bold text-foreground">Supporting Documents</h2>
+              <p className="text-[11px] font-mono text-muted-foreground mt-1">PDFs only · up to 10 files · 25 MB each · optional</p>
             </div>
 
             <label
               htmlFor="docs-input"
-              className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-white/15 rounded-xl p-10 cursor-pointer hover:border-[color:var(--gold)]/50 hover:bg-white/5 transition-all group"
+              className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-[color:var(--input)] rounded-xl p-10 cursor-pointer hover:border-[color:var(--gold)]/50 hover:bg-muted transition-all group"
             >
               <input type="file" multiple accept=".pdf" onChange={handleDocumentSelect} className="hidden" id="docs-input" />
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-[color:var(--gold)] transition-colors">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/60 group-hover:text-[color:var(--gold)] transition-colors">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" />
               </svg>
-              <p className="text-sm font-semibold text-white/60 group-hover:text-white/80 transition-colors">Click to upload documents</p>
-              <p className="text-[10px] font-mono text-white/30">Business plan, financials, deck…</p>
+              <p className="text-sm font-semibold text-muted-foreground group-hover:text-foreground/80 transition-colors">Click to upload documents</p>
+              <p className="text-[10px] font-mono text-muted-foreground/60">Business plan, financials, deck…</p>
             </label>
 
             {documents.length > 0 && (
               <div className="space-y-2">
                 <p className={labelCls}>Uploaded ({documents.length}/10)</p>
                 {documents.map((doc, idx) => (
-                  <div key={idx} className="flex items-center justify-between px-4 py-2.5 bg-white/5 rounded-lg ring-1 ring-white/10">
-                    <span className="text-[11px] font-mono text-white/70 truncate">{doc.name}</span>
+                  <div key={idx} className="flex items-center justify-between px-4 py-2.5 bg-secondary rounded-lg ring-1 ring-[color:var(--border)]">
+                    <span className="text-[11px] font-mono text-foreground/70 truncate">{doc.name}</span>
                     <button type="button" onClick={() => handleRemoveDocument(idx)} className="text-red-400/60 hover:text-red-400 text-xs ml-3 transition-colors">✕</button>
                   </div>
                 ))}
@@ -533,10 +616,10 @@ export default function CreatePitchPage() {
 
         {/* ── Step 4: Funding ── */}
         {step === 'funding' && (
-          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+          <div className="rounded-2xl bg-card ring-1 ring-[color:var(--border)] p-8 space-y-6">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 4</p>
-              <h2 className="text-xl font-bold text-white">Funding Details</h2>
+              <h2 className="text-xl font-bold text-foreground">Funding Details</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -602,13 +685,13 @@ export default function CreatePitchPage() {
 
         {/* ── Step 5: Review ── */}
         {step === 'review' && (
-          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+          <div className="rounded-2xl bg-card ring-1 ring-[color:var(--border)] p-8 space-y-6">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 5</p>
-              <h2 className="text-xl font-bold text-white">Review Your Pitch</h2>
+              <h2 className="text-xl font-bold text-foreground">Review Your Pitch</h2>
             </div>
 
-            <dl className="rounded-xl bg-white/5 ring-1 ring-white/10 divide-y divide-white/10 overflow-hidden">
+            <dl className="rounded-xl bg-card ring-1 ring-[color:var(--border)] divide-y divide-[color:var(--border)] overflow-hidden">
               {[
                 ['Title', formData.title],
                 ['Tagline', formData.tagline],
@@ -621,8 +704,8 @@ export default function CreatePitchPage() {
                 ['Equity Offered', `${formData.equityOffered}%`],
               ].map(([k, v]) => (
                 <div key={k} className="flex items-center justify-between px-4 py-3 gap-4">
-                  <dt className="text-[10px] font-mono uppercase tracking-widest text-white/40 shrink-0">{k}</dt>
-                  <dd className="text-sm font-semibold text-white/90 text-right truncate capitalize">{v}</dd>
+                  <dt className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground shrink-0">{k}</dt>
+                  <dd className="text-sm font-semibold text-foreground text-right truncate capitalize">{v}</dd>
                 </div>
               ))}
             </dl>
@@ -643,17 +726,17 @@ export default function CreatePitchPage() {
 
         {/* ── Step 6: Payment (real Stripe) ── */}
         {step === 'payment' && realPayments && (
-          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+          <div className="rounded-2xl bg-card ring-1 ring-[color:var(--border)] p-8 space-y-6">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 6</p>
-              <h2 className="text-xl font-bold text-white">Listing Fee</h2>
+              <h2 className="text-xl font-bold text-foreground">Listing Fee</h2>
             </div>
 
             <div className="rounded-xl bg-[color:var(--gold)]/10 ring-1 ring-[color:var(--gold)]/30 px-5 py-4">
               <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">One-time fee</p>
-              <p className="text-white/70 text-sm mb-3">Publishes your pitch to every investor on Bamboo.</p>
+              <p className="text-foreground/70 text-sm mb-3">Publishes your pitch to every investor on Bamboo.</p>
               <div className="flex justify-between items-center pt-3 border-t border-[color:var(--gold)]/20">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-white/50">Total</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Total</span>
                 <span className="font-display text-2xl text-[color:var(--gold)]">${(LISTING_FEE_CENTS / 100).toFixed(2)}</span>
               </div>
             </div>
@@ -670,11 +753,11 @@ export default function CreatePitchPage() {
               <>
                 {loading && (
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-mono text-white/40">
+                    <div className="flex justify-between text-[10px] font-mono text-muted-foreground">
                       <span>{uploadStatus}</span>
                       <span>{uploadProgress}%</span>
                     </div>
-                    <div className="w-full bg-white/10 rounded-full h-1">
+                    <div className="w-full bg-secondary rounded-full h-1">
                       <div className="bg-[color:var(--gold)] h-1 rounded-full transition-all" style={{ width: `${uploadProgress}%` }} />
                     </div>
                   </div>
@@ -700,34 +783,34 @@ export default function CreatePitchPage() {
 
         {/* ── Step 6: Payment (demo fallback) ── */}
         {step === 'payment' && !realPayments && (
-          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+          <div className="rounded-2xl bg-card ring-1 ring-[color:var(--border)] p-8 space-y-6">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 6</p>
-              <h2 className="text-xl font-bold text-white">Listing Fee</h2>
+              <h2 className="text-xl font-bold text-foreground">Listing Fee</h2>
             </div>
 
-            <div className="rounded-xl bg-white/5 ring-1 ring-white/10 px-5 py-4">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">Pricing</p>
-              <p className="text-white/70 text-sm mb-3">
+            <div className="rounded-xl bg-card ring-1 ring-[color:var(--border)] px-5 py-4">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">Pricing</p>
+              <p className="text-foreground/70 text-sm mb-3">
                 Listing pricing is being finalised.{' '}
                 <Link href="/contact" className="text-[color:var(--gold)] underline-offset-2 underline hover:opacity-80">Contact us</Link>{' '}
                 to publish your pitch to investors.
               </p>
-              <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">Total</span>
+              <div className="flex justify-between items-center pt-3 border-t border-[color:var(--border)]">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Total</span>
                 <Link href="/contact" className="font-bold text-[color:var(--gold)] hover:opacity-80 transition-opacity">Contact Us →</Link>
               </div>
             </div>
 
-            <p className="text-[10px] font-mono text-white/30 text-center">Demo mode — no real funds move</p>
+            <p className="text-[10px] font-mono text-muted-foreground/60 text-center">Demo mode — no real funds move</p>
 
             {loading && (
               <div className="space-y-1.5">
-                <div className="flex justify-between text-[10px] font-mono text-white/40">
+                <div className="flex justify-between text-[10px] font-mono text-muted-foreground">
                   <span>{uploadStatus}</span>
                   <span>{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-white/10 rounded-full h-1">
+                <div className="w-full bg-secondary rounded-full h-1">
                   <div className="bg-[color:var(--gold)] h-1 rounded-full transition-all" style={{ width: `${uploadProgress}%` }} />
                 </div>
               </div>
@@ -749,7 +832,7 @@ export default function CreatePitchPage() {
 
         {/* ── Step 7: Confirmation ── */}
         {step === 'confirmation' && (
-          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-10 text-center space-y-6">
+          <div className="rounded-2xl bg-card ring-1 ring-[color:var(--border)] p-10 text-center space-y-6">
             <div className="w-16 h-16 mx-auto rounded-full bg-[color:var(--gold)]/15 ring-1 ring-[color:var(--gold)]/30 flex items-center justify-center">
               <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
@@ -757,16 +840,16 @@ export default function CreatePitchPage() {
             </div>
 
             <div>
-              <h2 className="font-display text-3xl text-white mb-2">Pitch Planted</h2>
-              <p className="text-white/50 text-sm font-mono">
+              <h2 className="font-display text-3xl text-foreground mb-2">Pitch Planted</h2>
+              <p className="text-muted-foreground text-sm font-mono">
                 {realPayments
                   ? 'Payment received — your pitch is going live to investors right now.'
                   : 'Your pitch is under review. We\'ll notify you once it\'s live.'}
               </p>
             </div>
 
-            <div className="rounded-xl bg-white/5 ring-1 ring-white/10 px-5 py-4 text-left">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-3">Next Steps</p>
+            <div className="rounded-xl bg-card ring-1 ring-[color:var(--border)] px-5 py-4 text-left">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-3">Next Steps</p>
               <ol className="space-y-2">
                 {(realPayments
                   ? ['Your pitch appears in Discover within moments']
@@ -775,7 +858,7 @@ export default function CreatePitchPage() {
                   'Track investor interest from your dashboard',
                   'Upgrade to Verified Badge for extra credibility',
                 ]).map((item, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-[11px] font-mono text-white/60">
+                  <li key={i} className="flex items-start gap-2.5 text-[11px] font-mono text-muted-foreground">
                     <span className="shrink-0 w-4 h-4 rounded-full bg-[color:var(--gold)]/20 text-[color:var(--gold)] flex items-center justify-center text-[9px] font-bold mt-0.5">{i + 1}</span>
                     {item}
                   </li>

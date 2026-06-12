@@ -27,6 +27,7 @@ function LoginInner() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -41,6 +42,10 @@ function LoginInner() {
       }
       if (password.length < 6) {
         setError("Password must be at least 6 characters");
+        return;
+      }
+      if (!acceptedTerms) {
+        setError("Please accept the Terms of Service and Privacy Policy to continue.");
         return;
       }
     }
@@ -260,6 +265,36 @@ function LoginInner() {
               </div>
             )}
 
+            {isSignup && (
+              <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5 size-4 shrink-0 rounded border-[color:var(--input)] text-primary focus:ring-2 focus:ring-primary cursor-pointer"
+                />
+                <span className="text-xs text-muted-foreground leading-snug">
+                  I agree to Bamboo&apos;s{" "}
+                  <Link
+                    href="/terms"
+                    target="_blank"
+                    className="text-foreground font-semibold underline-offset-2 hover:underline"
+                  >
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    className="text-foreground font-semibold underline-offset-2 hover:underline"
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
+                </span>
+              </label>
+            )}
+
             {!isSignup && (
               <div className="flex justify-end">
                 <Link
@@ -273,7 +308,7 @@ function LoginInner() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (isSignup && !acceptedTerms)}
               className="w-full py-4 bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (

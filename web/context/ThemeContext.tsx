@@ -7,6 +7,8 @@ type Theme = 'light' | 'dark';
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  /** False during SSR / before the first client effect runs. */
+  mounted: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -32,12 +34,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  if (!isClient) {
-    return <>{children}</>;
-  }
-
+  // Always render the provider (even before hydration) so consumers never
+  // crash. `mounted` lets toggles avoid a hydration mismatch on their icon.
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, mounted: isClient }}>
       {children}
     </ThemeContext.Provider>
   );
