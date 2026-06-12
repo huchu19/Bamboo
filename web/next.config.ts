@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ['firebase-admin', '@google-cloud/firestore', 'google-auth-library'],
 };
 
 // Sentry build plugin (source-map upload, release tagging) only engages when
