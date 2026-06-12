@@ -11,16 +11,20 @@ export type NavItem = { href: string; label: string };
  * menu render from this list so they can never drift apart.
  */
 export function useNavItems(): NavItem[] {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, role } = useAuth();
 
   const items: NavItem[] = [{ href: '/discover', label: 'Discover' }];
 
   if (isAuthenticated) {
     items.push(
       { href: '/dashboard', label: 'Dashboard' },
-      { href: '/pitch/new', label: 'List a Pitch' },
+      { href: '/pitch/new', label: 'Plant Your Pitch' },
       { href: '/investor/watchlist', label: 'Watchlist' },
     );
+  }
+
+  if (role === 'admin') {
+    items.push({ href: '/admin', label: 'Admin' });
   }
 
   items.push(

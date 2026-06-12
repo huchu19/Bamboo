@@ -298,9 +298,9 @@ export default function Home() {
                 <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] flex items-center gap-1.5">
                   <BambooLeaf size={10} /> Company
                 </p>
-                <a href="#" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Manifesto</a>
-                <a href="#" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Security</a>
-                <a href="#" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Contact</a>
+                <Link href="/contact" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Contact</Link>
+                <Link href="/privacy" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Privacy Policy</Link>
+                <Link href="/terms" className="text-sm hover:text-[color:var(--gold)] transition-colors text-white/60">Terms of Service</Link>
               </div>
             </div>
           </div>

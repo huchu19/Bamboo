@@ -60,3 +60,15 @@ export async function verifyBearerToken(authorization: string | null): Promise<s
     return null;
   }
 }
+
+/**
+ * Verify the bearer token AND that the caller's user doc has role 'admin'.
+ * Returns the uid for admins, null otherwise. The role lives in Firestore (not
+ * a custom claim) so it's checked with a doc read on every admin request.
+ */
+export async function verifyAdmin(authorization: string | null): Promise<string | null> {
+  const uid = await verifyBearerToken(authorization);
+  if (!uid) return null;
+  const snap = await getAdminDb().collection('users').doc(uid).get();
+  return snap.exists && snap.data()?.role === 'admin' ? uid : null;
+}

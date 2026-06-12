@@ -67,6 +67,60 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   Dark theme — forest-ink surfaces, cream text, same warm gold accent.
+   Overrides both the Tailwind v4 @theme tokens (--color-*) and the plain
+   vars above. Applied via data-theme="dark" on <html>.
+   ─────────────────────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  /* Tailwind utility tokens (bg-background, text-foreground, bg-card, …) */
+  --color-background: #0b150f;
+  --color-foreground: #f3efe6;
+  --color-card: #14241a;
+  --color-card-foreground: #f3efe6;
+
+  --color-primary: #4f9469;
+  --color-primary-foreground: #07100a;
+
+  --color-accent: #e0b65c;
+  --color-accent-foreground: #07100a;
+  --color-gold: #e0b65c;
+  --color-gold-foreground: #07100a;
+  --color-gold-soft: #efce8c;
+
+  /* Ink surfaces stay dark but lift slightly so they read against the page. */
+  --color-ink: #06100a;
+  --color-ink-foreground: #f3efe6;
+
+  --color-leaf: #6fa386;
+
+  --color-secondary: #1b2c20;
+  --color-secondary-foreground: #f3efe6;
+  --color-muted: #1b2c20;
+  --color-muted-foreground: #9db0a3;
+
+  --color-border: rgba(243, 239, 230, 0.12);
+  --color-input: rgba(243, 239, 230, 0.18);
+  --color-ring: #4f9469;
+
+  /* Plain vars used via var(--gold) etc. */
+  --background: #0b150f;
+  --foreground: #f3efe6;
+  --card: #14241a;
+  --primary: #4f9469;
+  --primary-deep: #2d5a3d;
+  --accent: #e0b65c;
+  --gold: #e0b65c;
+  --gold-foreground: #07100a;
+  --gold-soft: #efce8c;
+  --ink: #06100a;
+  --ink-foreground: #f3efe6;
+  --secondary: #1b2c20;
+  --muted-foreground: #9db0a3;
+  --border: rgba(243, 239, 230, 0.12);
+  --input: rgba(243, 239, 230, 0.18);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    Animations
    ─────────────────────────────────────────────────────────────────────────── */
 

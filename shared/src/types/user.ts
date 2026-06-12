@@ -2,7 +2,7 @@
  * User types for Bamboo investing platform
  */
 
-export type UserRole = 'inventor' | 'investor';
+export type UserRole = 'inventor' | 'investor' | 'admin';
 
 export interface InventorProfile {
   companyName?: string;

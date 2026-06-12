@@ -148,13 +148,14 @@ async function fulfilListingFee(pi: Stripe.PaymentIntent) {
   const { pitchId } = pi.metadata;
   const now = Date.now();
 
-  // TODO(phase-8): set status 'pending_review' once the admin queue exists.
+  // Paid pitches enter the admin review queue (Phase 8) rather than going live
+  // immediately. An admin approves them to 'live' via /api/admin/pitch.
   await db.collection('pitches').doc(pitchId).set(
     {
       listingFeePaid: true,
       listingFeePaymentId: pi.id,
-      status: 'live',
-      publishedAt: now,
+      status: 'pending_review',
+      submittedForReviewAt: now,
       updatedAt: now,
     },
     { merge: true },

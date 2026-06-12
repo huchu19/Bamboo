@@ -54,6 +54,15 @@ export default function RootLayout({
       suppressHydrationWarning
       data-theme="light"
     >
+      <head>
+        {/* Apply the stored theme before first paint to avoid a flash of the
+            wrong theme. Runs ahead of hydration; ThemeProvider takes over after. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           <AuthProvider>
