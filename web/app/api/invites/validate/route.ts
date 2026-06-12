@@ -29,15 +29,23 @@ export async function POST(request: NextRequest) {
     return Response.json({ valid: false, reason: 'Enter your invite code.' });
   }
 
-  const snap = await getAdminDb().collection('invites').doc(code).get();
-  if (!snap.exists) {
-    return Response.json({ valid: false, reason: 'That invite code is not recognised.' });
-  }
+  try {
+    const snap = await getAdminDb().collection('invites').doc(code).get();
+    if (!snap.exists) {
+      return Response.json({ valid: false, reason: 'That invite code is not recognised.' });
+    }
 
-  const invite = snap.data()!;
-  if ((invite.usedCount ?? 0) >= (invite.maxUses ?? 1)) {
-    return Response.json({ valid: false, reason: 'That invite code has already been used.' });
-  }
+    const invite = snap.data()!;
+    if ((invite.usedCount ?? 0) >= (invite.maxUses ?? 1)) {
+      return Response.json({ valid: false, reason: 'That invite code has already been used.' });
+    }
 
-  return Response.json({ valid: true });
+    return Response.json({ valid: true });
+  } catch (err: any) {
+    console.error('[invites/validate] Admin SDK error:', err?.message ?? err);
+    return Response.json(
+      { valid: false, reason: `Server error: ${err?.message ?? 'unknown'}` },
+      { status: 500 },
+    );
+  }
 }
