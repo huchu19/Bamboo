@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BambooLeaf } from "./BambooIcons";
+import Image from "next/image";
+import icon from "@/app/icon.png";
 import { NavLinks, useNavItems } from "./NavLinks";
 import { SiteNavActions } from "./SiteNavActions";
 import { ThemeToggleButton } from "./ThemeToggleButton";
@@ -23,7 +24,14 @@ export function SiteNav({ variant = "light" }: { variant?: "light" | "ink" }) {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center" aria-label="Bamboo home">
-            <BambooLeaf size={22} className="text-[color:var(--gold)] -rotate-12" />
+            <Image
+              src={icon}
+              alt="Bamboo"
+              width={32}
+              height={32}
+              priority
+              className="size-8 rounded-md object-contain"
+            />
           </Link>
           <div className="hidden md:flex gap-6 text-[10px] font-mono uppercase tracking-widest opacity-80">
             <NavLinks />
