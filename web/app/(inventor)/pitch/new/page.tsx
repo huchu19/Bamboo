@@ -282,47 +282,64 @@ export default function CreatePitchPage() {
   const currentStepIndex = steps.indexOf(step);
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
+  // Shared class fragments
+  const inputCls = 'w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white/90 placeholder:text-white/25 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] transition-all';
+  const labelCls = 'block text-[10px] font-mono uppercase tracking-widest text-white/50 mb-2';
+  const hintCls = 'text-[10px] font-mono text-white/30 mt-1.5';
+  const btnPrimary = 'flex-1 py-3.5 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all';
+  const btnSecondary = 'flex-1 py-3.5 bg-white/5 border border-white/10 text-white/60 rounded-lg font-mono text-xs uppercase tracking-widest hover:bg-white/10 transition-all disabled:opacity-40';
+
   return (
-    <div>
-      {step !== 'confirmation' && (
-        <div className="mb-8">
-          <div className="flex justify-between mb-2">
-            <h1 className="text-2xl font-bold text-gray-900">Create Your Pitch</h1>
-            <span className="text-sm text-gray-600">
-              Step {currentStepIndex + 1} of {steps.length}
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-green-600 h-2 rounded-full transition-all"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-      )}
+    <div className="min-h-screen bg-[color:var(--ink)] px-4 py-10">
+      <div className="max-w-2xl mx-auto">
 
-      {/* Step 1: Basic Info */}
-      {step === 'basic' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Information</h2>
+        {/* Header + progress */}
+        {step !== 'confirmation' && (
+          <div className="mb-8">
+            <div className="flex items-baseline justify-between mb-4">
+              <h1 className="font-display text-3xl text-white tracking-tight">Plant Your Pitch</h1>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
+                {currentStepIndex + 1} / {steps.length}
+              </span>
+            </div>
+            {/* Step dots */}
+            <div className="flex gap-1.5 mb-1">
+              {steps.map((s, i) => (
+                <div
+                  key={s}
+                  className={`h-1 flex-1 rounded-full transition-all duration-500 ${
+                    i <= currentStepIndex ? 'bg-[color:var(--gold)]' : 'bg-white/10'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
-          <form className="space-y-6">
+        {/* ── Step 1: Basic Info ── */}
+        {step === 'basic' && (
+          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Pitch Title *</label>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 1</p>
+              <h2 className="text-xl font-bold text-white">Basic Information</h2>
+            </div>
+
+            <div>
+              <label className={labelCls}>Pitch Title *</label>
               <input
                 type="text"
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                placeholder="e.g., EcoTrack - Carbon Footprint Analytics"
+                placeholder="e.g., EcoTrack — Carbon Footprint Analytics"
                 maxLength={100}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className={inputCls}
               />
-              <p className="text-xs text-gray-500 mt-1">{formData.title.length}/100 characters</p>
+              <p className={hintCls}>{formData.title.length}/100 characters</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Tagline *</label>
+              <label className={labelCls}>Tagline *</label>
               <input
                 type="text"
                 name="tagline"
@@ -330,52 +347,49 @@ export default function CreatePitchPage() {
                 onChange={handleInputChange}
                 placeholder="One-sentence hook"
                 maxLength={100}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className={inputCls}
               />
-              <p className="text-xs text-gray-500 mt-1">{formData.tagline.length}/100 characters</p>
+              <p className={hintCls}>{formData.tagline.length}/100 characters</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Category *</label>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <label className={labelCls}>Category *</label>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {PITCH_CATEGORIES.map((cat) => (
                   <button
                     key={cat.value}
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, category: cat.value }))}
-                    className={`p-3 rounded-lg border-2 transition text-center text-sm font-medium ${
+                    className={`py-3 px-2 rounded-xl border transition-all text-center ${
                       formData.category === cat.value
-                        ? 'border-green-600 bg-green-50 text-green-900'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-[color:var(--gold)] bg-[color:var(--gold)]/10 text-[color:var(--gold)]'
+                        : 'border-white/10 bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80'
                     }`}
                   >
-                    <div className="text-2xl mb-1">{cat.emoji}</div>
-                    {cat.label}
+                    <div className="text-xl mb-1">{cat.emoji}</div>
+                    <span className="text-[10px] font-mono leading-tight">{cat.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Tags (up to 5)</label>
-              <div className="flex gap-2 mb-3">
+              <label className={labelCls}>Tags (up to 5)</label>
+              <div className="flex gap-2 mb-2">
                 <input
                   type="text"
                   value={currentTag}
                   onChange={(e) => setCurrentTag(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
+                    if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); }
                   }}
                   placeholder="Add a tag and press Enter"
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                  className={inputCls + ' flex-1'}
                 />
                 <button
                   type="button"
                   onClick={handleAddTag}
-                  className="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                  className="px-4 py-3 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all"
                 >
                   Add
                 </button>
@@ -384,23 +398,17 @@ export default function CreatePitchPage() {
                 {formData.tags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm"
+                    className="inline-flex items-center gap-1.5 bg-[color:var(--gold)]/10 border border-[color:var(--gold)]/30 text-[color:var(--gold)] px-3 py-1 rounded-full text-[11px] font-mono"
                   >
                     {tag}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(idx)}
-                      className="text-green-600 hover:text-green-800"
-                    >
-                      ✕
-                    </button>
+                    <button type="button" onClick={() => handleRemoveTag(idx)} className="opacity-60 hover:opacity-100">✕</button>
                   </span>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Description *</label>
+              <label className={labelCls}>Description *</label>
               <textarea
                 name="description"
                 value={formData.description}
@@ -408,195 +416,160 @@ export default function CreatePitchPage() {
                 placeholder="Tell your story. What problem are you solving? Why are you unique?"
                 rows={6}
                 maxLength={2000}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 resize-none"
+                className={inputCls + ' resize-none'}
               />
-              <p className="text-xs text-gray-500 mt-1">{formData.description.length}/2000 characters</p>
+              <p className={hintCls}>{formData.description.length}/2000 characters</p>
             </div>
 
             <button
               type="button"
               onClick={() => setStep('video')}
               disabled={!formData.title || !formData.tagline || !formData.description}
-              className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className={btnPrimary + ' w-full flex items-center justify-center gap-2 group'}
             >
               Next: Upload Video
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
             </button>
-          </form>
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* Step 2: Video Upload */}
-      {step === 'video' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Upload Your Pitch Video</h2>
-          <p className="text-gray-600 mb-6">Maximum 60 seconds, up to 100MB</p>
-
-          <div className="space-y-6">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-green-500 transition cursor-pointer">
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleVideoSelect}
-                className="hidden"
-                id="video-input"
-              />
-              <label htmlFor="video-input" className="cursor-pointer block">
-                <div className="text-4xl mb-2">🎥</div>
-                <p className="font-semibold text-gray-900 mb-1">Upload your pitch video</p>
-                <p className="text-sm text-gray-600">Drag and drop or click to select</p>
-              </label>
+        {/* ── Step 2: Video ── */}
+        {step === 'video' && (
+          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 2</p>
+              <h2 className="text-xl font-bold text-white">Pitch Video</h2>
+              <p className="text-[11px] font-mono text-white/40 mt-1">Max 60 seconds · up to 100 MB · optional</p>
             </div>
+
+            <label
+              htmlFor="video-input"
+              className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-white/15 rounded-xl p-10 cursor-pointer hover:border-[color:var(--gold)]/50 hover:bg-white/5 transition-all group"
+            >
+              <input type="file" accept="video/*" onChange={handleVideoSelect} className="hidden" id="video-input" />
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-[color:var(--gold)] transition-colors">
+                <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+              </svg>
+              <p className="text-sm font-semibold text-white/60 group-hover:text-white/80 transition-colors">Click to select your video</p>
+              <p className="text-[10px] font-mono text-white/30">Drag &amp; drop also works</p>
+            </label>
 
             {videoPreview && (
               <div>
-                <p className="text-sm font-medium text-gray-900 mb-2">Preview</p>
-                <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
+                <p className={labelCls}>Preview</p>
+                <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden ring-1 ring-white/10">
                   <video src={videoPreview} controls className="w-full h-full" />
                 </div>
                 <button
                   type="button"
                   onClick={() => { setVideoFile(null); setVideoPreview(''); }}
-                  className="mt-3 text-red-600 hover:text-red-700 text-sm font-medium"
+                  className="mt-2 text-[11px] font-mono text-red-400/70 hover:text-red-400 transition-colors"
                 >
-                  Remove Video
+                  Remove video
                 </button>
               </div>
             )}
 
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => setStep('basic')}
-                className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
-              >
-                Back
-              </button>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setStep('basic')} className={btnSecondary}>← Back</button>
               <button
                 type="button"
                 onClick={() => setStep('documents')}
-                disabled={!videoFile}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className={btnPrimary + ' flex items-center justify-center gap-2 group'}
               >
-                Next: Documents
+                {videoFile ? 'Next: Documents' : 'Skip for now'}
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Step 3: Documents */}
-      {step === 'documents' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Upload Documents</h2>
-          <p className="text-gray-600 mb-6">PDFs only, up to 10 files, 25MB each (optional)</p>
-
-          <div className="space-y-6">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-green-500 transition cursor-pointer">
-              <input
-                type="file"
-                multiple
-                accept=".pdf"
-                onChange={handleDocumentSelect}
-                className="hidden"
-                id="docs-input"
-              />
-              <label htmlFor="docs-input" className="cursor-pointer block">
-                <div className="text-4xl mb-2">📄</div>
-                <p className="font-semibold text-gray-900 mb-1">Upload your documents</p>
-                <p className="text-sm text-gray-600">Business plan, financials, deck, etc.</p>
-              </label>
+        {/* ── Step 3: Documents ── */}
+        {step === 'documents' && (
+          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 3</p>
+              <h2 className="text-xl font-bold text-white">Supporting Documents</h2>
+              <p className="text-[11px] font-mono text-white/40 mt-1">PDFs only · up to 10 files · 25 MB each · optional</p>
             </div>
 
+            <label
+              htmlFor="docs-input"
+              className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-white/15 rounded-xl p-10 cursor-pointer hover:border-[color:var(--gold)]/50 hover:bg-white/5 transition-all group"
+            >
+              <input type="file" multiple accept=".pdf" onChange={handleDocumentSelect} className="hidden" id="docs-input" />
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-[color:var(--gold)] transition-colors">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" />
+              </svg>
+              <p className="text-sm font-semibold text-white/60 group-hover:text-white/80 transition-colors">Click to upload documents</p>
+              <p className="text-[10px] font-mono text-white/30">Business plan, financials, deck…</p>
+            </label>
+
             {documents.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-gray-900 mb-3">
-                  Uploaded Documents ({documents.length}/10)
-                </p>
-                <div className="space-y-2">
-                  {documents.map((doc, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
-                    >
-                      <span className="text-sm text-gray-700">{doc.name}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveDocument(idx)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
+              <div className="space-y-2">
+                <p className={labelCls}>Uploaded ({documents.length}/10)</p>
+                {documents.map((doc, idx) => (
+                  <div key={idx} className="flex items-center justify-between px-4 py-2.5 bg-white/5 rounded-lg ring-1 ring-white/10">
+                    <span className="text-[11px] font-mono text-white/70 truncate">{doc.name}</span>
+                    <button type="button" onClick={() => handleRemoveDocument(idx)} className="text-red-400/60 hover:text-red-400 text-xs ml-3 transition-colors">✕</button>
+                  </div>
+                ))}
               </div>
             )}
 
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => setStep('video')}
-                className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
-              >
-                Back
-              </button>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setStep('video')} className={btnSecondary}>← Back</button>
               <button
                 type="button"
                 onClick={() => setStep('funding')}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
+                className={btnPrimary + ' flex items-center justify-center gap-2 group'}
               >
-                Next: Funding Details
+                Next: Funding
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Step 4: Funding */}
-      {step === 'funding' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Funding Details</h2>
+        {/* ── Step 4: Funding ── */}
+        {step === 'funding' && (
+          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 4</p>
+              <h2 className="text-xl font-bold text-white">Funding Details</h2>
+            </div>
 
-          <form className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Funding Goal (USD) *
-                </label>
+                <label className={labelCls}>Funding Goal (USD) *</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-3 text-gray-600">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[color:var(--gold)] font-mono text-sm">$</span>
                   <input
                     type="number"
                     name="fundingGoal"
                     value={formData.fundingGoal}
                     onChange={handleInputChange}
                     placeholder="500000"
-                    className="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                    className={inputCls + ' pl-8'}
                   />
                 </div>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Minimum Investment (USD) *
-                </label>
+                <label className={labelCls}>Min. Investment (USD) *</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-3 text-gray-600">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[color:var(--gold)] font-mono text-sm">$</span>
                   <input
                     type="number"
                     name="minimumInvestment"
                     value={formData.minimumInvestment}
                     onChange={handleInputChange}
                     placeholder="10000"
-                    className="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                    className={inputCls + ' pl-8'}
                   />
                 </div>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Equity Offered (%) *
-                </label>
+                <label className={labelCls}>Equity Offered *</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -605,115 +578,83 @@ export default function CreatePitchPage() {
                     onChange={handleInputChange}
                     placeholder="12"
                     step="0.1"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                    className={inputCls + ' pr-8'}
                   />
-                  <span className="absolute right-4 top-3 text-gray-600">%</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[color:var(--gold)] font-mono text-sm">%</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => setStep('documents')}
-                className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
-              >
-                Back
-              </button>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setStep('documents')} className={btnSecondary}>← Back</button>
               <button
                 type="button"
                 onClick={() => setStep('review')}
                 disabled={!formData.fundingGoal || !formData.minimumInvestment || !formData.equityOffered}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className={btnPrimary + ' flex items-center justify-center gap-2 group'}
               >
                 Review Pitch
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Step 5: Review */}
-      {step === 'review' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Review Your Pitch</h2>
-
-          <div className="space-y-6">
-            <div className="border-t border-b border-gray-200 py-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-sm text-gray-600">Title</p>
-                  <p className="font-semibold text-gray-900">{formData.title}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Category</p>
-                  <p className="font-semibold text-gray-900 capitalize">
-                    {formData.category.replace('-', ' ')}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Tagline</p>
-                  <p className="font-semibold text-gray-900">{formData.tagline}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Video</p>
-                  <p className="font-semibold text-gray-900">{videoFile?.name || '—'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Funding Goal</p>
-                  <p className="font-semibold text-gray-900">${formData.fundingGoal}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Equity Offered</p>
-                  <p className="font-semibold text-gray-900">{formData.equityOffered}%</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Min. Investment</p>
-                  <p className="font-semibold text-gray-900">${formData.minimumInvestment}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Documents</p>
-                  <p className="font-semibold text-gray-900">{documents.length} file(s)</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => setStep('funding')}
-                className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
-              >
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={() => setStep('payment')}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
-              >
-                Continue to Payment
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Step 6: Payment — real Stripe listing fee */}
-      {step === 'payment' && realPayments && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment</h2>
+        {/* ── Step 5: Review ── */}
+        {step === 'review' && (
+          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 5</p>
+              <h2 className="text-xl font-bold text-white">Review Your Pitch</h2>
+            </div>
 
-          <div className="space-y-6">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <h3 className="font-semibold text-green-900 mb-2">💳 Pitch Listing Fee</h3>
-              <p className="text-green-700 mb-4">
-                A one-time fee to publish your pitch to all investors on Bamboo.
-              </p>
-              <div className="flex justify-between py-3 border-t border-green-200">
-                <span className="font-semibold text-green-900">Total</span>
-                <span className="font-bold text-green-900 text-lg">
-                  ${(LISTING_FEE_CENTS / 100).toFixed(2)}
-                </span>
+            <dl className="rounded-xl bg-white/5 ring-1 ring-white/10 divide-y divide-white/10 overflow-hidden">
+              {[
+                ['Title', formData.title],
+                ['Tagline', formData.tagline],
+                ['Category', formData.category.replace(/-/g, ' ')],
+                ['Tags', formData.tags.join(', ') || '—'],
+                ['Video', videoFile?.name || '—'],
+                ['Documents', `${documents.length} file(s)`],
+                ['Funding Goal', `$${formData.fundingGoal}`],
+                ['Min. Investment', `$${formData.minimumInvestment}`],
+                ['Equity Offered', `${formData.equityOffered}%`],
+              ].map(([k, v]) => (
+                <div key={k} className="flex items-center justify-between px-4 py-3 gap-4">
+                  <dt className="text-[10px] font-mono uppercase tracking-widest text-white/40 shrink-0">{k}</dt>
+                  <dd className="text-sm font-semibold text-white/90 text-right truncate capitalize">{v}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setStep('funding')} className={btnSecondary}>← Back</button>
+              <button
+                type="button"
+                onClick={() => setStep('payment')}
+                className={btnPrimary + ' flex items-center justify-center gap-2 group'}
+              >
+                Continue to Payment
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 6: Payment (real Stripe) ── */}
+        {step === 'payment' && realPayments && (
+          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 6</p>
+              <h2 className="text-xl font-bold text-white">Listing Fee</h2>
+            </div>
+
+            <div className="rounded-xl bg-[color:var(--gold)]/10 ring-1 ring-[color:var(--gold)]/30 px-5 py-4">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">One-time fee</p>
+              <p className="text-white/70 text-sm mb-3">Publishes your pitch to every investor on Bamboo.</p>
+              <div className="flex justify-between items-center pt-3 border-t border-[color:var(--gold)]/20">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-white/50">Total</span>
+                <span className="font-display text-2xl text-[color:var(--gold)]">${(LISTING_FEE_CENTS / 100).toFixed(2)}</span>
               </div>
             </div>
 
@@ -728,183 +669,147 @@ export default function CreatePitchPage() {
             ) : (
               <>
                 {loading && (
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm text-gray-600">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-[10px] font-mono text-white/40">
                       <span>{uploadStatus}</span>
                       <span>{uploadProgress}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-green-600 h-2 rounded-full transition-all"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
+                    <div className="w-full bg-white/10 rounded-full h-1">
+                      <div className="bg-[color:var(--gold)] h-1 rounded-full transition-all" style={{ width: `${uploadProgress}%` }} />
                     </div>
                   </div>
                 )}
-
                 {payError && (
-                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                    {payError}
-                  </p>
+                  <p className="text-[10px] font-mono text-red-300/90 bg-red-500/10 ring-1 ring-red-500/30 rounded-lg px-3 py-2">{payError}</p>
                 )}
-
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setStep('review')}
-                    disabled={loading}
-                    className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition disabled:opacity-50"
-                  >
-                    Back
-                  </button>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setStep('review')} disabled={loading} className={btnSecondary}>← Back</button>
                   <button
                     type="button"
                     onClick={startListingPayment}
                     disabled={loading}
-                    className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={btnPrimary + ' flex items-center justify-center gap-2'}
                   >
-                    {loading
-                      ? 'Preparing...'
-                      : `Continue to Payment — $${(LISTING_FEE_CENTS / 100).toFixed(0)}`}
+                    {loading ? 'Preparing…' : `Pay $${(LISTING_FEE_CENTS / 100).toFixed(0)} & Publish`}
                   </button>
                 </div>
               </>
             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Step 6: Payment — demo / Stripe-not-configured fallback */}
-      {step === 'payment' && !realPayments && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment</h2>
+        {/* ── Step 6: Payment (demo fallback) ── */}
+        {step === 'payment' && !realPayments && (
+          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-8 space-y-6">
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] mb-1">Step 6</p>
+              <h2 className="text-xl font-bold text-white">Listing Fee</h2>
+            </div>
 
-          <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h3 className="font-semibold text-blue-900 mb-2">💳 Pitch Listing Fee</h3>
-              <p className="text-blue-700 mb-4">
+            <div className="rounded-xl bg-white/5 ring-1 ring-white/10 px-5 py-4">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">Pricing</p>
+              <p className="text-white/70 text-sm mb-3">
                 Listing pricing is being finalised.{' '}
-                <Link href="/contact" className="underline font-semibold hover:text-blue-900">
-                  Contact us
-                </Link>{' '}
+                <Link href="/contact" className="text-[color:var(--gold)] underline-offset-2 underline hover:opacity-80">Contact us</Link>{' '}
                 to publish your pitch to investors.
               </p>
-              <div className="flex justify-between py-3 border-t border-blue-200">
-                <span className="font-semibold text-blue-900">Total</span>
-                <Link
-                  href="/contact"
-                  className="font-bold text-blue-900 text-lg underline hover:text-blue-700"
-                >
-                  Contact Us
-                </Link>
+              <div className="flex justify-between items-center pt-3 border-t border-white/10">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">Total</span>
+                <Link href="/contact" className="font-bold text-[color:var(--gold)] hover:opacity-80 transition-opacity">Contact Us →</Link>
               </div>
             </div>
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-sm text-green-700">
-                🔒 Payment processed securely. This is a demo — no real charge will be made.
-              </p>
-            </div>
+            <p className="text-[10px] font-mono text-white/30 text-center">Demo mode — no real funds move</p>
 
             {loading && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-gray-600">
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[10px] font-mono text-white/40">
                   <span>{uploadStatus}</span>
                   <span>{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-green-600 h-2 rounded-full transition-all"
-                    style={{ width: `${uploadProgress}%` }}
-                  />
+                <div className="w-full bg-white/10 rounded-full h-1">
+                  <div className="bg-[color:var(--gold)] h-1 rounded-full transition-all" style={{ width: `${uploadProgress}%` }} />
                 </div>
               </div>
             )}
 
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => setStep('review')}
-                disabled={loading}
-                className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition disabled:opacity-50"
-              >
-                Back
-              </button>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setStep('review')} disabled={loading} className={btnSecondary}>← Back</button>
               <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className={btnPrimary + ' flex items-center justify-center gap-2'}
               >
-                {loading ? 'Publishing...' : 'Complete & Publish'}
+                {loading ? 'Publishing…' : 'Complete & Publish'}
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Step 7: Confirmation */}
-      {step === 'confirmation' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <div className="text-6xl mb-4">🎉</div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Pitch Created Successfully!</h2>
-          <p className="text-gray-600 mb-8">
-            {realPayments
-              ? 'Payment received — your pitch is going live to investors right now.'
-              : "Your pitch has been submitted and is now under review. You'll be notified once it's approved and visible to investors."}
-          </p>
+        {/* ── Step 7: Confirmation ── */}
+        {step === 'confirmation' && (
+          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-10 text-center space-y-6">
+            <div className="w-16 h-16 mx-auto rounded-full bg-[color:var(--gold)]/15 ring-1 ring-[color:var(--gold)]/30 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8 text-left">
-            <p className="text-sm text-gray-600 mb-2">Next Steps:</p>
-            <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
-              {realPayments ? (
-                <li>Your pitch appears in Discover within a few moments</li>
-              ) : (
-                <>
-                  <li>Your pitch is reviewed by our team (24–48 hours)</li>
-                  <li>Once approved, it goes live to all investors</li>
-                </>
-              )}
-              <li>Track investor interest from your dashboard</li>
-              <li>
-                Optional: Upgrade to Verified Badge (
-                <Link href="/contact" className="underline text-green-700 hover:text-green-800">
-                  Contact Us
-                </Link>
-                ) for extra credibility
-              </li>
-            </ol>
+            <div>
+              <h2 className="font-display text-3xl text-white mb-2">Pitch Planted</h2>
+              <p className="text-white/50 text-sm font-mono">
+                {realPayments
+                  ? 'Payment received — your pitch is going live to investors right now.'
+                  : 'Your pitch is under review. We\'ll notify you once it\'s live.'}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-white/5 ring-1 ring-white/10 px-5 py-4 text-left">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-3">Next Steps</p>
+              <ol className="space-y-2">
+                {(realPayments
+                  ? ['Your pitch appears in Discover within moments']
+                  : ['Our team reviews your pitch (24–48 h)', 'Once approved, it goes live to all investors']
+                ).concat([
+                  'Track investor interest from your dashboard',
+                  'Upgrade to Verified Badge for extra credibility',
+                ]).map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-[11px] font-mono text-white/60">
+                    <span className="shrink-0 w-4 h-4 rounded-full bg-[color:var(--gold)]/20 text-[color:var(--gold)] flex items-center justify-center text-[9px] font-bold mt-0.5">{i + 1}</span>
+                    {item}
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push('/dashboard')}
+                className={btnPrimary + ' flex items-center justify-center gap-2'}
+              >
+                Go to Dashboard →
+              </button>
+              <button
+                onClick={() => {
+                  setStep('basic');
+                  setFormData({ title: '', tagline: '', description: '', category: 'technology', tags: [], fundingGoal: '', minimumInvestment: '', equityOffered: '' });
+                  setVideoFile(null);
+                  setVideoPreview('');
+                  setDocuments([]);
+                  setClientSecret('');
+                  setPayError('');
+                  setCreatedPitchId('');
+                }}
+                className={btnSecondary}
+              >
+                Create Another
+              </button>
+            </div>
           </div>
+        )}
 
-          <div className="flex gap-4">
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
-            >
-              Go to Dashboard
-            </button>
-            <button
-              onClick={() => {
-                setStep('basic');
-                setFormData({
-                  title: '', tagline: '', description: '',
-                  category: 'technology', tags: [],
-                  fundingGoal: '', minimumInvestment: '', equityOffered: '',
-                });
-                setVideoFile(null);
-                setVideoPreview('');
-                setDocuments([]);
-                setClientSecret('');
-                setPayError('');
-                setCreatedPitchId('');
-              }}
-              className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
-            >
-              Create Another Pitch
-            </button>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
