@@ -22,15 +22,8 @@ export function SiteNav({ variant = "light" }: { variant?: "light" | "ink" }) {
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2">
-            <BambooLeaf size={18} className="text-[color:var(--gold)] -rotate-12" />
-            <span
-              className={`font-display text-2xl tracking-tighter uppercase ${
-                isInk ? "text-[color:var(--ink-foreground)]" : "text-foreground"
-              }`}
-            >
-              Bamboo
-            </span>
+          <Link href="/" className="flex items-center" aria-label="Bamboo home">
+            <BambooLeaf size={22} className="text-[color:var(--gold)] -rotate-12" />
           </Link>
           <div className="hidden md:flex gap-6 text-[10px] font-mono uppercase tracking-widest opacity-80">
             <NavLinks />
