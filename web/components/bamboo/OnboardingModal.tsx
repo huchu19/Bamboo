@@ -1,16 +1,14 @@
 'use client';
 
 /**
- * First-login beta onboarding (Phase 7.4). Shows once per account on the
- * first signed-in page view — dismissal is remembered per uid in
- * localStorage, so a shared machine doesn't hide it for the next user.
- * Never renders in dev bypass (the demo doesn't need a welcome).
+ * First-login beta onboarding (Phase 7.4). Shows once per account, tracked by
+ * the `hasOnboarded` flag on the user's Firestore doc so dismissal follows the
+ * account across devices and browsers (localStorage alone re-showed it on
+ * every new device/incognito session). Never renders in dev bypass.
  */
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-
-const STORAGE_PREFIX = 'bamboo:onboarded:';
 
 export function OnboardingModal() {
   const { user, devBypass, isAuthenticated } = useAuth();
@@ -18,25 +16,25 @@ export function OnboardingModal() {
 
   const uid = user?.uid;
   const role = user?.role;
+  const hasOnboarded = user?.hasOnboarded;
 
   useEffect(() => {
     if (devBypass || !isAuthenticated || !uid) return;
-    try {
-      if (!window.localStorage.getItem(STORAGE_PREFIX + uid)) setOpen(true);
-    } catch {
-      // Storage unavailable (private mode) — skip rather than nag every view.
-    }
-  }, [devBypass, isAuthenticated, uid]);
+    // `user` is the Firestore doc, so this stays consistent across every
+    // device the account signs in on. Only show when never onboarded.
+    if (!hasOnboarded) setOpen(true);
+  }, [devBypass, isAuthenticated, uid, hasOnboarded]);
 
   if (!open) return null;
 
   function dismiss() {
-    try {
-      window.localStorage.setItem(STORAGE_PREFIX + uid, String(Date.now()));
-    } catch {
-      // ignore
-    }
     setOpen(false);
+    if (!uid) return;
+    // Persist to Firestore so it never returns on any device. Fire and forget:
+    // a failed write just risks showing it once more, never blocks the user.
+    import('@/lib/firebase/firestore')
+      .then(({ markOnboarded }) => markOnboarded(uid))
+      .catch(() => {});
   }
 
   const steps =

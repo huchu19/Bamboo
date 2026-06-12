@@ -40,6 +40,11 @@ export const onUserChange = (userId: string, callback: (user: User | null) => vo
   });
 };
 
+/** Mark onboarding complete on the user doc so it follows them across devices. */
+export const markOnboarded = async (userId: string): Promise<void> => {
+  await updateDoc(doc(db, 'users', userId), { hasOnboarded: true, updatedAt: Date.now() });
+};
+
 // ─── Pitches ──────────────────────────────────────────────────────────────────
 
 export const getPitches = async (limitCount = 20): Promise<Pitch[]> => {

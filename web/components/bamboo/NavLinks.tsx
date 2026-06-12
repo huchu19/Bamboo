@@ -23,7 +23,7 @@ export function NavLinks() {
       {isAuthenticated && role === 'inventor' && (
         <>
           <Link href="/dashboard" className={linkCls}>
-            My Pitches
+            Command Deck
           </Link>
           <Link href="/pitch/new" className={linkCls}>
             Plant a Pitch
@@ -33,7 +33,7 @@ export function NavLinks() {
 
       {isAuthenticated && role === 'investor' && (
         <Link href="/investor/dashboard" className={linkCls}>
-          Your Grove
+          Command Deck
         </Link>
       )}
 

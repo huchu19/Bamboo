@@ -177,7 +177,7 @@ function LoginInner() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  I&apos;m an {r}
+                  I&apos;m {r === "investor" ? "an" : "a"} {r}
                 </button>
               ))}
             </div>

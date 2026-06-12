@@ -31,6 +31,9 @@ export interface User {
   createdAt: number; // timestamp
   updatedAt: number; // timestamp
 
+  /** True once the user has dismissed the first-login onboarding modal. */
+  hasOnboarded?: boolean;
+
   // Role-specific profiles
   inventorProfile?: InventorProfile;
   investorProfile?: InvestorProfile;
