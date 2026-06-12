@@ -232,7 +232,15 @@ export default function CreatePitchPage() {
     }
   };
 
-  /** Upload media + create the Firestore pitch doc; returns the new pitch id. */
+  /**
+   * Create the Firestore pitch doc, then upload media, then patch the doc with
+   * the media URLs; returns the new pitch id.
+   *
+   * The doc MUST exist before any Storage upload: storage.rules only allows
+   * writes under pitches/{pitchId}/ when the Firestore doc exists and its
+   * inventorId matches the caller (`ownsPitch`). If an upload fails midway the
+   * leftover doc is harmless — discovery only lists `live` pitches.
+   */
   const uploadAndCreatePitch = async (opts: {
     status: PitchStatus;
     listingFeePaid: boolean;
@@ -241,7 +249,7 @@ export default function CreatePitchPage() {
     const { collection, doc } = await import('firebase/firestore');
     const { db } = await import('@/lib/firebase/config');
     if (!db) throw new Error('Firebase is not configured.');
-    const { createPitch } = await import('@/lib/firebase/firestore');
+    const { createPitch, updatePitch } = await import('@/lib/firebase/firestore');
     const {
       uploadPitchVideo,
       uploadPitchDocument,
@@ -252,34 +260,9 @@ export default function CreatePitchPage() {
     let videoURL = '';
     const pitchDocuments: { name: string; url: string; type: string; uploadedAt: number }[] = [];
 
-    // Upload video
-    if (videoFile) {
-      setUploadStatus('Uploading video...');
-      const videoTask = uploadPitchVideo(pitchId, videoFile, ({ progress }) => {
-        setUploadProgress(Math.round(progress * 0.7)); // 0-70% for video
-      });
-      videoURL = await waitForUpload(videoTask);
-    }
-
-    // Upload documents
-    if (documents.length > 0) {
-      setUploadStatus('Uploading documents...');
-      for (let i = 0; i < documents.length; i++) {
-        const docTask = uploadPitchDocument(pitchId, documents[i]);
-        const url = await waitForUpload(docTask);
-        pitchDocuments.push({
-          name: documents[i].name,
-          url,
-          type: documents[i].type,
-          uploadedAt: Date.now(),
-        });
-        setUploadProgress(70 + Math.round(((i + 1) / documents.length) * 20));
-      }
-    }
-
-    // Save pitch to Firestore
-    setUploadStatus('Saving pitch...');
-    setUploadProgress(95);
+    // Create the pitch doc first (empty media fields) so Storage rules pass.
+    setUploadStatus('Creating pitch...');
+    setUploadProgress(5);
 
     const now = Date.now();
     await createPitch(pitchId, {
@@ -309,6 +292,41 @@ export default function CreatePitchPage() {
       // payments) or here when we publish directly (demo / no-Stripe flow).
       ...(opts.status === 'pending_payment' ? {} : { publishedAt: now }),
     });
+
+    // Upload video
+    if (videoFile) {
+      setUploadStatus('Uploading video...');
+      const videoTask = uploadPitchVideo(pitchId, videoFile, ({ progress }) => {
+        setUploadProgress(5 + Math.round(progress * 0.65)); // 5-70% for video
+      });
+      videoURL = await waitForUpload(videoTask);
+    }
+
+    // Upload documents
+    if (documents.length > 0) {
+      setUploadStatus('Uploading documents...');
+      for (let i = 0; i < documents.length; i++) {
+        const docTask = uploadPitchDocument(pitchId, documents[i]);
+        const url = await waitForUpload(docTask);
+        pitchDocuments.push({
+          name: documents[i].name,
+          url,
+          type: documents[i].type,
+          uploadedAt: Date.now(),
+        });
+        setUploadProgress(70 + Math.round(((i + 1) / documents.length) * 20));
+      }
+    }
+
+    // Patch the doc with the uploaded media URLs.
+    if (videoURL || pitchDocuments.length > 0) {
+      setUploadStatus('Saving pitch...');
+      setUploadProgress(95);
+      await updatePitch(pitchId, {
+        ...(videoURL ? { videoURL } : {}),
+        ...(pitchDocuments.length > 0 ? { documents: pitchDocuments } : {}),
+      });
+    }
 
     return pitchId;
   };
