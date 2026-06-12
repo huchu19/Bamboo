@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -449,7 +449,7 @@ export default function CreatePitchPage() {
                         : 'border-[color:var(--border)] bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground/80'
                     }`}
                   >
-                    <div className="text-xl mb-1">{cat.emoji}</div>
+                    <div className="flex justify-center mb-1">{cat.icon}</div>
                     <span className="text-[10px] font-mono leading-tight">{cat.label}</span>
                   </button>
                 ))}
