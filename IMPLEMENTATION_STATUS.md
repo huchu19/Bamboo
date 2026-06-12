@@ -110,14 +110,14 @@ persistence. Sticky invest CTA. EquityChart on traction section. Confetti on suc
 
 ---
 
-## 🚀 Phase 7: Hosting & Launch — IN PROGRESS
+## ✅ Phase 7: Hosting & Launch — Code Complete (2026-06-12)
 
-Code-side items landed 2026-06-11; remaining items are dashboard/manual
+Code-side items complete; remaining items are Vercel/Firebase dashboard
 actions documented in [docs/PRODUCTION_CHECKLIST.md](./docs/PRODUCTION_CHECKLIST.md).
 
 - [ ] Deploy to Vercel under custom domain (project: `bamboo-xi-ebon.vercel.app`)
 - [ ] Configure production env vars (Firebase prod project + Stripe live keys
-      + webhook events + Sentry DSN — full list in the checklist)
+      + webhook events + Sentry DSN + Resend keys — full list in the checklist)
 - [ ] Confirm `NEXT_PUBLIC_DEV_BYPASS_AUTH=false` in Vercel production
 - [ ] Separate Firebase production project (not the dev/test project)
 - [ ] Firebase App Check enabled on production project
@@ -129,23 +129,29 @@ actions documented in [docs/PRODUCTION_CHECKLIST.md](./docs/PRODUCTION_CHECKLIST
 - [x] Lighthouse audit run (local prod build): `/` 94/94/100/100,
       `/discover` 85/94/100/100 — `/discover` gap is LCP-only; re-run on
       the deployed URL. Lazy-loading Sentry took `/` from 74 → 94.
-- [x] Invite-only access — `invites` collection + generator script
-      (`scripts/generate-invites.mjs`), `/api/invites/validate` +
-      `/api/invites/redeem` (transactional, idempotent), register-form gate
-      via `NEXT_PUBLIC_INVITE_REQUIRED=true`, rules lockdown for both new
-      collections
+- [x] ~~Invite-only access~~ — removed 2026-06-12; registration is open
 - [x] First-login onboarding modal (role-aware, once per uid, real mode only)
-- [ ] Welcome email for new signups (needs sender domain + service choice)
+- [x] Welcome email on signup — `POST /api/auth/welcome-email` via Resend;
+      role-aware HTML template; fire-and-forget (safe when key is unset).
+      Add `RESEND_API_KEY` + `RESEND_FROM_EMAIL` to Vercel env to activate.
 
 ---
 
-## 🔍 Phase 8: Admin & Moderation — TODO
+## ✅ Phase 8: Admin & Moderation — DONE (2026-06-12)
 
-- [ ] `/admin` route, `role === 'admin'` guard
-- [ ] Pitch review queue: approve / reject / request changes
-- [ ] New pitches start as `status: 'pending_review'` — invisible on discover until approved
-- [ ] Rejected pitch: notify inventor, refund listing fee
-- [ ] Verified badge approval: view application, charge $199, set `isVerified: true`
+- [x] `/admin` route, `role === 'admin'` guard — client + `verifyAdmin()` server check
+- [x] Admin nav link — visible only to admin accounts in the account dropdown
+- [x] Pitch review queue (Pending Review tab): approve (→ `live`) / reject with reason modal
+      (→ `rejected` + listing-fee Stripe refund); rejection reason shown to inventor
+- [x] New pitches start as `status: 'pending_review'` — webhook sets this after listing fee
+- [x] Rejected pitch: rejection reason stored + displayed in MyPitchesPanel
+- [x] Reported pitches tab: report button on pitch detail → `/api/pitch/report` →
+      `status: 'reported'`; admin can dismiss (clears flags) or remove (reject + refund)
+- [x] Badge Applications tab: inventor applies via Billing tab ($199 Stripe charge, real mode);
+      webhook sets `verifiedBadgeStatus: 'pending_badge_review'`; admin grants badge
+      (`approve_badge` → `isVerified: true`)
+- [x] Verified badge fee updated to $199; `type: 'verified_badge'` payment intent +
+      webhook fulfilment + refund handler all wired
 
 ---
 
@@ -165,7 +171,7 @@ See MILESTONES.md Phase 10.
 
 1. **Auth bypass must be off in production** — bypass defaults `true` when the env var
    is unset; Vercel production env MUST set `NEXT_PUBLIC_DEV_BYPASS_AUTH=false` (Phase 7).
-2. **No admin panel** — pitches go directly to `status: 'live'` without review (fix in Phase 8).
+2. ~~No admin panel~~ — resolved 2026-06-12: Phase 8 complete, pitches go to `pending_review`.
 3. **Stripe runs on test keys** — payment rails (listing fee + investments)
    are live end-to-end, but live keys + Connect activation land in Phase 7.
 4. ~~Investor dashboard still reads localStorage investments~~ — resolved
@@ -194,4 +200,4 @@ vercel --prod
 
 ---
 
-**Last Updated**: 2026-06-11
+**Last Updated**: 2026-06-12

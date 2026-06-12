@@ -4,9 +4,9 @@ Things to verify before pointing real users at `bamboo-xi-ebon.vercel.app`
 (or the custom domain once attached). Walk this top-to-bottom; mark items
 off as they pass.
 
-> Updated 2026-06-11 for Phase 6 (real Stripe payments) and Phase 7
-> (invites, Sentry, onboarding). The old "Stripe is stubbed" assumptions no
-> longer apply.
+> Updated 2026-06-12 for Phase 6 (real Stripe payments) and Phase 7
+> (Sentry, onboarding). Invite-only gate removed — registration is open.
+> The old "Stripe is stubbed" assumptions no longer apply.
 
 ## Build & Deploy
 
@@ -20,8 +20,7 @@ off as they pass.
 Firebase:
 - [ ] `NEXT_PUBLIC_FIREBASE_*` — all 7 vars, matching your local `.env.local`
 - [ ] `FIREBASE_SERVICE_ACCOUNT_KEY` — full service-account JSON as one line.
-      **Required**: the Stripe webhook, refunds, and invite redemption all
-      run on the Admin SDK and fail without it.
+      **Required**: the Stripe webhook and refunds run on the Admin SDK and fail without it.
 
 Stripe (Phase 6 — real payments):
 - [ ] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — `pk_live_...` for launch
@@ -37,8 +36,6 @@ Stripe (Phase 6 — real payments):
 
 Launch posture (Phase 7):
 - [ ] `NEXT_PUBLIC_DEV_BYPASS_AUTH=false`
-- [ ] `NEXT_PUBLIC_INVITE_REQUIRED=true` — registration then needs a code
-      from `node scripts/generate-invites.mjs --count 100`
 - [ ] `NEXT_PUBLIC_SENTRY_DSN` — from the Sentry project; plus
       `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` for source maps
 - [ ] `NEXT_PUBLIC_SITE_URL=https://<production-domain>`
@@ -46,15 +43,10 @@ Launch posture (Phase 7):
 
 ## Firebase (see [PHASE_C_DEPLOY.md](./PHASE_C_DEPLOY.md))
 
-- [ ] Firestore rules deployed (`firebase deploy --only firestore:rules`) —
-      includes the `invites` / `inviteRedemptions` lockdown
-- [ ] Optional hard invite enforcement: enable the `inviteRedemptions`
-      clause on `users.create` in `firestore.rules` (see inline comment)
-      and redeploy **together with** `NEXT_PUBLIC_INVITE_REQUIRED=true`
+- [ ] Firestore rules deployed (`firebase deploy --only firestore:rules`)
 - [ ] Firestore indexes built (check Firestore → Indexes, all "Enabled")
 - [ ] Storage rules deployed (`firebase deploy --only storage:rules`)
 - [ ] Seed data loaded (`node scripts/seed-firestore.mjs`)
-- [ ] Invite codes minted (`node scripts/generate-invites.mjs --count 100 > invites.txt`)
 - [ ] Authorized domains include the production domain
 - [ ] Email/Password sign-in method enabled
 
@@ -62,9 +54,7 @@ Launch posture (Phase 7):
 
 - [ ] `/` loads, no console errors, no "Firebase not configured" warning
 - [ ] `/discover` shows the three seeded pitches
-- [ ] Register **without** an invite code → blocked with a friendly error
-- [ ] Register with a fresh code → account created, code's `usedCount`
-      incremented, onboarding modal appears once (and not on next login)
+- [ ] Register a new account → account created, onboarding modal appears once (and not on next login)
 - [ ] Sign up as a new inventor — `/pitch/new` walks to the payment step,
       4242 test card (preview) or real card (prod) pays the $49 fee, pitch
       flips to `live` via the webhook within seconds
@@ -85,9 +75,7 @@ Launch posture (Phase 7):
 - [ ] Try an unauthenticated invest call (DevTools → Network) — rejected
 - [ ] `POST /api/pitch/cancel` without a Bearer token → 401; with another
       user's pitch → 403
-- [ ] `POST /api/invites/redeem` with a used-up code → 409
 - [ ] Try writing to another user's `/users/{otherUid}` doc — rejected
-- [ ] Try reading `/invites/{anything}` from the client — rejected
 - [ ] Try uploading to a pitch you don't own — rejected
 - [ ] `/discover/<random-id-that-does-not-exist>` renders the 404 page
 - [ ] Force an error (e.g. throw in a page) — error boundary renders, not a

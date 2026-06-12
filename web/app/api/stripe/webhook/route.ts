@@ -9,8 +9,8 @@
  *   payment_intent.succeeded
  *     type=investment  → transaction: create investments/{id}, bump pitch
  *                        counters, write payments/{pi_id} audit record
- *     type=listing_fee → set pitch.listingFeePaid=true + status 'live'
- *                        (Phase 8 will switch this to 'pending_review')
+ *     type=listing_fee    → pitch.listingFeePaid=true, status 'pending_review'
+ *     type=verified_badge → pitch.verifiedBadgePaid=true, status 'pending_badge_review'
  *   payment_intent.payment_failed → payments/{pi_id} audit record only
  *   charge.refunded
  *     type=investment  → investment status 'refunded', pitch counters rolled
@@ -86,6 +86,8 @@ async function handleSucceeded(pi: Stripe.PaymentIntent) {
     await fulfilInvestment(pi);
   } else if (type === 'listing_fee') {
     await fulfilListingFee(pi);
+  } else if (type === 'verified_badge') {
+    await fulfilVerifiedBadge(pi);
   }
   await recordPayment(pi, 'succeeded');
 }
@@ -162,6 +164,27 @@ async function fulfilListingFee(pi: Stripe.PaymentIntent) {
   );
 }
 
+async function fulfilVerifiedBadge(pi: Stripe.PaymentIntent) {
+  const db = getAdminDb();
+  const { pitchId } = pi.metadata;
+  const now = Date.now();
+
+  // Payment received — flag the pitch as awaiting badge review by the admin.
+  // The admin approves in /api/admin/pitch with action='approve_badge', which
+  // sets isVerified=true and clears the pending state.
+  await db.collection('pitches').doc(pitchId).set(
+    {
+      verifiedBadgePaid: true,
+      verifiedBadgePaymentId: pi.id,
+      isVerified: false,
+      verifiedBadgeStatus: 'pending_badge_review',
+      verifiedBadgeSubmittedAt: now,
+      updatedAt: now,
+    },
+    { merge: true },
+  );
+}
+
 /**
  * Refund fulfilment — runs for refunds created by /api/pitch/cancel AND for
  * refunds issued manually from the Stripe dashboard (same single path).
@@ -207,9 +230,13 @@ async function handleRefunded(charge: Stripe.Charge) {
       }
     });
   } else if (meta?.type === 'listing_fee' && meta.pitchId) {
-    // Refunding a listing fee means delisting the pitch.
     await db.collection('pitches').doc(meta.pitchId).set(
       { listingFeePaid: false, status: 'closed', updatedAt: now },
+      { merge: true },
+    );
+  } else if (meta?.type === 'verified_badge' && meta.pitchId) {
+    await db.collection('pitches').doc(meta.pitchId).set(
+      { verifiedBadgePaid: false, verifiedBadgeStatus: 'refunded', isVerified: false, updatedAt: now },
       { merge: true },
     );
   }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import { SiteNav } from "@/components/bamboo/SiteNav";
 import { BambooLeaf } from "@/components/bamboo/BambooIcons";
@@ -14,6 +14,7 @@ import { useWatchlist } from "@/lib/watchlist-store";
 import { usePitches } from "@/lib/use-pitches";
 import { useAuth } from "@/context/AuthContext";
 import { MyPitchesPanel } from "@/components/bamboo/MyPitchesPanel";
+import { PaymentStep } from "@/components/bamboo/PaymentStep";
 
 const FOUNDER_ID = "hussain-naqvi"; // demo inventor — owns EduNexus
 
@@ -642,41 +643,131 @@ function UploadPanel({ pitch }: { pitch: Pitch }) {
 }
 
 function BillingPanel({ pitch }: { pitch: Pitch }) {
+  const { firebaseUser, user, devBypass } = useAuth();
+  const [badgeStep, setBadgeStep] = useState<'idle' | 'confirm' | 'pay' | 'done'>('idle');
+  const [clientSecret, setClientSecret] = useState('');
+  const [badgeError, setBadgeError] = useState('');
+  const [loadingBadge, setLoadingBadge] = useState(false);
+
+  const startBadgePayment = useCallback(async () => {
+    if (!firebaseUser) return;
+    setLoadingBadge(true);
+    setBadgeError('');
+    try {
+      const res = await fetch('/api/stripe/payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'verified_badge',
+          pitchId: pitch.id,
+          inventorId: firebaseUser.uid,
+          email: user?.email ?? firebaseUser.email ?? undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.clientSecret) throw new Error(data.error || 'Could not start payment.');
+      setClientSecret(data.clientSecret);
+      setBadgeStep('pay');
+    } catch (err: any) {
+      setBadgeError(err.message);
+    } finally {
+      setLoadingBadge(false);
+    }
+  }, [firebaseUser, user, pitch.id]);
+
+  const isVerified = pitch.verified;
+
   return (
     <div className="grid md:grid-cols-2 gap-6">
-      <Link
-        href="/contact"
-        className="block bg-card ring-1 ring-[color:var(--border)] rounded-2xl p-8 hover:ring-foreground transition-all"
-      >
-        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-          Listing Fee
-        </p>
-        <p className="font-display text-5xl uppercase tracking-tighter mt-2">Contact Us</p>
-        <p className="text-xs text-muted-foreground mt-1">Pricing finalised on listing</p>
-        <div className="mt-6 pt-6 border-t border-[color:var(--border)] text-xs font-mono uppercase tracking-widest text-muted-foreground">
-          Speak with our team to plant your pitch →
+      {/* Listing fee info */}
+      <div className="bg-card ring-1 ring-[color:var(--border)] rounded-2xl p-8">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Listing Fee</p>
+        <p className="font-display text-5xl uppercase tracking-tighter mt-2">$49</p>
+        <p className="text-xs text-muted-foreground mt-1">One-time fee to list your pitch</p>
+        <div className="mt-6 pt-6 border-t border-[color:var(--border)] space-y-2 text-xs font-mono text-muted-foreground">
+          <p>✓ Listed on Discover</p>
+          <p>✓ Investor access to pitch + vault</p>
+          <p>✓ Real-time raise metrics</p>
         </div>
-      </Link>
+      </div>
 
-      <Link
-        href="/contact"
-        className="block bg-[color:var(--ink)] text-[color:var(--ink-foreground)] rounded-2xl p-8 ring-1 ring-white/10 hover:ring-[color:var(--gold)] transition-all"
-      >
+      {/* Verified badge */}
+      <div className="bg-[color:var(--ink)] text-[color:var(--ink-foreground)] rounded-2xl p-8 ring-1 ring-white/10">
         <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)]">
-          {pitch.verified ? "Boost" : "Verified Badge"}
+          {isVerified ? 'Root-Verified ✓' : 'Verified Badge'}
         </p>
-        <p className="font-display text-5xl uppercase tracking-tighter mt-2 text-[color:var(--gold)]">
-          Contact Us
-        </p>
-        <p className="text-xs text-white/60 mt-1">
-          {pitch.verified
-            ? "Pricing finalised on feature placement"
-            : "Pricing finalised on verification"}
-        </p>
-        <span className="mt-6 block w-full py-2.5 bg-white/10 rounded-lg text-xs font-bold uppercase tracking-widest text-center">
-          Talk to our team →
-        </span>
-      </Link>
+        <p className="font-display text-5xl uppercase tracking-tighter mt-2 text-[color:var(--gold)]">$199</p>
+        <p className="text-xs text-white/60 mt-1">One-time due-diligence review</p>
+
+        <div className="mt-5 space-y-1.5 text-xs font-mono text-white/60">
+          <p>✓ Identity + company verification</p>
+          <p>✓ Gold Root-Verified badge on your pitch</p>
+          <p>✓ Priority placement in Discover</p>
+        </div>
+
+        {isVerified ? (
+          <div className="mt-6 py-2.5 bg-[color:var(--gold)]/10 border border-[color:var(--gold)]/30 rounded-lg text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] text-center">
+            Badge Active
+          </div>
+        ) : (pitch as any).verifiedBadgeStatus === 'pending_badge_review' ? (
+          <div className="mt-6 py-2.5 bg-white/5 border border-white/10 rounded-lg text-[10px] font-mono uppercase tracking-widest text-white/60 text-center">
+            Under review — we'll notify you
+          </div>
+        ) : (
+          <>
+            {badgeStep === 'idle' && (
+              <button
+                type="button"
+                onClick={() => setBadgeStep('confirm')}
+                disabled={devBypass}
+                className="mt-6 w-full py-2.5 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg text-xs font-bold uppercase tracking-widest hover:opacity-90 transition disabled:opacity-40"
+              >
+                {devBypass ? 'Apply (real mode only)' : 'Apply for Verification →'}
+              </button>
+            )}
+
+            {badgeStep === 'confirm' && (
+              <div className="mt-6 space-y-3">
+                <p className="text-xs text-white/70">
+                  You'll be charged <strong className="text-[color:var(--gold)]">$199</strong>. Our team will review your identity + company details and grant the badge within 48h.
+                </p>
+                {badgeError && <p className="text-[10px] font-mono text-red-400">{badgeError}</p>}
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setBadgeStep('idle')}
+                    className="flex-1 py-2.5 bg-white/5 text-white/60 rounded-lg text-[10px] font-mono uppercase tracking-widest hover:bg-white/10 transition">
+                    Cancel
+                  </button>
+                  <button type="button" onClick={startBadgePayment} disabled={loadingBadge}
+                    className="flex-1 py-2.5 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg text-[10px] font-mono uppercase tracking-widest hover:opacity-90 transition disabled:opacity-40">
+                    {loadingBadge ? 'Loading…' : 'Pay $199'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {badgeStep === 'pay' && clientSecret && (
+              <div className="mt-6">
+                {/* Dynamic import keeps Stripe out of the initial bundle */}
+                <BadgePaymentStep
+                  clientSecret={clientSecret}
+                  onSuccess={() => setBadgeStep('done')}
+                  onBack={() => setBadgeStep('confirm')}
+                />
+              </div>
+            )}
+
+            {badgeStep === 'done' && (
+              <div className="mt-6 py-3 bg-[color:var(--gold)]/10 border border-[color:var(--gold)]/30 rounded-lg text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] text-center">
+                Payment received · under review
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
+}
+
+function BadgePaymentStep({ clientSecret, onSuccess, onBack }: { clientSecret: string; onSuccess: () => void; onBack: () => void }) {
+  return <PaymentStep clientSecret={clientSecret} amount={199} variant="dark" onSuccess={onSuccess} onBack={onBack} />;
 }

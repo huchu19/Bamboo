@@ -4,8 +4,6 @@ import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { isInviteRequired } from "@/lib/invites";
-
 export default function LoginPage() {
   return (
     <Suspense fallback={null}>
@@ -21,12 +19,10 @@ function LoginInner() {
   const isSignup = search.get("mode") === "signup";
   const [selectedRole, setSelectedRole] = useState<"investor" | "inventor">("investor");
 
-  const inviteRequired = isInviteRequired();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -55,40 +51,15 @@ function LoginInner() {
       if (isSignup) {
         const firebaseRole = selectedRole === "inventor" ? "inventor" : "investor";
 
-        if (inviteRequired) {
-          const res = await fetch("/api/invites/validate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code: inviteCode }),
-          });
-          const data = await res.json();
-          if (!data.valid) {
-            setError(data.reason || "That invite code is not valid.");
-            setLoading(false);
-            return;
-          }
-        }
-
         const { registerUser } = await import("@/lib/firebase/auth");
-        const user = await registerUser(email, password, displayName, firebaseRole);
+        await registerUser(email, password, displayName, firebaseRole);
 
-        if (inviteRequired) {
-          const token = await user.getIdToken();
-          const res = await fetch("/api/invites/redeem", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ code: inviteCode }),
-          });
-          if (!res.ok) {
-            const data = await res.json();
-            setError(`${data.error || "Could not redeem the invite."} Your account was created — contact us and we'll activate it.`);
-            setLoading(false);
-            return;
-          }
-        }
+        // Fire-and-forget: email failure must never block registration.
+        fetch("/api/auth/welcome-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, displayName, role: firebaseRole }),
+        }).catch(() => {});
 
         router.push("/dashboard");
       } else {
@@ -210,27 +181,6 @@ function LoginInner() {
           )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            {isSignup && inviteRequired && (
-              <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  Invite Code
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={inviteCode}
-                  onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                  className="mt-1 w-full px-4 py-3 bg-card border border-[color:var(--input)] rounded-lg text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="BAMBOO-XXXX-XXXX"
-                  autoCapitalize="characters"
-                  autoCorrect="off"
-                  spellCheck={false}
-                />
-                <p className="text-[10px] font-mono text-muted-foreground mt-1">
-                  Bamboo is invite-only. No code? Ask the person who invited you.
-                </p>
-              </div>
-            )}
             {isSignup && (
               <div>
                 <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">

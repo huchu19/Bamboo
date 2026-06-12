@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, use, useEffect } from "react";
+import { useRef, useState, use, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteNav } from "@/components/bamboo/SiteNav";
@@ -14,6 +14,14 @@ import { useWatchlist } from "@/lib/watchlist-store";
 import { InvestModal } from "@/components/bamboo/InvestModal";
 import { DocumentCard } from "@/components/bamboo/DocumentCard";
 import { useAuth } from "@/context/AuthContext";
+
+const REPORT_REASONS = [
+  'Misleading information',
+  'Fraudulent pitch',
+  'Inappropriate content',
+  'Spam',
+  'Other',
+] as const;
 
 const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH !== "false";
 
@@ -255,6 +263,10 @@ export default function PitchDetail({
               ))}
             </div>
           </div>
+
+          {!isOwnPitch && firebaseUser && (
+            <ReportPitchButton pitch={pitch} />
+          )}
         </aside>
       </div>
 
@@ -394,10 +406,79 @@ function WatchlistButton({ pitch }: { pitch: Pitch }) {
   );
 }
 
+function formatTime(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
 function PitchVideoPlayer({ pitch }: { pitch: Pitch }) {
-  const ref = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
+  const [started, setStarted] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [buffered, setBuffered] = useState(0);
+  const [showControls, setShowControls] = useState(true);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasVideo = !!pitch.videoUrl;
+
+  const scheduleHide = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setShowControls(false), 3000);
+  };
+
+  const revealControls = () => {
+    setShowControls(true);
+    scheduleHide();
+  };
+
+  const togglePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (!started) setStarted(true);
+    if (v.paused) {
+      v.play().catch(() => {});
+    } else {
+      v.pause();
+    }
+    revealControls();
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    setMuted(v.muted);
+    revealControls();
+  };
+
+  const toggleFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const el = containerRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      el.requestFullscreen();
+    }
+    revealControls();
+  };
+
+  const seek = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const v = videoRef.current;
+    const bar = progressRef.current;
+    if (!v || !bar || !duration) return;
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    v.currentTime = ratio * duration;
+    revealControls();
+  };
 
   if (!hasVideo) {
     return (
@@ -410,7 +491,7 @@ function PitchVideoPlayer({ pitch }: { pitch: Pitch }) {
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="size-20 rounded-full bg-white/10 backdrop-blur-md ring-1 ring-white/20 flex items-center justify-center opacity-60">
-            <span className="text-white translate-x-1 text-2xl">▶</span>
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="white" aria-hidden="true"><polygon points="5,3 19,12 5,21" /></svg>
           </span>
         </div>
         <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md text-white text-xs font-mono px-3 py-1 rounded-full">
@@ -420,41 +501,147 @@ function PitchVideoPlayer({ pitch }: { pitch: Pitch }) {
     );
   }
 
-  const start = () => {
-    setPlaying(true);
-    queueMicrotask(() => {
-      ref.current?.play().catch(() => {});
-    });
-  };
+  const progress = duration ? currentTime / duration : 0;
 
   return (
-    <section className="relative aspect-video rounded-3xl overflow-hidden ring-1 ring-[color:var(--border)] bg-[color:var(--ink)]">
+    <section
+      ref={containerRef}
+      onClick={togglePlay}
+      onMouseMove={revealControls}
+      onMouseLeave={() => playing && setShowControls(false)}
+      className="relative aspect-video rounded-3xl overflow-hidden ring-1 ring-[color:var(--border)] bg-[color:var(--ink)] cursor-pointer group select-none"
+    >
       <video
-        ref={ref}
+        ref={videoRef}
         src={pitch.videoUrl}
         poster={pitch.posterUrl}
-        controls={playing}
         playsInline
         preload="metadata"
         className="absolute inset-0 size-full object-cover"
+        onPlay={() => { setPlaying(true); scheduleHide(); }}
+        onPause={() => { setPlaying(false); setShowControls(true); if (hideTimer.current) clearTimeout(hideTimer.current); }}
+        onTimeUpdate={() => {
+          const v = videoRef.current;
+          if (!v) return;
+          setCurrentTime(v.currentTime);
+          if (v.buffered.length) setBuffered(v.buffered.end(v.buffered.length - 1));
+        }}
+        onLoadedMetadata={() => setDuration(videoRef.current?.duration ?? 0)}
       />
-      {!playing && (
-        <button
-          type="button"
-          onClick={start}
-          aria-label="Play pitch video"
-          className="absolute inset-0 flex items-center justify-center group bg-black/20 hover:bg-black/10 transition-colors"
-        >
+
+      {/* Big play overlay — only before first play */}
+      {!started && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/25 pointer-events-none">
           <span className="size-20 rounded-full bg-white/10 backdrop-blur-md ring-1 ring-white/20 flex items-center justify-center group-hover:bg-[color:var(--gold)] group-hover:ring-[color:var(--gold)] transition-all">
-            <span className="text-white group-hover:text-[color:var(--gold-foreground)] translate-x-1 text-2xl">▶</span>
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="white" className="translate-x-0.5" aria-hidden="true"><polygon points="5,3 19,12 5,21" /></svg>
           </span>
-        </button>
-      )}
-      {!playing && (
-        <div className="pointer-events-none absolute bottom-4 right-4 bg-black/50 backdrop-blur-md text-white text-xs font-mono px-3 py-1 rounded-full">
-          0:60 · The Pitch
         </div>
       )}
+
+      {/* Gradient + controls */}
+      <div
+        className={`absolute inset-x-0 bottom-0 transition-opacity duration-300 ${showControls || !playing ? "opacity-100" : "opacity-0"}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Gradient scrim */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none rounded-b-3xl" />
+
+        <div className="relative px-4 pb-4 pt-10 space-y-2">
+          {/* Progress bar */}
+          <div
+            ref={progressRef}
+            onClick={seek}
+            className="relative h-1 rounded-full bg-white/20 cursor-pointer group/bar"
+          >
+            {/* Buffered */}
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-white/30 transition-all"
+              style={{ width: `${(duration ? buffered / duration : 0) * 100}%` }}
+            />
+            {/* Played */}
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-[color:var(--gold)] transition-all"
+              style={{ width: `${progress * 100}%` }}
+            />
+            {/* Thumb */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-3 rounded-full bg-[color:var(--gold)] ring-2 ring-black/40 opacity-0 group-hover/bar:opacity-100 transition-opacity"
+              style={{ left: `${progress * 100}%` }}
+            />
+          </div>
+
+          {/* Control row */}
+          <div className="flex items-center gap-3">
+            {/* Play/pause */}
+            <button
+              type="button"
+              onClick={togglePlay}
+              aria-label={playing ? "Pause" : "Play"}
+              className="text-white hover:text-[color:var(--gold)] transition-colors"
+            >
+              {playing ? (
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <rect x="6" y="4" width="4" height="16" rx="1" />
+                  <rect x="14" y="4" width="4" height="16" rx="1" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <polygon points="5,3 19,12 5,21" />
+                </svg>
+              )}
+            </button>
+
+            {/* Time */}
+            <span className="text-[11px] font-mono text-white/70 tabular-nums">
+              {formatTime(currentTime)}{duration ? ` / ${formatTime(duration)}` : ""}
+            </span>
+
+            <span className="flex-1" />
+
+            {/* Label */}
+            <span className="text-[10px] font-mono uppercase tracking-widest text-white/50 hidden sm:block">
+              The Pitch · 60s
+            </span>
+
+            {/* Mute */}
+            <button
+              type="button"
+              onClick={toggleMute}
+              aria-label={muted ? "Unmute" : "Mute"}
+              className="text-white hover:text-[color:var(--gold)] transition-colors"
+            >
+              {muted ? (
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <line x1="23" y1="9" x2="17" y2="15" />
+                  <line x1="17" y1="9" x2="23" y2="15" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </svg>
+              )}
+            </button>
+
+            {/* Fullscreen */}
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              aria-label="Toggle fullscreen"
+              className="text-white hover:text-[color:var(--gold)] transition-colors"
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="15 3 21 3 21 9" />
+                <polyline points="9 21 3 21 3 15" />
+                <line x1="21" y1="3" x2="14" y2="10" />
+                <line x1="3" y1="21" x2="10" y2="14" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
@@ -474,5 +661,91 @@ function SimilarCard({ pitch }: { pitch: Pitch }) {
       </div>
       <span className="text-[color:var(--gold)] text-xs">→</span>
     </Link>
+  );
+}
+
+function ReportPitchButton({ pitch }: { pitch: Pitch }) {
+  const { firebaseUser } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState<string>(REPORT_REASONS[0]);
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState('');
+
+  const submit = useCallback(async () => {
+    if (!firebaseUser) return;
+    setLoading(true);
+    setError('');
+    try {
+      const token = await firebaseUser.getIdToken();
+      const res = await fetch('/api/pitch/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ pitchId: pitch.id, reason }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Report failed.');
+      setDone(true);
+      setOpen(false);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [firebaseUser, pitch.id, reason]);
+
+  if (done) {
+    return (
+      <p className="text-[10px] font-mono text-muted-foreground text-center py-2">
+        ✓ Report submitted. Our team will review it.
+      </p>
+    );
+  }
+
+  return (
+    <div>
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="w-full text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors py-2 text-center"
+        >
+          Report this pitch
+        </button>
+      ) : (
+        <div className="bg-card ring-1 ring-[color:var(--border)] rounded-xl p-4 space-y-3">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+            Report · {pitch.company}
+          </p>
+          <select
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            className="w-full px-3 py-2 bg-secondary border border-[color:var(--input)] rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            {REPORT_REASONS.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+          {error && <p className="text-[10px] font-mono text-red-500">{error}</p>}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => { setOpen(false); setError(''); }}
+              className="flex-1 py-2 text-[10px] font-mono uppercase tracking-widest rounded-lg border border-[color:var(--border)] text-muted-foreground hover:bg-secondary transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={submit}
+              disabled={loading}
+              className="flex-1 py-2 text-[10px] font-mono uppercase tracking-widest rounded-lg bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-40"
+            >
+              {loading ? 'Submitting…' : 'Submit Report'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

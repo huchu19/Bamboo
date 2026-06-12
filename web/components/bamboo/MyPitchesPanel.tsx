@@ -22,8 +22,19 @@ const STATUS_STYLES: Record<string, string> = {
   draft: 'bg-secondary text-muted-foreground',
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  live: 'Live',
+  pending_payment: 'Pending payment',
+  pending_review: 'Under review',
+  closed: 'Closed',
+  funded: 'Funded',
+  rejected: 'Rejected',
+  draft: 'Draft',
+  reported: 'Reported',
+};
+
 function statusLabel(status: PitchStatus): string {
-  return status.replace('_', ' ');
+  return STATUS_LABELS[status] ?? status.replace(/_/g, ' ');
 }
 
 export function MyPitchesPanel() {
@@ -143,6 +154,16 @@ export function MyPitchesPanel() {
                   {(p.fundingGoal / 100).toLocaleString()} · {p.investorCount} investor
                   {p.investorCount === 1 ? '' : 's'}
                 </p>
+                {p.status === 'pending_review' && (
+                  <p className="text-[10px] font-mono text-[color:var(--gold)] mt-1">
+                    Your pitch is in the review queue. We'll notify you once it's approved.
+                  </p>
+                )}
+                {p.status === 'rejected' && (p as any).rejectionReason && (
+                  <p className="text-[10px] font-mono text-red-500 mt-1">
+                    Reason: {(p as any).rejectionReason}
+                  </p>
+                )}
               </div>
 
               {p.status === 'live' && (
@@ -154,7 +175,7 @@ export function MyPitchesPanel() {
                 </Link>
               )}
 
-              {p.status !== 'closed' && p.status !== 'rejected' && (
+              {p.status === 'live' && (
                 <button
                   type="button"
                   disabled={cancelling === p.id}

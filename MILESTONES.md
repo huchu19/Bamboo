@@ -150,13 +150,10 @@ Must be done before inviting any real participant.
       to Sentry via dynamic import
 
 ### 7.4 Onboarding for selected participants
-- [x] Invite-only access — invite code system: `invites/{CODE}` docs minted
-      with `scripts/generate-invites.mjs`, validate + transactional redeem
-      API routes, register-form gate behind `NEXT_PUBLIC_INVITE_REQUIRED=true`,
-      optional rules-level enforcement documented in `firestore.rules`
-- [ ] Welcome email template (send via Firebase Extensions or Resend) —
-      needs a sender domain + service choice; the onboarding modal covers
-      first-run guidance until then
+- [x] ~~Invite-only access~~ — removed 2026-06-12; registration is open for beta cohort
+- [x] Welcome email on signup — `POST /api/auth/welcome-email` (Resend, role-aware HTML),
+      fire-and-forget after `registerUser`; activates when `RESEND_API_KEY` is set in
+      Vercel env (inert without it). Add `RESEND_FROM_EMAIL` too.
 - [x] Brief onboarding modal on first login explaining the beta — role-aware
       copy, shown once per uid, real mode only
 
@@ -170,14 +167,16 @@ the verified badge process without touching the database directly.
 **Target**: 2026-07-05
 
 ### 8.1 Admin dashboard (internal, password-protected route)
-- [ ] `/admin` route, only accessible to `role === 'admin'` accounts
-- [ ] Pitch review queue: approve / reject / request changes
-- [ ] Verified badge approval: view application, approve, charge $199
+- [x] `/admin` route, only accessible to `role === 'admin'` accounts (client + server guard)
+- [x] Pitch review queue: approve (→ live) / reject with reason (→ rejected + listing-fee refund)
+- [x] Admin nav link in account menu — only visible when `role === 'admin'`
+- [x] Verified badge approval: badge applications tab, `approve_badge` action sets `isVerified: true`
 
 ### 8.2 Pitch moderation
-- [ ] New pitches start in `status: 'pending'` — not visible on discovery until approved
-- [ ] Rejected pitches: notify inventor with reason, refund listing fee
-- [ ] Reported pitches: flag for review, temporarily hide
+- [x] New pitches start in `status: 'pending_review'` after listing fee payment (webhook)
+- [x] Rejected pitches: rejection reason stored + shown to inventor in MyPitchesPanel; listing fee refunded via Stripe
+- [x] Reported pitches: report button on pitch detail (reason dropdown) → `POST /api/pitch/report` → `status: 'reported'` → admin Reported tab with dismiss / remove actions
+- [x] Verified badge flow: inventor applies via Billing tab ($199 Stripe charge) → `pending_badge_review` → admin grants in Badge Applications tab
 
 ---
 
@@ -221,8 +220,8 @@ Phase 3 (Investor build)       │███████████████�
 Phase 4 (Demo Polish)          │████████████████████████│ ✅ DONE
 Phase 5 (Auth + Persistence)   │████████████████████████│ ✅ DONE (Jun 11)
 Phase 6 (Stripe Payments)      │████████████████████████│ ✅ DONE (Jun 11)
-Phase 7 (Hosting + Launch)     │░░░░░░░░░░░░░░░░░░░░░░░░│ 🚀 NOW  → Jun 28
-Phase 8 (Admin + Moderation)   │░░░░░░░░░░░░░░░░░░░░░░░░│ 🔍 SOON → Jul 5
+Phase 7 (Hosting + Launch)     │████████████████████░░░░│ 🚀 Code done → dashboard steps remain
+Phase 8 (Admin + Moderation)   │████████████████████████│ ✅ DONE (2026-06-12)
 Phase 9 (Mobile)               │░░░░░░░░░░░░░░░░░░░░░░░░│ 📱 POST-LAUNCH
 Phase 10 (Growth)              │░░░░░░░░░░░░░░░░░░░░░░░░│ 📈 POST-LAUNCH
 ```
@@ -235,13 +234,13 @@ Before inviting the first real participant:
 - [x] Phase 5 complete: real auth + Firestore persistence
 - [x] Phase 6 complete: real payments flowing (live keys + webhook events
       configured in prod as part of Phase 7)
-- [ ] Phase 7 complete: live domain, production Firebase, error monitoring
-- [ ] Phase 8 complete: admin can moderate pitches before they go live
+- [ ] Phase 7 complete: live domain, production Firebase, error monitoring (dashboard steps only)
+- [x] Phase 8 complete: admin can moderate pitches, reported pitches, and verified badges
 - [ ] Zero known P0 bugs
 - [ ] Privacy policy + terms of service page live
 - [ ] `NEXT_PUBLIC_DEV_BYPASS_AUTH=false` confirmed in Vercel production env
 
 ---
 
-**Last Updated**: 2026-06-11
+**Last Updated**: 2026-06-12
 **Owned By**: Hussain Naqvi

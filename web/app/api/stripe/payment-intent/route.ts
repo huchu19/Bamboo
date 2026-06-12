@@ -6,8 +6,9 @@
  * this route only opens the payment, it never writes to Firestore.
  *
  * Body:
- *   { type: 'investment', pitchId, investorId, amountCents, anonymous?, email? }
- *   { type: 'listing_fee', pitchId, inventorId, email? }
+ *   { type: 'investment',     pitchId, investorId, amountCents, anonymous?, email? }
+ *   { type: 'listing_fee',    pitchId, inventorId, email? }
+ *   { type: 'verified_badge', pitchId, inventorId, email? }
  *
  * `email` sets receipt_email on the PaymentIntent — Stripe then emails a
  * receipt automatically on capture (live mode only; test mode shows the
@@ -16,7 +17,7 @@
 
 import { NextRequest } from 'next/server';
 import { getConnectAccountId, getStripe, isStripeConfigured } from '@/lib/stripe/server';
-import { LISTING_FEE_CENTS, MIN_INVESTMENT_CENTS } from '@/lib/fees';
+import { LISTING_FEE_CENTS, MIN_INVESTMENT_CENTS, VERIFIED_BADGE_FEE_CENTS } from '@/lib/fees';
 
 export const runtime = 'nodejs';
 
@@ -103,6 +104,27 @@ export async function POST(request: NextRequest) {
         ...(email ? { receipt_email: email } : {}),
         metadata: {
           type: 'listing_fee',
+          pitchId,
+          inventorId,
+        },
+      });
+
+      return Response.json({ clientSecret: intent.client_secret });
+    }
+
+    if (type === 'verified_badge') {
+      const { inventorId } = body;
+      if (!inventorId || typeof inventorId !== 'string') {
+        return Response.json({ error: 'inventorId is required.' }, { status: 400 });
+      }
+
+      const intent = await stripe.paymentIntents.create({
+        amount: VERIFIED_BADGE_FEE_CENTS,
+        currency: 'usd',
+        automatic_payment_methods: { enabled: true },
+        ...(email ? { receipt_email: email } : {}),
+        metadata: {
+          type: 'verified_badge',
           pitchId,
           inventorId,
         },
