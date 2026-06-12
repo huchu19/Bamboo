@@ -32,9 +32,11 @@ export function adaptFirestorePitch(fp: FirestorePitch): Pitch {
     return 'Series A';
   };
 
+  // 0 when no real deadline is set — the card hides the countdown rather than
+  // inventing one.
   const daysLeft = fp.fundingDeadline
     ? Math.max(0, Math.round((fp.fundingDeadline - Date.now()) / 86_400_000))
-    : 30;
+    : 0;
 
   return {
     id: fp.id,
@@ -52,7 +54,8 @@ export function adaptFirestorePitch(fp: FirestorePitch): Pitch {
     daysLeft,
     posterColor: 'from-stone-900 to-stone-950',
     equityOffered: fp.equityOffered,
-    traction: Array.from({ length: 12 }, (_, i) => Math.round((raised / 12) * (i + 1))),
+    // No fabricated traction for real pitches — empty hides the sparkline.
+    traction: [],
     location: '',
     videoUrl: fp.videoURL,
     posterUrl: fp.videoThumbnailURL,

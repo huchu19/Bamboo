@@ -123,8 +123,10 @@ export function DiscoverPitchCard({ pitch }: { pitch: Pitch }) {
 
       <div className="p-5 pt-7 flex flex-col flex-1">
         <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
-          <span>{pitch.sector} · {pitch.location}</span>
-          <span className={urgency ? "text-[color:var(--gold)] font-bold" : ""}>{pitch.daysLeft}d left</span>
+          <span>{pitch.sector}{pitch.location ? ` · ${pitch.location}` : ""}</span>
+          {pitch.daysLeft > 0 && (
+            <span className={urgency ? "text-[color:var(--gold)] font-bold" : ""}>{pitch.daysLeft}d left</span>
+          )}
         </div>
 
         <h3 className="font-display text-2xl uppercase tracking-tight leading-tight">
@@ -145,15 +147,17 @@ export function DiscoverPitchCard({ pitch }: { pitch: Pitch }) {
           {pitch.hook}
         </p>
 
-        <div className="mt-5 -mx-1 px-1 py-3 border-y border-dashed border-[color:var(--border)]">
-          <div className="flex items-center justify-between text-[9px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
-            <span>12-mo traction</span>
-            <span className="text-[color:var(--primary)] font-bold">
-              ↗ {pitch.traction[pitch.traction.length - 1]}x
-            </span>
+        {pitch.traction.length > 0 && (
+          <div className="mt-5 -mx-1 px-1 py-3 border-y border-dashed border-[color:var(--border)]">
+            <div className="flex items-center justify-between text-[9px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
+              <span>12-mo traction</span>
+              <span className="text-[color:var(--primary)] font-bold">
+                ↗ {pitch.traction[pitch.traction.length - 1]}x
+              </span>
+            </div>
+            <TractionSpark data={pitch.traction} height={32} width={260} />
           </div>
-          <TractionSpark data={pitch.traction} height={32} width={260} />
-        </div>
+        )}
 
         <div className="flex items-stretch mt-4 text-xs">
           <Stat label="Ask" value={pitch.asking} />

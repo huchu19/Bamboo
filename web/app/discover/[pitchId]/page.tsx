@@ -13,6 +13,7 @@ import { adaptFirestorePitch } from "@/lib/use-pitches";
 import { useWatchlist } from "@/lib/watchlist-store";
 import { InvestModal } from "@/components/bamboo/InvestModal";
 import { DocumentCard } from "@/components/bamboo/DocumentCard";
+import { useAuth } from "@/context/AuthContext";
 
 const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH !== "false";
 
@@ -30,6 +31,7 @@ export default function PitchDetail({
   );
   const [investOpen, setInvestOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const { firebaseUser } = useAuth();
 
   useEffect(() => {
     if (mockPitch || DEV_BYPASS) return;
@@ -71,6 +73,9 @@ export default function PitchDetail({
   const similar = PITCHES.filter((p) => p.id !== pitch.id && p.sector === pitch.sector).slice(0, 3);
   const fallback = PITCHES.filter((p) => p.id !== pitch.id).slice(0, 3);
   const sidebar = similar.length ? similar : fallback;
+
+  // A founder can't invest in their own pitch.
+  const isOwnPitch = !!firebaseUser && firebaseUser.uid === pitch.founderId;
 
   return (
     <div className="min-h-screen bg-background">
@@ -133,27 +138,27 @@ export default function PitchDetail({
           <section className="grid sm:grid-cols-[auto_1fr] gap-6 items-center bg-card ring-1 ring-[color:var(--border)] rounded-3xl p-6">
             <EquityChart raised={pitch.raised} equityOffered={pitch.equityOffered} size={160} />
             <div className="min-w-0">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
-                Growth signal · last 12 months
-              </p>
-              <div className="-mx-1">
-                <TractionSpark data={pitch.traction} height={64} width={420} />
-              </div>
-              <dl className="grid grid-cols-3 gap-px bg-[color:var(--border)] rounded-lg overflow-hidden mt-4 ring-1 ring-[color:var(--border)]">
-                <div className="bg-card p-3">
-                  <dt className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-                    Min check
-                  </dt>
-                  <dd className="font-bold font-mono text-sm mt-0.5 tabular-nums">{pitch.id === "edunexus" ? "$6,300" : "$5,000"}</dd>
-                </div>
-                <div className="bg-card p-3">
-                  <dt className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-                    Round close
-                  </dt>
-                  <dd className="font-bold font-mono text-sm mt-0.5 tabular-nums">
-                    {pitch.daysLeft} days
-                  </dd>
-                </div>
+              {pitch.traction.length > 0 && (
+                <>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+                    Growth signal · last 12 months
+                  </p>
+                  <div className="-mx-1">
+                    <TractionSpark data={pitch.traction} height={64} width={420} />
+                  </div>
+                </>
+              )}
+              <dl className="grid grid-cols-2 gap-px bg-[color:var(--border)] rounded-lg overflow-hidden mt-4 ring-1 ring-[color:var(--border)]">
+                {pitch.daysLeft > 0 && (
+                  <div className="bg-card p-3">
+                    <dt className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+                      Round close
+                    </dt>
+                    <dd className="font-bold font-mono text-sm mt-0.5 tabular-nums">
+                      {pitch.daysLeft} days
+                    </dd>
+                  </div>
+                )}
                 <div className="bg-card p-3">
                   <dt className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
                     Backers
@@ -183,19 +188,6 @@ export default function PitchDetail({
             )}
           </section>
 
-          <BambooDivider label="Capital" className="!my-2" />
-
-          <section>
-            <h2 className="font-display text-3xl uppercase tracking-tighter mb-4">Backers</h2>
-            <div className="grid sm:grid-cols-3 gap-3">
-              {["Sequoia Scout", "AngelList Syndicate", "Cassia Capital"].map((b) => (
-                <div key={b} className="bg-card ring-1 ring-[color:var(--border)] rounded-xl p-4">
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)]">Lead</p>
-                  <p className="font-bold mt-1">{b}</p>
-                </div>
-              ))}
-            </div>
-          </section>
         </main>
 
         <aside className="lg:col-span-4 space-y-6">
@@ -205,7 +197,7 @@ export default function PitchDetail({
                 ["Ask", pitch.asking],
                 ["Valuation", pitch.valuation],
                 ["Backers", String(pitch.investors)],
-                ["Days Left", String(pitch.daysLeft)],
+                ...(pitch.daysLeft > 0 ? [["Days Left", String(pitch.daysLeft)]] : []),
               ].map(([k, v]) => (
                 <div key={k} className="bg-[color:var(--ink)] p-3">
                   <p className="text-[10px] font-mono uppercase tracking-widest text-white/50">{k}</p>
@@ -227,11 +219,30 @@ export default function PitchDetail({
               </div>
             </div>
 
-            <InvestForm onOpen={() => setInvestOpen(true)} />
+            {isOwnPitch ? (
+              <div className="rounded-lg bg-white/5 ring-1 ring-white/10 p-4 text-center">
+                <p className="text-[11px] font-mono uppercase tracking-widest text-[color:var(--gold)]">
+                  This is your pitch
+                </p>
+                <p className="text-[11px] text-white/50 mt-1.5">
+                  You can&apos;t invest in your own pitch.
+                </p>
+                <Link
+                  href="/dashboard"
+                  className="mt-3 inline-block text-[10px] font-mono uppercase tracking-widest text-white/70 hover:text-[color:var(--gold)] transition-colors"
+                >
+                  Manage in your dashboard →
+                </Link>
+              </div>
+            ) : (
+              <>
+                <InvestForm onOpen={() => setInvestOpen(true)} />
 
-            <p className="mt-4 text-[10px] font-mono text-white/40 text-center">
-              Powered by Stripe · Funds held in escrow until close
-            </p>
+                <p className="mt-4 text-[10px] font-mono text-white/40 text-center">
+                  Powered by Stripe · Funds held in escrow until close
+                </p>
+              </>
+            )}
           </div>
 
           <div>
@@ -251,7 +262,7 @@ export default function PitchDetail({
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[color:var(--ink)] text-[color:var(--ink-foreground)] border-t border-white/10 px-4 py-3 flex items-center gap-3 backdrop-blur-md">
         <div className="flex-1 min-w-0">
           <p className="text-[9px] font-mono uppercase tracking-widest text-white/50">
-            {pitch.raised}% raised · {pitch.daysLeft}d left
+            {pitch.raised}% raised{pitch.daysLeft > 0 ? ` · ${pitch.daysLeft}d left` : ""}
           </p>
           <div className="h-1 mt-1 bg-white/10 rounded-full overflow-hidden">
             <div
@@ -260,19 +271,25 @@ export default function PitchDetail({
             />
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setInvestOpen(true)}
-          className="shrink-0 px-4 py-2.5 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-[11px] inline-flex items-center gap-1.5"
-        >
-          <BambooLeaf size={11} />
-          Plant Capital
-        </button>
+        {isOwnPitch ? (
+          <span className="shrink-0 px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest text-white/50">
+            Your pitch
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setInvestOpen(true)}
+            className="shrink-0 px-4 py-2.5 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-[11px] inline-flex items-center gap-1.5"
+          >
+            <BambooLeaf size={11} />
+            Plant Capital
+          </button>
+        )}
       </div>
 
       <InvestModal
         pitch={pitch}
-        open={investOpen}
+        open={investOpen && !isOwnPitch}
         onClose={() => setInvestOpen(false)}
         onRecorded={handleRecorded}
       />

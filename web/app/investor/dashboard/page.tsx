@@ -2,14 +2,9 @@
 
 import Link from 'next/link';
 import { BambooLeaf, VerifiedLeafBadge } from '@/components/bamboo/BambooIcons';
-import { BambooProgress } from '@/components/bamboo/BambooProgress';
 import { BambooDivider } from '@/components/bamboo/BambooDivider';
 import { DiscoverPitchCard } from '@/components/bamboo/DiscoverPitchCard';
 import { getPitch } from '@/lib/mock-pitches';
-import {
-  ACTIVITY,
-  PORTFOLIO_TARGET,
-} from '@/lib/mock-investor-data';
 import { useWatchlist } from '@/lib/watchlist-store';
 import { useInvestorInvestments } from '@/lib/use-investor-investments';
 import { usePitches } from '@/lib/use-pitches';
@@ -29,9 +24,7 @@ export default function InvestorDashboard() {
   const avgEquity = investments.length
     ? investments.reduce((sum, i) => sum + i.equityPct, 0) / investments.length
     : 0;
-  const rootScoreAvg = 88; // mock — would be derived from pitch quality signals
   const best = [...investments].sort((a, b) => b.amount - a.amount)[0];
-  const portfolioPct = Math.min(100, Math.round((totalPlanted / PORTFOLIO_TARGET) * 100));
 
   const { ids: watchlistIds } = useWatchlist();
   const watchlist = watchlistIds
@@ -79,29 +72,26 @@ export default function InvestorDashboard() {
             ${totalPlanted.toLocaleString()}
           </p>
           <p className="text-sm text-white/60 mt-2">
-            Across {investments.length} sprouts · target ${PORTFOLIO_TARGET.toLocaleString()}
+            Across {investments.length} {investments.length === 1 ? 'sprout' : 'sprouts'}
           </p>
-          <div className="mt-6">
-            <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest text-white/60 mb-2">
-              <span>Toward target</span>
-              <span className="text-[color:var(--gold)] font-bold">{portfolioPct}%</span>
-            </div>
-            <BambooProgress value={portfolioPct} segments={10} />
-          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-px bg-[color:var(--border)] rounded-3xl overflow-hidden ring-1 ring-[color:var(--border)]">
           <StatTile label="Active Sprouts" value={String(activeSprouts)} sub="completed deals" />
-          <StatTile label="Avg Root Score" value={`${rootScoreAvg}/100`} sub="across portfolio" />
           <StatTile
             label="Avg Equity"
             value={`${(avgEquity * 100).toFixed(2)}%`}
             sub="per investment"
           />
           <StatTile
-            label="Best Performer"
-            value={best?.pitch.company ?? '—'}
-            sub={best ? `+${best.pitch.raised}% raised` : 'No investments yet'}
+            label="Total Positions"
+            value={String(investments.length)}
+            sub="in your grove"
+          />
+          <StatTile
+            label="Largest Stake"
+            value={best ? `$${best.amount.toLocaleString()}` : '—'}
+            sub={best?.pitch.company ?? 'No investments yet'}
           />
         </div>
       </section>
@@ -234,33 +224,8 @@ export default function InvestorDashboard() {
         )}
       </section>
 
-      {/* Activity + CTA */}
-      <section className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-card ring-1 ring-[color:var(--border)] rounded-3xl p-6">
-          <div className="flex items-end justify-between mb-5">
-            <div>
-              <span className="font-mono text-[color:var(--gold)] text-[10px] uppercase tracking-widest">
-                Pulse · 04
-              </span>
-              <h3 className="font-display text-2xl uppercase tracking-tighter mt-2">
-                What&apos;s Growing
-              </h3>
-            </div>
-          </div>
-          <ul className="space-y-3">
-            {ACTIVITY.map((a, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm">
-                <span className="mt-0.5 size-7 rounded-full bg-secondary flex items-center justify-center shrink-0 text-[color:var(--primary)]">
-                  <BambooLeaf size={12} />
-                </span>
-                <p className="flex-1 text-foreground/80">{a.copy}</p>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground shrink-0">
-                  {a.when} ago
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+      {/* Discover CTA */}
+      <section>
         <Link
           href="/discover"
           className="group bg-gradient-to-br from-[color:var(--ink)] to-[color:var(--primary-deep)] text-[color:var(--ink-foreground)] rounded-3xl p-6 ring-1 ring-white/10 bamboo-grain relative overflow-hidden flex flex-col justify-between min-h-[16rem]"

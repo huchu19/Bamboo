@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BambooLeaf } from "./BambooIcons";
-import { TendTheGroveLink } from "./TendTheGroveLink";
+import { NavLinks } from "./NavLinks";
 import { SiteNavActions } from "./SiteNavActions";
 
 export function SiteNav({ variant = "light" }: { variant?: "light" | "ink" }) {
@@ -26,13 +26,7 @@ export function SiteNav({ variant = "light" }: { variant?: "light" | "ink" }) {
             </span>
           </Link>
           <div className="hidden md:flex gap-6 text-[10px] font-mono uppercase tracking-widest opacity-80">
-            <Link href="/discover" className="hover:text-[color:var(--gold)] transition-colors cursor-pointer">
-              Walk the Grove
-            </Link>
-            <TendTheGroveLink />
-            <Link href="/#pricing" className="hover:text-[color:var(--gold)] transition-colors cursor-pointer">
-              Harvest
-            </Link>
+            <NavLinks />
           </div>
         </div>
         <SiteNavActions variant={variant} />

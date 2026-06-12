@@ -135,20 +135,6 @@ function LoginInner() {
             Bamboo is the grove where Root-Verified founders plant 60-second pitches and
             accredited investors grow portfolios. Connected roots, exponential bloom.
           </p>
-          <div className="grid grid-cols-3 gap-px bg-white/10 ring-1 ring-white/10 rounded-xl overflow-hidden">
-            {[
-              ["$240M+", "Capital Planted"],
-              ["1,800", "Root-Verified Founders"],
-              ["96%", "Grove Match Rate"],
-            ].map(([k, v]) => (
-              <div key={k} className="bg-[color:var(--ink)] p-4">
-                <p className="font-display text-2xl text-[color:var(--gold)]">{k}</p>
-                <p className="text-[10px] font-mono uppercase tracking-widest text-white/50 mt-1">
-                  {v}
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
 
         <p className="relative z-10 text-[10px] font-mono text-white/40 tracking-widest uppercase">

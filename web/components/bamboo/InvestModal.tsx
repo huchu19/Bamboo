@@ -278,7 +278,7 @@ export function InvestModal({
                   : 'bg-white/5 ring-white/10 hover:bg-white/10'
               }`}
             >
-              <span className="flex items-center gap-2.5 text-left">
+              <span className="flex items-center gap-2.5 text-left min-w-0 flex-1">
                 <svg
                   viewBox="0 0 24 24"
                   width="16"
@@ -305,7 +305,7 @@ export function InvestModal({
                     </>
                   )}
                 </svg>
-                <span className="flex flex-col">
+                <span className="flex flex-col min-w-0">
                   <span className="text-[11px] font-bold text-white/90">
                     {anonymous ? 'Investing as Anonymous backer' : 'Show my name to the founder'}
                   </span>
@@ -324,7 +324,7 @@ export function InvestModal({
               >
                 <span
                   className={`absolute top-0.5 h-4 w-4 rounded-full bg-white/95 transition-transform ${
-                    anonymous ? 'translate-x-4' : 'translate-x-0.5'
+                    anonymous ? 'translate-x-[18px]' : 'translate-x-0.5'
                   }`}
                 />
               </span>

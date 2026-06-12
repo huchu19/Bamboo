@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { INVESTMENTS, type MockInvestment } from './mock-investor-data';
 
 const STORAGE_KEY = 'bamboo:investments';
 
@@ -22,17 +21,8 @@ export type Investment = {
   anonymous: boolean;
 };
 
-/** Seed from the dashboard mocks so portfolio numbers stay consistent. */
-const SEED: Investment[] = INVESTMENTS.map((i: MockInvestment) => ({
-  id: i.id,
-  pitchId: i.pitchId,
-  company: i.pitchId,
-  amount: i.amount,
-  equityPct: i.equityPct,
-  date: i.date,
-  status: i.status,
-  anonymous: Boolean(i.anonymous),
-}));
+// Portfolios start empty — only real investments (made through the flow) show.
+const SEED: Investment[] = [];
 
 type Listener = () => void;
 const listeners = new Set<Listener>();

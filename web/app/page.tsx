@@ -52,19 +52,6 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Mini ticker */}
-            <div className="mt-12 grid grid-cols-3 gap-px bg-[color:var(--border)] rounded-xl overflow-hidden ring-1 ring-[color:var(--border)] max-w-md">
-              {[
-                ["$240M+", "Planted"],
-                ["1,800", "Founders"],
-                ["12 days", "Avg Bloom"],
-              ].map(([k, v]) => (
-                <div key={k} className="bg-card p-3">
-                  <p className="font-display text-xl text-foreground">{k}</p>
-                  <p className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">{v}</p>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Featured Pitch Card */}

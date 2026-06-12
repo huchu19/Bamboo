@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { WATCHLIST_IDS } from './mock-investor-data';
 
 const STORAGE_KEY = 'bamboo:watchlist';
+
+// Watchlists start empty — users add their own. (No fabricated seed entries.)
+const WATCHLIST_IDS: string[] = [];
 
 type Listener = () => void;
 const listeners = new Set<Listener>();

@@ -358,6 +358,9 @@ const variants = {
 - Write clear, imperative commit messages
 - Group related changes into logical commits
 - Reference MILESTONES.md when closing phases
+- **Never add Claude (or any AI assistant) as a co-author.** Do not append
+  `Co-Authored-By: Claude ...` trailers or `Generated with Claude Code` lines
+  to commit messages or PR bodies pushed to GitHub.
 
 ### PR Process
 1. Create a feature branch: `git checkout -b feature/description`

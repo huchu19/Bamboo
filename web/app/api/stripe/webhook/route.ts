@@ -109,6 +109,14 @@ async function fulfilInvestment(pi: Stripe.PaymentIntent) {
     if (!pitchSnap.exists) throw new Error(`Pitch ${pitchId} not found`);
     const pitch = pitchSnap.data()!;
 
+    // A founder can't invest in their own pitch. The UI blocks this, but the
+    // webhook is the trust boundary — skip fulfilment (the audit record under
+    // payments/{pi_id} still captures the attempt).
+    if (pitch.inventorId === investorId) {
+      console.warn(`[webhook] Skipping self-investment: ${investorId} on ${pitchId}`);
+      return;
+    }
+
     const equityPortion =
       pitch.fundingGoal > 0 ? (pi.amount / pitch.fundingGoal) * pitch.equityOffered : 0;
 
