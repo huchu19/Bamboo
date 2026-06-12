@@ -313,7 +313,7 @@ export default function DiscoverPage() {
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}
-                className="py-3 rounded-lg text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)]"
+                className="py-3 rounded-lg text-xs font-bold uppercase tracking-widest bg-[color:var(--gold)] text-[color:var(--gold-foreground)]"
               >
                 Show {filtered.length} seeds
               </button>

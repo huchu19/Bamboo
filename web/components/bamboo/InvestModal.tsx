@@ -237,7 +237,7 @@ export function InvestModal({
               type="button"
               disabled={!valid}
               onClick={() => setStep('review')}
-              className="w-full py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 group"
+              className="w-full py-4 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 group"
             >
               Review
               <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -353,7 +353,7 @@ export function InvestModal({
                 type="button"
                 disabled={submitting}
                 onClick={confirm}
-                className="flex-1 py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+                className="flex-1 py-4 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
               >
                 {submitting
                   ? 'Preparing…'
@@ -410,7 +410,7 @@ export function InvestModal({
             <button
               type="button"
               onClick={onClose}
-              className="mt-6 w-full py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all"
+              className="mt-6 w-full py-4 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all"
             >
               Done
             </button>

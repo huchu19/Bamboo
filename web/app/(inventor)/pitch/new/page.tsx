@@ -368,7 +368,7 @@ export default function CreatePitchPage() {
   const inputCls = 'w-full px-4 py-3 bg-secondary border border-[color:var(--input)] rounded-lg text-foreground placeholder:text-muted-foreground/60 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] transition-all';
   const labelCls = 'block text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2';
   const hintCls = 'text-[10px] font-mono text-muted-foreground/70 mt-1.5';
-  const btnPrimary = 'flex-1 py-3.5 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all';
+  const btnPrimary = 'flex-1 py-3.5 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all';
   const btnSecondary = 'flex-1 py-3.5 bg-secondary border border-[color:var(--border)] text-muted-foreground rounded-lg font-mono text-xs uppercase tracking-widest hover:bg-muted transition-all disabled:opacity-40';
 
   return (

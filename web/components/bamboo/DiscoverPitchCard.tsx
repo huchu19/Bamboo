@@ -174,7 +174,7 @@ export function DiscoverPitchCard({ pitch }: { pitch: Pitch }) {
           </div>
           <div className="relative h-1.5 bg-secondary rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-primary to-[color:var(--gold)] rounded-full"
+              className="h-full bg-[color:var(--gold)] rounded-full"
               style={{ width: `${pitch.raised}%` }}
             />
             {[25, 50, 75].map((t) => (
@@ -199,7 +199,7 @@ export function DiscoverPitchCard({ pitch }: { pitch: Pitch }) {
           <Link
             href={`/discover/${pitch.id}#invest`}
             onClick={(e) => e.stopPropagation()}
-            className="flex-1 text-center py-2.5 text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground rounded-lg hover:opacity-90 transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer"
+            className="flex-1 text-center py-2.5 text-xs font-bold uppercase tracking-widest bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <BambooLeaf size={11} className="text-[color:var(--gold)]" />
             Plant Capital

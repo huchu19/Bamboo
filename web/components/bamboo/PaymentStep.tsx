@@ -26,7 +26,7 @@ const STYLES: Record<
       'text-[10px] font-mono text-red-300/90 bg-red-500/10 ring-1 ring-red-500/30 rounded-lg px-3 py-2',
     footnote: 'text-[10px] font-mono text-white/40 text-center leading-relaxed',
     back: 'px-4 py-4 rounded-lg text-[10px] font-mono uppercase tracking-widest text-white/60 bg-white/5 hover:bg-white/10 disabled:opacity-40 transition-all',
-    pay: 'flex-1 py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 disabled:opacity-60 transition-all',
+    pay: 'flex-1 py-4 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 disabled:opacity-60 transition-all',
   },
   light: {
     error: 'text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2',

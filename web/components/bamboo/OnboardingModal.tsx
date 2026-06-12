@@ -92,7 +92,7 @@ export function OnboardingModal() {
         <button
           type="button"
           onClick={dismiss}
-          className="mt-5 w-full py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all"
+          className="mt-5 w-full py-4 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all"
         >
           Start growing
         </button>

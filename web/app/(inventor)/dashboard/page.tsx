@@ -71,7 +71,7 @@ export default function DashboardPage() {
             <StatusPill verified={pitch.verified} />
             <Link
               href="/pitch/new"
-              className="text-xs font-bold uppercase tracking-widest px-5 py-2.5 bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground rounded-full hover:opacity-90 transition-all flex items-center gap-1.5"
+              className="text-xs font-bold uppercase tracking-widest px-5 py-2.5 bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-all flex items-center gap-1.5"
             >
               <BambooLeaf size={11} className="text-[color:var(--gold)]" /> New Seed
             </Link>
@@ -305,7 +305,7 @@ function Overview({ pitch, raisedAmount }: { pitch: Pitch; raisedAmount: number 
 
         {/* Verified badge upsell — only show if not yet verified */}
         {!pitch.verified ? (
-          <section className="relative overflow-hidden bg-gradient-to-br from-[color:var(--ink)] via-[color:var(--ink)] to-[color:var(--gold)]/30 text-[color:var(--ink-foreground)] rounded-2xl p-6 ring-1 ring-[color:var(--gold)]/30">
+          <section className="relative overflow-hidden bg-[color:var(--ink)] text-[color:var(--ink-foreground)] rounded-2xl p-6 ring-1 ring-[color:var(--gold)]/30">
             <span aria-hidden="true" className="absolute -top-12 -right-10 size-40 rounded-full bg-[color:var(--gold)]/15 blur-2xl" />
             <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)] flex items-center gap-1.5">
               <BambooLeaf size={10} /> Root-Verify
@@ -325,7 +325,7 @@ function Overview({ pitch, raisedAmount }: { pitch: Pitch; raisedAmount: number 
             </Link>
           </section>
         ) : (
-          <section className="relative overflow-hidden bg-gradient-to-br from-[color:var(--ink)] to-primary text-[color:var(--ink-foreground)] rounded-2xl p-6">
+          <section className="relative overflow-hidden bg-[color:var(--ink)] text-[color:var(--ink-foreground)] rounded-2xl p-6 ring-1 ring-[color:var(--border)]">
             <p className="text-[10px] font-mono uppercase tracking-widest text-[color:var(--gold)]">Boost</p>
             <h3 className="font-display text-2xl uppercase tracking-tighter mt-2">
               Feature your pitch

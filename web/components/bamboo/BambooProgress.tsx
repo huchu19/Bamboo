@@ -28,7 +28,7 @@ export function BambooProgress({
             key={i}
             className={`relative flex-1 h-3 rounded-sm transition-colors duration-500 ${
               isFilled
-                ? "bg-gradient-to-b from-primary to-[color:var(--primary-deep)]"
+                ? "bg-primary"
                 : "bg-white/10"
             }`}
             style={{ transitionDelay: isFilled ? `${i * 40}ms` : "0ms" }}

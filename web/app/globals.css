@@ -67,57 +67,60 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Dark theme — forest-ink surfaces, cream text, same warm gold accent.
-   Overrides both the Tailwind v4 @theme tokens (--color-*) and the plain
-   vars above. Applied via data-theme="dark" on <html>.
+   Dark theme — warm charcoal surfaces, cream text, regal gold accent.
+   Near-black warm backgrounds (not minty), a deeper old-money gold as the
+   lead accent, and green demoted to a quiet secondary. Overrides both the
+   Tailwind v4 @theme tokens (--color-*) and the plain vars. data-theme="dark".
    ─────────────────────────────────────────────────────────────────────────── */
 [data-theme="dark"] {
   /* Tailwind utility tokens (bg-background, text-foreground, bg-card, …) */
-  --color-background: #0b150f;
-  --color-foreground: #f3efe6;
-  --color-card: #14241a;
-  --color-card-foreground: #f3efe6;
+  --color-background: #14110d;
+  --color-foreground: #f4efe4;
+  --color-card: #1c1813;
+  --color-card-foreground: #f4efe4;
 
-  --color-primary: #4f9469;
-  --color-primary-foreground: #07100a;
+  /* Green is the quiet secondary now — muted sage, not loud mint. */
+  --color-primary: #3f7355;
+  --color-primary-foreground: #f4efe4;
 
-  --color-accent: #e0b65c;
-  --color-accent-foreground: #07100a;
-  --color-gold: #e0b65c;
-  --color-gold-foreground: #07100a;
-  --color-gold-soft: #efce8c;
+  /* Regal gold leads. Deeper, less neon than the light-mode gold. */
+  --color-accent: #c9a23f;
+  --color-accent-foreground: #14110d;
+  --color-gold: #c9a23f;
+  --color-gold-foreground: #14110d;
+  --color-gold-soft: #dcb86a;
 
-  /* Ink surfaces stay dark but lift slightly so they read against the page. */
-  --color-ink: #06100a;
-  --color-ink-foreground: #f3efe6;
+  /* Ink surfaces: the darkest warm tone, for inverted panels. */
+  --color-ink: #0d0b08;
+  --color-ink-foreground: #f4efe4;
 
-  --color-leaf: #6fa386;
+  --color-leaf: #5e8a72;
 
-  --color-secondary: #1b2c20;
-  --color-secondary-foreground: #f3efe6;
-  --color-muted: #1b2c20;
-  --color-muted-foreground: #9db0a3;
+  --color-secondary: #241f18;
+  --color-secondary-foreground: #f4efe4;
+  --color-muted: #241f18;
+  --color-muted-foreground: #b3a890;
 
-  --color-border: rgba(243, 239, 230, 0.12);
-  --color-input: rgba(243, 239, 230, 0.18);
-  --color-ring: #4f9469;
+  --color-border: rgba(244, 239, 228, 0.10);
+  --color-input: rgba(244, 239, 228, 0.16);
+  --color-ring: #c9a23f;
 
   /* Plain vars used via var(--gold) etc. */
-  --background: #0b150f;
-  --foreground: #f3efe6;
-  --card: #14241a;
-  --primary: #4f9469;
-  --primary-deep: #2d5a3d;
-  --accent: #e0b65c;
-  --gold: #e0b65c;
-  --gold-foreground: #07100a;
-  --gold-soft: #efce8c;
-  --ink: #06100a;
-  --ink-foreground: #f3efe6;
-  --secondary: #1b2c20;
-  --muted-foreground: #9db0a3;
-  --border: rgba(243, 239, 230, 0.12);
-  --input: rgba(243, 239, 230, 0.18);
+  --background: #14110d;
+  --foreground: #f4efe4;
+  --card: #1c1813;
+  --primary: #3f7355;
+  --primary-deep: #2c5340;
+  --accent: #c9a23f;
+  --gold: #c9a23f;
+  --gold-foreground: #14110d;
+  --gold-soft: #dcb86a;
+  --ink: #0d0b08;
+  --ink-foreground: #f4efe4;
+  --secondary: #241f18;
+  --muted-foreground: #b3a890;
+  --border: rgba(244, 239, 228, 0.10);
+  --input: rgba(244, 239, 228, 0.16);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────

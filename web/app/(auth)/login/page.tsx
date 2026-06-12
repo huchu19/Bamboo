@@ -175,7 +175,7 @@ function LoginInner() {
                   onClick={() => setSelectedRole(r)}
                   className={`py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${
                     selectedRole === r
-                      ? "bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground shadow"
+                      ? "bg-primary text-primary-foreground shadow"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -309,7 +309,7 @@ function LoginInner() {
             <button
               type="submit"
               disabled={loading || (isSignup && !acceptedTerms)}
-              className="w-full py-4 bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 bg-primary text-primary-foreground rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />

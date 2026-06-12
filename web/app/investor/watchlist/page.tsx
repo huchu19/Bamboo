@@ -41,7 +41,7 @@ export default function WatchlistPage() {
           </p>
           <Link
             href="/discover"
-            className="mt-6 inline-flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground rounded-lg hover:opacity-90 transition-all cursor-pointer"
+            className="mt-6 inline-flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-widest bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all cursor-pointer"
           >
             <BambooLeaf size={12} className="text-[color:var(--gold)]" />
             Walk the Grove

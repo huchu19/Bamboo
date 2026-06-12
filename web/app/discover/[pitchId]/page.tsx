@@ -213,7 +213,7 @@ export default function PitchDetail({
               </div>
               <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[color:var(--gold)] to-white rounded-full"
+                  className="h-full bg-[color:var(--gold)] rounded-full"
                   style={{ width: `${pitch.raised}%` }}
                 />
               </div>
@@ -266,7 +266,7 @@ export default function PitchDetail({
           </p>
           <div className="h-1 mt-1 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[color:var(--gold)] to-white rounded-full"
+              className="h-full bg-[color:var(--gold)] rounded-full"
               style={{ width: `${pitch.raised}%` }}
             />
           </div>
@@ -279,7 +279,7 @@ export default function PitchDetail({
           <button
             type="button"
             onClick={() => setInvestOpen(true)}
-            className="shrink-0 px-4 py-2.5 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-[11px] inline-flex items-center gap-1.5"
+            className="shrink-0 px-4 py-2.5 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-[11px] inline-flex items-center gap-1.5"
           >
             <BambooLeaf size={11} />
             Plant Capital
@@ -334,7 +334,7 @@ function InvestForm({ onOpen }: { onOpen: () => void }) {
       <button
         type="button"
         onClick={onOpen}
-        className="w-full py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 group"
+        className="w-full py-4 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] rounded-lg font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 group"
       >
         Plant Capital
         <span className="group-hover:translate-x-1 transition-transform">→</span>

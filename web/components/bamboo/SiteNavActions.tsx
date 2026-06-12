@@ -95,7 +95,7 @@ export function SiteNavActions({ variant = "light" }: { variant?: "light" | "ink
           </Link>
           <Link
             href="/login?mode=signup"
-            className="text-xs font-semibold bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground px-5 py-2 rounded-full shadow-sm hover:opacity-90 transition-all flex items-center gap-1.5"
+            className="text-xs font-semibold bg-primary text-primary-foreground px-5 py-2 rounded-full shadow-sm hover:opacity-90 transition-all flex items-center gap-1.5"
           >
             <BambooLeaf size={11} className="text-[color:var(--gold)]" />
             Plant Your Seed

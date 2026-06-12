@@ -54,7 +54,7 @@ export default function GroveError({
             <button
               type="button"
               onClick={reset}
-              className="px-6 py-3 text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground rounded-lg hover:opacity-90 transition-all inline-flex items-center justify-center gap-2"
+              className="px-6 py-3 text-xs font-bold uppercase tracking-widest bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all inline-flex items-center justify-center gap-2"
             >
               <BambooLeaf size={12} className="text-[color:var(--gold)]" />
               Try again

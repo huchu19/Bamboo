@@ -35,7 +35,7 @@ export default function Home() {
             <div className="flex flex-wrap gap-4 mt-12 animate-reveal [animation-delay:300ms]">
               <Link
                 href="/discover"
-                className="group relative bg-gradient-to-br from-primary to-[color:var(--primary-deep)] text-primary-foreground px-8 py-4 rounded-xl font-bold flex flex-col items-start gap-1 hover:opacity-90 transition-all"
+                className="group relative bg-primary text-primary-foreground px-8 py-4 rounded-xl font-bold flex flex-col items-start gap-1 hover:opacity-90 transition-all"
               >
                 <span className="text-[10px] uppercase tracking-widest text-[color:var(--gold)]">Investors</span>
                 <span className="text-lg flex items-center gap-2">
@@ -134,7 +134,7 @@ export default function Home() {
             </ul>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 text-sm font-semibold bg-gradient-to-r from-primary to-[color:var(--primary-deep)] text-primary-foreground px-6 py-3 rounded-full hover:opacity-90 transition-all"
+              className="inline-flex items-center gap-2 text-sm font-semibold bg-primary text-primary-foreground px-6 py-3 rounded-full hover:opacity-90 transition-all"
             >
               Plant your pitch →
             </Link>
@@ -263,7 +263,7 @@ export default function Home() {
             </div>
             <Link
               href="/contact"
-              className="block w-full py-4 bg-gradient-to-r from-[color:var(--gold)] to-[color:var(--gold-soft)] text-[color:var(--gold-foreground)] font-bold rounded-xl shadow-lg shadow-[color:var(--gold)]/20 hover:opacity-90 transition-all text-center"
+              className="block w-full py-4 bg-[color:var(--gold)] text-[color:var(--gold-foreground)] font-bold rounded-xl shadow-lg shadow-[color:var(--gold)]/20 hover:opacity-90 transition-all text-center"
             >
               Contact Us
             </Link>
