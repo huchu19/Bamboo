@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import icon from "@/app/icon.png";
 import { NavLinks, useNavItems } from "./NavLinks";
 import { SiteNavActions } from "./SiteNavActions";
 import { ThemeToggleButton } from "./ThemeToggleButton";
@@ -25,7 +24,7 @@ export function SiteNav({ variant = "light" }: { variant?: "light" | "ink" }) {
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center" aria-label="Bamboo home">
             <Image
-              src={icon}
+              src="/logo.png"
               alt="Bamboo"
               width={32}
               height={32}
