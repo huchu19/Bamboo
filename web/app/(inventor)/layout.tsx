@@ -1,3 +1,5 @@
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+
 export default function InventorLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return <ProtectedRoute>{children}</ProtectedRoute>;
 }

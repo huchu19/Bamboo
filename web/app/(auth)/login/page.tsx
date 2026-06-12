@@ -110,6 +110,30 @@ function LoginInner() {
     }
   }
 
+  async function handleGoogle() {
+    setError("");
+    // On signup, the same Terms/Privacy acceptance applies to Google sign-up.
+    if (isSignup && !acceptedTerms) {
+      setError("Please accept the Terms of Service and Privacy Policy to continue.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { signInWithGoogle } = await import("@/lib/firebase/auth");
+      // Role only matters for brand-new accounts; returning users keep theirs.
+      await signInWithGoogle(isSignup && selectedRole === "inventor" ? "inventor" : "investor");
+      router.push("/dashboard");
+    } catch (err: any) {
+      if (err?.code === "auth/popup-closed-by-user") {
+        setError("");
+      } else {
+        setError(err?.message || "Could not sign in with Google.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
       <aside className="relative hidden lg:flex flex-col justify-between p-12 bg-[color:var(--ink)] text-[color:var(--ink-foreground)] overflow-hidden bamboo-grain">
@@ -320,6 +344,24 @@ function LoginInner() {
                 </>
               )}
             </button>
+
+            <div className="flex items-center gap-3 py-1">
+              <span className="h-px flex-1 bg-[color:var(--border)]" />
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                or
+              </span>
+              <span className="h-px flex-1 bg-[color:var(--border)]" />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogle}
+              disabled={loading || (isSignup && !acceptedTerms)}
+              className="w-full py-3.5 bg-card border border-[color:var(--input)] rounded-lg font-semibold text-sm hover:bg-secondary transition-all flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <GoogleGlyph />
+              Continue with Google
+            </button>
           </form>
 
           <p className="mt-8 text-xs text-muted-foreground text-center">
@@ -334,5 +376,28 @@ function LoginInner() {
         </div>
       </main>
     </div>
+  );
+}
+
+function GoogleGlyph() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"
+      />
+      <path
+        fill="#34A853"
+        d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.34A9 9 0 0 0 9 18z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.94H.96A9 9 0 0 0 0 9c0 1.45.35 2.82.96 4.06l3.01-2.34z"
+      />
+      <path
+        fill="#EA4335"
+        d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.94l3.01 2.34C4.68 5.16 6.66 3.58 9 3.58z"
+      />
+    </svg>
   );
 }

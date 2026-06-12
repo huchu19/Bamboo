@@ -22,7 +22,7 @@ export function SiteNavActions({ variant = "light" }: { variant?: "light" | "ink
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const dashboardHref = "/dashboard";
+  const profileHref = "/profile";
   const initials = user?.displayName
     ? user.displayName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : user?.email?.[0]?.toUpperCase() ?? "U";
@@ -61,12 +61,27 @@ export function SiteNavActions({ variant = "light" }: { variant?: "light" | "ink
                 </p>
               </div>
               <Link
-                href={dashboardHref}
+                href={profileHref}
                 onClick={() => setMenuOpen(false)}
-                className={`block px-4 py-2.5 text-xs font-mono uppercase tracking-widest transition-colors ${
+                className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-mono uppercase tracking-widest transition-colors ${
                   isInk ? "hover:bg-white/5" : "hover:bg-foreground/5"
                 }`}
               >
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                </svg>
+                Profile
+              </Link>
+              <Link
+                href="/dashboard"
+                onClick={() => setMenuOpen(false)}
+                className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-mono uppercase tracking-widest transition-colors ${
+                  isInk ? "hover:bg-white/5" : "hover:bg-foreground/5"
+                }`}
+              >
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+                </svg>
                 Dashboard
               </Link>
               <button

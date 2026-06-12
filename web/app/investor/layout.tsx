@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SiteNav } from '@/components/bamboo/SiteNav';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 export default function InvestorLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
@@ -12,6 +13,7 @@ export default function InvestorLayout({ children }: { children: React.ReactNode
   ];
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background text-foreground">
       <SiteNav />
       <div className="max-w-7xl mx-auto px-6 pt-10">
@@ -36,5 +38,6 @@ export default function InvestorLayout({ children }: { children: React.ReactNode
       </div>
       <div className="max-w-7xl mx-auto px-6 pb-24 pt-8">{children}</div>
     </div>
+    </ProtectedRoute>
   );
 }

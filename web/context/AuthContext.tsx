@@ -22,6 +22,8 @@ interface AuthContextType {
   role: UserRole | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  /** Whether the signed-in user's email is verified (always true in bypass). */
+  emailVerified: boolean;
   logout: () => Promise<void>;
   /** Dev-only: swap the mocked role. No-op when bypass is off. */
   setDevRole: (role: UserRole) => void;
@@ -121,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: user?.role || null,
         isLoading,
         isAuthenticated: DEV_BYPASS ? true : !!firebaseUser,
+        emailVerified: DEV_BYPASS ? true : !!firebaseUser?.emailVerified,
         logout: handleLogout,
         setDevRole,
         devBypass: DEV_BYPASS,

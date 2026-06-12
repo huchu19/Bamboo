@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, role, devBypass } = useAuth();
+  const { isAuthenticated, isLoading, role, devBypass, emailVerified } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -20,10 +20,15 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
       router.replace('/login');
       return;
     }
+    // Hard block: unverified email can't reach protected pages.
+    if (!emailVerified) {
+      router.replace('/verify-email');
+      return;
+    }
     if (requiredRole && role !== requiredRole) {
       router.replace('/dashboard');
     }
-  }, [devBypass, isAuthenticated, isLoading, role, requiredRole, router]);
+  }, [devBypass, isAuthenticated, isLoading, role, requiredRole, emailVerified, router]);
 
   if (devBypass) return <>{children}</>;
 
@@ -39,6 +44,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   }
 
   if (!isAuthenticated) return null;
+  if (!emailVerified) return null;
   if (requiredRole && role !== requiredRole) return null;
 
   return <>{children}</>;
