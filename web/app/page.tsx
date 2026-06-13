@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { version as appVersion } from "../package.json";
 import { SiteNav } from "@/components/bamboo/SiteNav";
 import { BambooStalk } from "@/components/bamboo/BambooStalk";
 import { BambooLeaf, RootGlyph } from "@/components/bamboo/BambooIcons";
@@ -6,6 +7,11 @@ import { BambooDivider } from "@/components/bamboo/BambooDivider";
 import { HeroFeaturedVideo } from "@/components/bamboo/HeroFeaturedVideo";
 
 export default function Home() {
+  // Build stamp shown in the footer to confirm which deploy is live. Vercel
+  // injects the commit SHA at build time; locally it's absent, so show "dev".
+  const commit = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "dev";
+  const buildStamp = `v${appVersion} · ${commit}`;
+
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-[color:var(--gold)]/40 relative">
       <SiteNav />
@@ -21,7 +27,7 @@ export default function Home() {
                 The Grove · Q1 2026 · $42M planted last quarter
               </span>
             </div>
-            <h1 className="font-display text-[clamp(4rem,12vw,9rem)] leading-[0.85] uppercase tracking-tighter mb-4 animate-reveal">
+            <h1 className="font-display text-[clamp(4rem,12vw,9rem)] leading-[0.95] uppercase tracking-tighter mb-4 animate-reveal">
               Plant <span className="text-[color:var(--gold)]">Your</span> Seed.
             </h1>
             <p className="font-display text-3xl md:text-4xl uppercase tracking-tighter text-foreground/60 mb-8 animate-reveal [animation-delay:100ms]">
@@ -311,6 +317,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <div className="size-2 rounded-full bg-[color:var(--gold)] animate-pulse" />
               <p className="text-[10px] font-mono uppercase tracking-widest text-white/60">Grove Open · Network Online</p>
+              <span className="text-[10px] font-mono text-white/30">{buildStamp}</span>
             </div>
           </div>
         </div>
