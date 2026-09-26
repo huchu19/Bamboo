@@ -1,4 +1,4 @@
-# 🎋 Bamboo — Investing Platform
+# 🎋 Bamboo
 **Plant Your Seed. Build Your Portfolio.**
 
 A two-sided investing marketplace connecting innovative entrepreneurs with impact-driven investors.
